@@ -1,0 +1,275 @@
+﻿.版本 2
+
+.程序集 KRC解密
+
+.子程序 删字节集首尾空, 字节集
+.参数 Data, 字节集
+.局部变量 Head, 整数型
+.局部变量 End, 整数型
+
+Head = 寻找首空 (Data)
+End = 寻找尾空 (Data)
+
+返回 (取字节集中间 (Data, Head, End - Head - 1))
+
+
+.子程序 寻找首空, 整数型
+.参数 Data, 字节集
+.参数 DataPos, 整数型, 可空
+.局部变量 NowPos, 整数型
+
+.如果真 (是否为空 (DataPos))
+    DataPos = 1
+.如果真结束
+NowPos = 寻找字节集 (Data, {0}, DataPos)
+.如果真 (NowPos == -1 || NowPos != DataPos)
+    返回 (DataPos - 1)
+.如果真结束
+NowPos = 寻找首空 (Data, NowPos + 1)
+返回 (NowPos)
+
+
+.子程序 UnzipFileStream, 字节集
+.参数 KrcData, 字节集
+.局部变量 Data, 字节集
+.局部变量 destLen, 整数型
+.局部变量 source, 字节集
+.局部变量 sourceLen, 整数型
+
+source = KrcData
+sourceLen = 取字节集长度 (KrcData)
+destLen = (sourceLen + sourceLen) * 2
+Data = 取空白字节集 (destLen)
+uncompress (Data, destLen, source, sourceLen)
+Data = 删字节集首尾空 (Data)
+返回 (Data)
+
+
+
+.子程序 寻找尾空, 整数型
+.参数 Data, 字节集
+.参数 DataPos, 整数型, 可空
+.局部变量 NowPos, 整数型
+
+.如果真 (是否为空 (DataPos))
+    DataPos = 取字节集长度 (Data)
+.如果真结束
+NowPos = 倒找字节集 (Data, {0}, DataPos)
+.如果真 (NowPos == -1 || NowPos != DataPos)
+    返回 (DataPos + 1)
+.如果真结束
+NowPos = 寻找尾空 (Data, NowPos - 1)
+返回 (NowPos)
+
+
+.子程序 DataXor, 字节集
+.参数 Data1, 字节集
+.参数 Data2, 字节集
+.局部变量 XorData1Size, 整数型
+.局部变量 XorData2Size, 整数型
+.局部变量 XorData1Addr, 整数型
+.局部变量 XorData2Addr, 整数型
+
+XorData1Size = 取字节集长度 (Data1)
+XorData2Size = 取字节集长度 (Data2)
+.如果真 (Data2 == {})
+    返回 (Data1)
+.如果真结束
+.如果真 (XorData2Size < XorData1Size)
+    XorData2Size = XorData1Size \ XorData2Size + 1
+    Data2 = 取重复字节集 (XorData2Size, Data2)
+.如果真结束
+
+XorData1Addr = GetDataAddr (Data1)
+XorData2Addr = GetDataAddr (Data2)
+置入代码 ({139, 189, 244, 255, 255, 255, 139, 149, 240, 255, 255, 255, 51, 219, 129, 173, 252, 255, 255, 255, 1, 0, 0, 0, 129, 189, 252, 255, 255, 255, 255, 255, 255, 255, 15, 132, 14, 0, 0, 0, 51, 192, 138, 4, 26, 48, 4, 59, 67, 233, 216, 255, 255, 255})
+返回 (Data1)
+
+
+
+.子程序 GetKrcData, 字节集
+.参数 Data, 字节集
+.局部变量 Size, 整数型
+.局部变量 XorData, 字节集
+.局部变量 HeadData, 字节集
+.局部变量 ZipBytes, 字节集
+.局部变量 EncodedBytes, 字节集
+.局部变量 id, 整数型
+
+Size = 取字节集长度 (Data)
+
+HeadData = {107, 114, 99, 49}
+
+XorData = {64, 71, 97, 119, 94, 50, 116, 71, 81, 54, 49, 45, 206, 210, 110, 105}
+
+EncodedBytes = 取字节集右边 (Data, Size - 4)
+
+ZipBytes = DataXor (EncodedBytes, XorData)
+
+返回 (UnzipFileStream (ZipBytes))
+
+
+
+.子程序 GetDataAddr, 整数型
+.参数 Data, 字节集, 参考
+
+置入代码 ({139, 69, 8, 139, 0, 133, 192, 15, 132, 3, 0, 0, 0, 131, 192, 8, 201, 194, 4, 0})
+返回 (0)
+
+
+.子程序 UnicodeToAnsi, 文本型
+.参数 Unicode, 字节集
+.局部变量 ansi_len, 整数型
+.局部变量 unicode_len
+.局部变量 ansi, 字节集
+
+unicode_len = 取字节集长度 (Unicode) / 2
+
+ansi_len = WideCharToMultiByte (936, 512, Unicode, unicode_len, 0, 0, 0, 假)
+
+ansi = 取空白字节集 (ansi_len)
+
+WideCharToMultiByte_Text (936, 512, Unicode, unicode_len, ansi, ansi_len, 0, 假)
+
+返回 (取字节集数据 (ansi, #文本型, ))
+
+
+
+.子程序 UTF8ToUnicode, 字节集
+.参数 UTF8, 字节集
+.局部变量 len, 整数型
+.局部变量 Unicode字节集, 字节集
+.局部变量 ll
+
+ll = 取字节集长度 (UTF8)
+len = MultiByteToWideChar (65001, 0, UTF8, ll, {}, 0)
+Unicode字节集 = 取空白字节集 (len * 2)
+' 本源码来自易语言资源网(www.5A5X.com)
+MultiByteToWideChar (65001, 0, UTF8, ll, Unicode字节集, len * 2)
+返回 (Unicode字节集)
+
+
+.子程序 UTF8ToAnsi, 文本型
+.参数 UTF8, 字节集
+
+返回 (UnicodeToAnsi (UTF8ToUnicode (UTF8)))
+
+
+.子程序 申请内存, 整数型
+.参数 Size, 整数型
+
+返回 (VirtualAlloc (0, Size, 4096, 64))
+
+
+.子程序 取指定文本, 文本型
+.参数 完整内容, 文本型, , 完整内容
+.参数 左边文本, 文本型, 可空, 左边文本
+.参数 右边文本, 文本型, 可空, 右边文本
+.局部变量 临时位置, 整数型
+.局部变量 总长度, 整数型
+.局部变量 临时文本, 文本型
+
+总长度 = 取文本长度 (完整内容)
+
+.判断开始 (右边文本 == “”)
+    .如果 (寻找文本 (完整内容, 左边文本, , 假) > -1)
+        临时位置 = 寻找文本 (完整内容, 左边文本, , 假) + 取文本长度 (左边文本)
+        临时文本 = 取文本中间 (完整内容, 临时位置, 总长度)
+        返回 (临时文本)
+    .否则
+        返回 (“”)
+    .如果结束
+    
+.判断 (左边文本 == “”)
+    .如果 (寻找文本 (完整内容, 右边文本, , 假) > -1)
+        临时位置 = 寻找文本 (完整内容, 右边文本, , 假) - 1
+        临时文本 = 取文本左边 (完整内容, 临时位置)
+        返回 (临时文本)
+    .否则
+        返回 (“”)
+    .如果结束
+    
+.判断 (左边文本 == “” && 右边文本 == “ ”)
+    返回 (“”)
+.默认
+    .如果 (寻找文本 (完整内容, 左边文本, , 假) > -1)
+        临时位置 = 寻找文本 (完整内容, 左边文本, , 假) + 取文本长度 (左边文本)
+        临时文本 = 取文本中间 (完整内容, 临时位置, 总长度)
+        总长度 = 取文本长度 (临时文本)
+        临时位置 = 寻找文本 (临时文本, 右边文本, , 假) - 1
+        临时文本 = 取文本中间 (临时文本, 1, 临时位置)
+        返回 (临时文本)
+    .否则
+        返回 (“”)
+    .如果结束
+    
+.判断结束
+
+
+
+
+
+.子程序 YiMaTime, 文本型
+.参数 TimeS, 整数型
+.局部变量 Time分, 文本型
+.局部变量 Time秒, 文本型
+
+Time分 = 到文本 (TimeS \ 60)
+Time秒 = 到文本 (TimeS % 60)
+.如果真 (取文本长度 (Time分) == 1)
+    Time分 = “0” + 到文本 (TimeS \ 60)
+.如果真结束
+.如果真 (取文本长度 (Time秒) == 1)
+    Time秒 = “0” + 到文本 (TimeS % 60)
+.如果真结束
+' 本源码来自易语言资源网(www.5A5X.com)
+返回 (Time分 + “:” + Time秒)
+
+
+.子程序 KrcTimeConvert, 文本型
+.参数 Time, 文本型
+.局部变量 Size, 整数型
+.局部变量 TxtTime, 文本型
+.局部变量 NewTime, 文本型
+.局部变量 分, 文本型
+.局部变量 秒, 文本型
+.局部变量 毫, 文本型
+
+
+Size = 取文本长度 (Time)
+TxtTime = 取文本左边 (Time, Size - 1)
+.如果 (到整数 (Time) >= 60000)
+    .判断开始 (Size == 5)
+        分 = YiMaTime (到整数 (取文本左边 (TxtTime, 2)))
+        NewTime = 分 + “.” + 毫
+    .判断 (Size > 5)
+        分 = YiMaTime (到整数 (取文本左边 (TxtTime, 3)))
+    .默认
+        
+    .判断结束
+    
+    毫 = 取文本右边 (TxtTime, 2)
+    NewTime = 分 + “.” + 毫
+.否则
+    
+    .判断开始 (Size > 4)
+        分 = “00”
+        秒 = 取文本左边 (TxtTime, 2)
+        
+    .判断 (Size > 3)
+        分 = “00”
+        秒 = “0” + 取文本左边 (TxtTime, 1)
+    .默认
+        分 = “00”
+        秒 = “00”
+    .判断结束
+    
+    毫 = 取文本右边 (TxtTime, 2)
+    NewTime = 分 + “:” + 秒 + “.” + 毫
+.如果结束
+
+
+返回 (NewTime)
+
+
+

@@ -1,0 +1,28 @@
+﻿{
+  "items": [
+    {
+      "comment": "",
+      "isPublic": false,
+      "key": "image:图片2",
+      "logicalName": "图片2",
+      "order": 0,
+      "relativePath": "image/图片2.bin"
+    },
+    {
+      "comment": "",
+      "isPublic": false,
+      "key": "image:图片3",
+      "logicalName": "图片3",
+      "order": 1,
+      "relativePath": "image/图片3.bin"
+    },
+    {
+      "comment": "",
+      "isPublic": false,
+      "key": "image:zlib",
+      "logicalName": "zlib",
+      "order": 2,
+      "relativePath": "image/zlib.bin"
+    }
+  ]
+}

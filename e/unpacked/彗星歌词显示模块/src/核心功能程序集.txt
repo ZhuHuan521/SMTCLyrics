@@ -1,0 +1,226 @@
+﻿.版本 2
+
+.支持库 系统核心支持库
+.支持库 DirectX3D支持库
+
+.程序集 核心功能程序集
+
+.子程序 _启动子程序, 整数型, , 请在本子程序中放置易模块初始化代码
+
+输出调试文本 (#版权信息)
+歌词窗口_初始化 ()
+_临时子程序 ()  ' 在初始化代码执行完毕后调用测试代码
+返回 (0)  ' 可以根据您的需要返回任意数值
+
+
+.子程序 _临时子程序
+.局部变量 窗口1, 彗星歌词窗口
+
+窗口1.创建 ()
+窗口1.置字体 (“黑体”, 50, 真)
+窗口1.更新歌词 (“彗星歌词窗口”, 50)
+窗口1.禁止关闭 (真)
+歌词窗口_消息循环 ()
+
+
+.子程序 歌词窗口_初始化
+.局部变量 wc, WNDCLASSEX
+
+Gdiplus_初始化 ()
+' ------------------------------------------------------------
+g_ArrowCursor = LoadCursor (0, #IDC_ARROW)
+g_HandCursor = LoadCursor (0, #IDC_HAND)
+g_SizeAllCursor = LoadCursor (0, #IDC_SIZEALL)
+' ------------------------------------------------------------
+wc.cbSize = LocalSize_WNDCLASSEX (wc)  ' 要指定整个结构所占的字节数，必须
+wc.style = 位或 (#CS_HREDRAW, #CS_VREDRAW)
+wc.hInstance = GetModuleHandle (字符 (0))  ' 取当前应用程序的实例句柄。
+wc.hIcon = 0
+wc.hCursor = g_ArrowCursor
+wc.hbrBackground = #COLOR_BTNFACE + 1  ' 也可以使用其他的Color常量，注意在后面要＋1。
+wc.lpszClassName = #COMET_DEFAULT_CLASSNAME
+wc.lpfnWndProc = GetProcAddress (GetModuleHandle (“user32.dll”), “DefWindowProcA”)
+' 注册表填写好了之后，进行注册登记窗口类。
+RegisterClassEx (wc)
+
+
+.子程序 歌词窗口_消息循环, 整数型
+.局部变量 msg, MSG
+
+.判断循环首 (GetMessage (msg, 0, 0, 0) != 0)
+    TranslateMessage (msg)
+    DispatchMessage (msg)
+.判断循环尾 ()
+返回 (msg.wParam)
+
+
+.子程序 歌词窗口_消息处理, 整数型
+.参数 hWnd, 整数型, , 要接收消息的那个窗口的句柄
+.参数 wMsg, 整数型, , 消息的标识符
+.参数 wParam, 整数型, , 具体取决于消息
+.参数 lParam, 整数型, , 具体取决于消息;
+
+.判断开始 (wMsg == #WM_LBUTTONDOWN)
+    返回 (歌词窗口_鼠标消息 (hWnd, wMsg, wParam, lParam))
+.判断 (wMsg == #WM_LBUTTONUP)
+    返回 (歌词窗口_鼠标消息 (hWnd, wMsg, wParam, lParam))
+.判断 (wMsg == #WM_MOUSEMOVE)
+    返回 (歌词窗口_鼠标消息 (hWnd, wMsg, wParam, lParam))
+.判断 (wMsg == #WM_RBUTTONDOWN)
+    返回 (歌词窗口_鼠标消息 (hWnd, wMsg, wParam, lParam))
+.判断 (wMsg == #WM_RBUTTONUP)
+    返回 (歌词窗口_鼠标消息 (hWnd, wMsg, wParam, lParam))
+.判断 (wMsg == #WM_CLOSE)
+    返回 (OnClose (hWnd, wMsg, wParam, lParam))
+.判断 (wMsg == #WM_DESTROY)
+    返回 (OnDestroy (hWnd, wMsg, wParam, lParam))
+.判断 (wMsg == #WM_QUERYENDSESSION)
+    返回 (OnQueryEndSession (hWnd, wMsg, wParam, lParam))
+.默认
+    
+.判断结束
+返回 (CallPrevWndProc (hWnd, wMsg, wParam, lParam))
+
+
+.子程序 CallPrevWndProc, 整数型
+.参数 hWnd, 整数型, , 要接收消息的那个窗口的句柄
+.参数 wMsg, 整数型, , 消息的标识符
+.参数 wParam, 整数型, , 具体取决于消息
+.参数 lParam, 整数型, , 具体取决于消息;
+.局部变量 hProc, 整数型
+
+hProc = GetProp (hWnd, #COMET_PREVWNDPROC)
+.如果 (hProc != 0)
+    返回 (CallWindowProc (hProc, hWnd, wMsg, wParam, lParam))
+.否则
+    返回 (DefWindowProc (hWnd, wMsg, wParam, lParam))
+.如果结束
+
+
+
+.子程序 歌词窗口_鼠标消息, 整数型
+.参数 hWnd, 整数型, , 要接收消息的那个窗口的句柄
+.参数 wMsg, 整数型, , 消息的标识符
+.参数 wParam, 整数型, , 具体取决于消息
+.参数 lParam, 整数型, , 具体取决于消息;
+.局部变量 DUIIndex, 整数型
+.局部变量 pt, POINT
+.局部变量 nRet, 整数型
+.局部变量 nIndex, 整数型
+
+nRet = CallPrevWndProc (hWnd, wMsg, wParam, lParam)
+pt.x = LOWORD (lParam)
+pt.y = HIWORD (lParam)
+' ------------------------
+.判断开始 (wMsg == #WM_LBUTTONDOWN)
+    .如果真 (GetProp (hWnd, “Comet_HitMove”) != 0)
+        ReleaseCapture ()
+        SendMessage (hWnd, #WM_NCLBUTTONDOWN, #HTCAPTION, 0)
+    .如果真结束
+    
+.默认
+    
+.判断结束
+
+返回 (nRet)
+
+
+.子程序 OnClose, 整数型
+.参数 hWnd, 整数型, , 要接收消息的那个窗口的句柄
+.参数 wMsg, 整数型, , 消息的标识符
+.参数 wParam, 整数型, , 具体取决于消息
+.参数 lParam, 整数型, , 具体取决于消息 '
+
+.如果真 (GetProp (hWnd, “Comet_NoClose”) != 0)
+    返回 (0)
+.如果真结束
+返回 (CallPrevWndProc (hWnd, wMsg, wParam, lParam))
+
+
+.子程序 OnQueryEndSession, 整数型
+.参数 hWnd, 整数型, , 要接收消息的那个窗口的句柄
+.参数 wMsg, 整数型, , 消息的标识符
+.参数 wParam, 整数型, , 具体取决于消息
+.参数 lParam, 整数型, , 具体取决于消息 '
+
+SetProp (hWnd, “Comet_NoClose”, 0)
+返回 (CallPrevWndProc (hWnd, wMsg, wParam, lParam))
+
+
+.子程序 OnDestroy, 整数型
+.参数 hWnd, 整数型, , 要接收消息的那个窗口的句柄
+.参数 wMsg, 整数型, , 消息的标识符
+.参数 wParam, 整数型, , 具体取决于消息
+.参数 lParam, 整数型, , 具体取决于消息 '
+.局部变量 hProc, 整数型
+
+hProc = GetProp (hWnd, #COMET_PREVWNDPROC)
+.如果 (hProc != 0)
+    SetWindowLong (hWnd, #GWL_WNDPROC, hProc)
+    SetProp (hWnd, #COMET_PREVWNDPROC, 0)
+    返回 (CallWindowProc (hProc, hWnd, wMsg, wParam, lParam))
+.否则
+    返回 (DefWindowProc (hWnd, wMsg, wParam, lParam))
+.如果结束
+
+
+
+.子程序 OnGetMinMaxInfo, 整数型
+.参数 hWnd, 整数型, , 要接收消息的那个窗口的句柄
+.参数 wMsg, 整数型, , 消息的标识符
+.参数 wParam, 整数型, , 具体取决于消息
+.参数 lParam, 整数型, , 具体取决于消息 '
+.局部变量 ret, 整数型
+.局部变量 lpmmi, MINMAXINFO
+.局部变量 rc, RECT
+
+' CopyMemory_MINMAXINFO (lpmmi, lParam, 40)  ' 40为MINMAXINFO结构长度
+' SystemParametersInfo (#SPI_GETWORKAREA, 0, rc, 0)  ' //先取出桌面工作区的矩形位置
+' lpmmi.ptMinTrackSize.x ＝ 100  ' //最小拖动范围 宽度
+' lpmmi.ptMinTrackSize.y ＝ 30  ' //最小拖动范围 高度
+' lpmmi.ptMaxSize.x ＝ rc.Right － rc.Left  ' //最大宽度
+' lpmmi.ptMaxSize.y ＝ rc.Bottom － rc.Top  ' //最大高度
+' lpmmi.ptMaxPosition.x ＝ rc.Right － g_DUIArray [DUIIndex].Width  ' //最大的放置点
+' lpmmi.ptMaxPosition.y ＝ rc.Bottom － g_DUIArray [DUIIndex].Height  ' //最大的放置点
+' CopyMemory_MINMAXINFO2 (lParam, lpmmi, 40)  ' 40为MINMAXINFO结构长度
+
+ret = DefWindowProc (hWnd, wMsg, wParam, lParam)
+返回 (ret)
+
+
+.子程序 OnMoving, 整数型
+.参数 hWnd, 整数型, , 要接收消息的那个窗口的句柄
+.参数 wMsg, 整数型, , 消息的标识符
+.参数 wParam, 整数型, , 具体取决于消息
+.参数 lParam, 整数型, , 具体取决于消息 '
+.局部变量 Rect, RECT
+.局部变量 WorkArea, RECT
+.局部变量 w
+.局部变量 h
+.局部变量 x, 整数型
+.局部变量 y, 整数型
+
+CopyMemory_Rect (Rect, lParam, 16)
+x = Rect.Left
+y = Rect.Top
+w = Rect.Right - Rect.Left
+h = Rect.Bottom - Rect.Top
+SystemParametersInfo (#SPI_GETWORKAREA, 0, WorkArea, 0)  ' //先取出桌面工作区的矩形位置
+.如果真 (x < WorkArea.Left)
+    x = WorkArea.Left
+.如果真结束
+.如果真 (y < WorkArea.Top)
+    y = WorkArea.Top
+.如果真结束
+.如果真 (x + w > WorkArea.Right)
+    x = WorkArea.Right - w
+.如果真结束
+.如果真 (y + h > WorkArea.Bottom)
+    y = WorkArea.Bottom - h
+.如果真结束
+.如果真 (x != Rect.Left || y != Rect.Top)
+    Rect = CRect (x, y, x + w, y + h)
+    CopyMemory_Rect2 (lParam, Rect, 16)
+.如果真结束
+返回 (DefWindowProc (hWnd, wMsg, wParam, lParam))
+

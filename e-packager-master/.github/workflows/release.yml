@@ -1,0 +1,70 @@
+﻿name: Release
+
+on:
+  push:
+    tags:
+      - "*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    name: Build Win32 And x64, Publish Win32
+    runs-on: windows-2025-vs2026
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Set Version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          Set-Content -Path src\version.h -Value "#pragma once`n`n#define APP_VERSION `"$tag`""
+
+          if ($tag -match '(?i)(alpha|beta|pre|rc)') {
+            "IS_PRERELEASE=true" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          } else {
+            "IS_PRERELEASE=false" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          }
+
+      - name: Build Win32 And x64 Release
+        shell: pwsh
+        run: |
+          msbuild .\e-packager.sln /t:Build "/p:Configuration=Release;Platform=Win32" /m
+          msbuild .\e-packager.sln /t:Build "/p:Configuration=Release;Platform=x64" /m
+
+      - name: Package Win32 Release Files
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $assetRoot = Join-Path $env:GITHUB_WORKSPACE "release-assets"
+          $win32PackageRoot = Join-Path $assetRoot "e-packager-$tag-windows-win32"
+          $win32ZipPath = Join-Path $assetRoot "e-packager-$tag-windows-win32.zip"
+
+          if (Test-Path $assetRoot) {
+            Remove-Item -LiteralPath $assetRoot -Recurse -Force
+          }
+
+          New-Item -ItemType Directory -Path $win32PackageRoot | Out-Null
+          Copy-Item .\bin\Win32\Release\* $win32PackageRoot -Recurse -Force
+          Compress-Archive -Path (Join-Path $win32PackageRoot '*') -DestinationPath $win32ZipPath -Force
+
+          @(
+            "ASSET_ZIPS<<EOF"
+            ($win32ZipPath -replace '\\','/')
+            "EOF"
+          ) | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+          prerelease: ${{ env.IS_PRERELEASE }}
+          files: ${{ env.ASSET_ZIPS }}

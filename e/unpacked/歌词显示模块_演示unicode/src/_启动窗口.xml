@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<窗口 名称="_启动窗口" 备注="在程序启动后自动调入本窗口" 左边="50" 顶边="50" 宽度="446" 高度="567" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="BgAAAAIAAAABAAAAAAAA/wAAAAABAAAAAQAAAAEAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaAAAA18DD5rjotMogd2l0aCBTTVRDIEJ5Otb5u7cAAAAA">
+  <窗口.事件 索引="0" 名称="创建完毕" 处理器="窗口程序集1::__启动窗口_创建完毕" />
+  <窗口.事件 索引="2" 名称="_Lib0Type0Event2" 处理器="窗口程序集1::__启动窗口_将被销毁" />
+  <按钮 名称="按钮13" 左边="320" 顶边="480" 宽度="64" 高度="32" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAAAAAAABAAAAAQAAAAAAAAAAAAAACAAAAMfls/27urTm">
+    <按钮.事件 索引="0" 名称="被单击" 处理器="窗口程序集1::_按钮13_被单击" />
+  </按钮>
+  <按钮 名称="按钮12" 左边="208" 顶边="480" 宽度="88" 高度="32" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAAAAAAABAAAAAQAAAAAAAAAAAAAADAAAALG+tdjQtMjruOi0yg==">
+    <按钮.事件 索引="0" 名称="被单击" 处理器="窗口程序集1::_按钮12_被单击" />
+  </按钮>
+  <按钮 名称="按钮1" 左边="320" 顶边="440" 宽度="64" 高度="32" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAAAAAAABAAAAAQAAAAAAAAAAAAAABAAAALu71LQ=">
+    <按钮.事件 索引="0" 名称="被单击" 处理器="窗口程序集1::_按钮1_被单击" />
+  </按钮>
+  <组合框 名称="组合框7" 左边="96" 顶边="447" 宽度="100" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AwAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAD///8AAwAAAAAAAAAAAAAAAAAAAAQABAAAAMbztuwEAAAAube5twQAAAC/3s7SBAAAALjU0tcAAAAAAAAAAAAAAAA=" />
+  <标签 名称="标签20" 左边="380" 顶边="372" 宽度="61" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AgAAAAAAAAAIAAAAAAAAAICAgAD///8AgICAAAAAAAAAAAD/AQAAAAAAAACAgIAA////AICAgAAAAAAAAQAAAAAAAAAAAAAAAAAAAAgAAAC87LLi1tAuLgAAAAAAAAAA" />
+  <标签 名称="标签21" 左边="325" 顶边="372" 宽度="56" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AgAAAAAAAAAIAAAAAAAAAICAgAD///8AgICAAAAAAAAAAAD/AQAAAAAAAACAgIAA////AICAgAAAAAAAAQAAAAAAAAAAAAAAAAAAAAoAAAC41NLX17TMrKO6AAAAAAAAAAA=" />
+  <标签 名称="标签19" 左边="380" 顶边="348" 宽度="61" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AgAAAAAAAAAIAAAAAAAAAICAgAD///8AgICAAAAAAAAAAAD/AQAAAAAAAACAgIAA////AICAgAAAAAAAAQAAAAAAAAAAAAAAAAAAAAgAAAC87LLi1tAuLgAAAAAAAAAA" />
+  <标签 名称="标签16" 左边="325" 顶边="348" 宽度="56" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AgAAAAAAAAAIAAAAAAAAAICAgAD///8AgICAAAAAAAAAAAD/AQAAAAAAAACAgIAA////AICAgAAAAAAAAQAAAAAAAAAAAAAAAAAAAAoAAAC/3s7S17TMrKO6AAAAAAAAAAA=" />
+  <标签 名称="标签18" 左边="265" 顶边="371" 宽度="80" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AgAAAAAAAAAIAAAAAAAAAICAgAD///8AgICAAAAAAAAAAAD/AQAAAAAAAACAgIAA////AICAgAAAAAAAAQAAAAAAAAAAAAAAAAAAAAgAAAC87LLi1tAuLgAAAAAAAAAA" />
+  <标签 名称="标签17" 左边="265" 顶边="348" 宽度="80" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AgAAAAAAAAAIAAAAAAAAAICAgAD///8AgICAAAAAAAAAAAD/AQAAAAAAAACAgIAA////AICAgAAAAAAAAQAAAAAAAAAAAAAAAAAAAAgAAAC87LLi1tAuLgAAAAAAAAAA" />
+  <标签 名称="标签15" 左边="211" 顶边="371" 宽度="56" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AgAAAAAAAAAIAAAAAAAAAICAgAD///8AgICAAAAAAAAAAAD/AQAAAAAAAACAgIAA////AICAgAAAAAAAAQAAAAAAAAAAAAAAAAAAAAoAAAC5t7m317TMrKO6AAAAAAAAAAA=" />
+  <标签 名称="标签14" 左边="211" 顶边="348" 宽度="56" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AgAAAAAAAAAIAAAAAAAAAICAgAD///8AgICAAAAAAAAAAAD/AQAAAAAAAACAgIAA////AICAgAAAAAAAAQAAAAAAAAAAAAAAAAAAAAoAAADG87bs17TMrKO6AAAAAAAAAAA=" />
+  <分组框 名称="分组框7" 左边="217" 顶边="224" 宽度="219" 高度="112" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AQAAAAAAAAAAAAAAAAAA/wAAAAAIAAAAuOi0yrSwv9o=">
+    <按钮 名称="按钮11" 左边="123" 顶边="24" 宽度="86" 高度="32" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAAAAAAABAAAAAQAAAAAAAAAAAAAADAAAALvxyKG1scewzrvWww==">
+      <按钮.事件 索引="0" 名称="被单击" 处理器="窗口程序集1::_按钮11_被单击" />
+    </按钮>
+    <按钮 名称="按钮10" 左边="123" 顶边="67" 宽度="86" 高度="32" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAAAAAAABAAAAAQAAAAAAAAAAAAAABAAAALGjtOY=">
+      <按钮.事件 索引="0" 名称="被单击" 处理器="窗口程序集1::_按钮10_被单击" />
+    </按钮>
+    <编辑框 名称="编辑框10" 左边="46" 顶边="83" 宽度="73" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="" />
+    <编辑框 名称="编辑框9" 左边="46" 顶边="61" 宽度="73" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="" />
+    <编辑框 名称="编辑框8" 左边="46" 顶边="39" 宽度="73" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="" />
+    <编辑框 名称="编辑框7" 左边="46" 顶边="18" 宽度="73" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="" />
+    <标签 名称="标签12" 左边="7" 顶边="80" 宽度="80" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AgAAAAAAAAAIAAAAAAAAAICAgAD///8AgICAAAAAAAAAAAD/AQAAAAAAAACAgIAA////AICAgAAAAAAAAQAAAAAAAAAAAAAAAAAAAAQAAADX87HfAAAAAAAAAAA=" />
+    <标签 名称="标签11" 左边="7" 顶边="58" 宽度="80" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AgAAAAAAAAAIAAAAAAAAAICAgAD///8AgICAAAAAAAAAAAD/AQAAAAAAAACAgIAA////AICAgAAAAAAAAQAAAAAAAAAAAAAAAAAAAAQAAAC/7bbIAAAAAAAAAAA=" />
+    <标签 名称="标签10" 左边="7" 顶边="37" 宽度="80" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AgAAAAAAAAAIAAAAAAAAAICAgAD///8AgICAAAAAAAAAAAD/AQAAAAAAAACAgIAA////AICAgAAAAAAAAQAAAAAAAAAAAAAAAAAAAAQAAAC437bIAAAAAAAAAAA=" />
+    <标签 名称="标签9" 左边="6" 顶边="16" 宽度="80" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AgAAAAAAAAAIAAAAAAAAAICAgAD///8AgICAAAAAAAAAAAD/AQAAAAAAAACAgIAA////AICAgAAAAAAAAQAAAAAAAAAAAAAAAAAAAAQAAAC2pbHfAAAAAAAAAAA=" />
+  </分组框>
+  <按钮 名称="按钮9" 左边="208" 顶边="401" 宽度="88" 高度="32" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAAAAAAABAAAAAQAAAAAAAAAAAAAADQAAAMv4tqgvveKz/cv4tqg=">
+    <按钮.事件 索引="0" 名称="被单击" 处理器="窗口程序集1::_按钮9_被单击" />
+  </按钮>
+  <分组框 名称="分组框6" 左边="8" 顶边="344" 宽度="192" 高度="176" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AQAAAAAAAAAAAAAAAAAA/wAAAAAGAAAAuOi0ytS0">
+    <标签 名称="标签2" 左边="8" 顶边="103" 宽度="64" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AgAAAAAAAAAIAAAAAAAAAICAgAD///8AgICAAAAAAAAAAAD/AQAAAAAAAACAgIAA////AICAgAAAAAAAAQAAAAAAAAAAAAAAAAAAAAcAAADTxc/IvLY0AAAAAAAAAAA=" />
+    <标签 名称="标签13" 左边="8" 顶边="73" 宽度="72" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AgAAAAAAAAAIAAAAAAAAAICAgAD///8AgICAAAAAAAAAAAD/AQAAAAAAAACAgIAA////AICAgAAAAAAAAQAAAAAAAAAAAAAAAAAAAAcAAADTxc/IvLYzAAAAAAAAAAA=" />
+    <组合框 名称="组合框5" 左边="88" 顶边="73" 宽度="100" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AwAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAD///8AAgAAAAAAAAAAAAAAAAAAAAQABAAAAMbztuwEAAAAube5twQAAAC/3s7SBAAAALjU0tcAAAAAAAAAAAAAAAA=" />
+    <按钮 名称="按钮8" 左边="56" 顶边="144" 宽度="64" 高度="29" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAAAAAAABAAAAAQAAAAAAAAAAAAAABAAAALGjtOY=">
+      <按钮.事件 索引="0" 名称="被单击" 处理器="窗口程序集1::_按钮8_被单击" />
+    </按钮>
+    <标签 名称="标签8" 左边="8" 顶边="43" 宽度="79" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AgAAAAAAAAAIAAAAAAAAAICAgAD///8AgICAAAAAAAAAAAD/AQAAAAAAAACAgIAA////AICAgAAAAAAAAQAAAAAAAAAAAAAAAAAAAAcAAADTxc/IvLYyAAAAAAAAAAA=" />
+    <标签 名称="标签7" 左边="8" 顶边="13" 宽度="80" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AgAAAAAAAAAIAAAAAAAAAICAgAD///8AgICAAAAAAAAAAAD/AQAAAAAAAACAgIAA////AICAgAAAAAAAAQAAAAAAAAAAAAAAAAAAAAcAAADTxc/IvLYxAAAAAAAAAAA=" />
+    <组合框 名称="组合框2" 左边="88" 顶边="43" 宽度="100" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AwAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAD///8AAQAAAAAAAAAAAAAAAAAAAAQABAAAAMbztuwEAAAAube5twQAAAC/3s7SBAAAALjU0tcAAAAAAAAAAAAAAAA=" />
+    <组合框 名称="组合框1" 左边="88" 顶边="14" 宽度="100" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AwAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAD///8AAAAAAAAAAAAAAAAAAAAAAAQABAAAAMbztuwEAAAAube5twQAAAC/3s7SBAAAALjU0tcAAAAAAAAAAAAAAAA=" />
+  </分组框>
+  <分组框 名称="分组框5" 左边="108" 顶边="224" 宽度="104" 高度="112" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AQAAAAAAAAAAAAAAAAAA/wAAAAAIAAAAz9TKvre9yr0=">
+    <单选框 名称="单选框5" 左边="13" 顶边="63" 宽度="80" 高度="23" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAP8AAAAAAAAAAAAAAAAJAAAAwb2+5F/P8sew" />
+    <按钮 名称="按钮7" 左边="29" 顶边="87" 宽度="40" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAAAAAAABAAAAAQAAAAAAAAAAAAAABAAAALGjtOY=">
+      <按钮.事件 索引="0" 名称="被单击" 处理器="窗口程序集1::_按钮7_被单击" />
+    </按钮>
+    <单选框 名称="单选框4" 左边="13" 顶边="39" 宽度="80" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAP8AAAAAAAAAAAAAAAAEAAAAwb2+5A==" />
+    <单选框 名称="单选框3" 左边="13" 顶边="17" 宽度="80" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAP8AAAAAAAAAAAAAAAAEAAAA0ru+5A==" />
+  </分组框>
+  <分组框 名称="分组框4" 左边="8" 顶边="224" 宽度="96" 高度="112" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AQAAAAAAAAAAAAAAAAAA/wAAAAAIAAAAvODK07e9t6g=">
+    <按钮 名称="按钮6" 左边="24" 顶边="87" 宽度="40" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAAAAAAABAAAAAQAAAAAAAAAAAAAABAAAALGjtOY=">
+      <按钮.事件 索引="0" 名称="被单击" 处理器="窗口程序集1::_按钮6_被单击" />
+    </按钮>
+    <单选框 名称="单选框2" 左边="10" 顶边="44" 宽度="80" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAP8AAAAAAAAAAAAAAAAFAAAAU01UQzI=" />
+    <单选框 名称="单选框1" 左边="10" 顶边="18" 宽度="72" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAP8AAAAAAAAAAAAAAAAFAAAAU01UQzE=" />
+  </分组框>
+  <按钮 名称="按钮5" 左边="320" 顶边="401" 宽度="64" 高度="32" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAAAAAAABAAAAAQAAAAAAAAAAAAAACAAAAMui0MK84MrT">
+    <按钮.事件 索引="0" 名称="被单击" 处理器="窗口程序集1::_按钮5_被单击" />
+  </按钮>
+  <按钮 名称="按钮4" 左边="208" 顶边="440" 宽度="88" 高度="32" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAAAAAAABAAAAAQAAAAAAAAAAAAAADAAAANbY0MLBqs34u/HIoQ==">
+    <按钮.事件 索引="0" 名称="被单击" 处理器="窗口程序集1::_按钮4_被单击" />
+  </按钮>
+  <时钟 名称="时钟1" 左边="216" 顶边="8" 宽度="26" 高度="26" 可视="假" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AQAAAOCTBAA=">
+    <时钟.事件 索引="0" 名称="周期事件" 处理器="窗口程序集1::_时钟1_周期事件" />
+  </时钟>
+  <时钟 名称="时钟2" 左边="216" 顶边="34" 宽度="26" 高度="26" 可视="假" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AQAAAIQDAAA=">
+    <时钟.事件 索引="0" 名称="周期事件" 处理器="窗口程序集1::_时钟2_周期事件" />
+  </时钟>
+  <分组框 名称="分组框3" 左边="238" 顶边="6" 宽度="198" 高度="216" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AQAAAAAAAAAAAAAAAAAA/wAAAAAIAAAAuOi0ytHVyas=">
+    <按钮 名称="按钮3" 左边="72" 顶边="168" 宽度="70" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAAAAAAABAAAAAQAAAAAAAAAAAAAABAAAAMno1sM=">
+      <按钮.事件 索引="0" 名称="被单击" 处理器="窗口程序集1::_按钮3_被单击" />
+    </按钮>
+    <组合框 名称="组合框4" 左边="72" 顶边="140" 宽度="104" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AwAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAD///8AAQAAAAAAAAAAAAAAAAAAAAMABgAAAM7evaWx5AgAAADBvcmrvaWx5AgAAADI/cmrvaWx5AAAAAAAAAAAAAAAAA==" />
+    <组合框 名称="组合框3" 左边="72" 顶边="67" 宽度="104" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AwAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAD///8AAQAAAAAAAAAAAAAAAAAAAAMABgAAAM7evaWx5AgAAADBvcmrvaWx5AgAAADI/cmrvaWx5AAAAAAAAAAAAAAAAA==" />
+    <颜色选择器 名称="颜色选择器6" 左边="72" 顶边="115" 宽度="50" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="" />
+    <颜色选择器 名称="颜色选择器5" 左边="128" 顶边="91" 宽度="50" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAAD//wAAAAAA" />
+    <颜色选择器 名称="颜色选择器4" 左边="72" 顶边="91" 宽度="50" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAACI/wAAAAAA" />
+    <颜色选择器 名称="颜色选择器3" 左边="72" 顶边="43" 宽度="50" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="" />
+    <颜色选择器 名称="颜色选择器2" 左边="128" 顶边="19" 宽度="50" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAP//AAAAAAAA" />
+    <颜色选择器 名称="颜色选择器1" 左边="72" 顶边="19" 宽度="50" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAP8AAAAAAAAA" />
+    <标签 名称="标签4" 左边="8" 顶边="24" 宽度="64" 高度="136" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AgAAAAAAAAAIAAAAAAAAAICAgAD///8AgICAAAAAAAAAAAD/AQAAAAAAAACAgIAA////AICAgAAAAAAAAQAAAAEAAAAAAAAAAAAAAFAAAADOxNfW0dXJq6O6DQoNCs7E19ax37/yo7oNCg0KzsTX1r2lseSjug0KDQq438HB0dXJq6O6DQoNCrjfwcGx37/yo7oNCg0KuN/Bwb2lseSjugAAAAAAAAAA" />
+  </分组框>
+  <分组框 名称="分组框2" 左边="8" 顶边="6" 宽度="224" 高度="216" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AQAAAAAAAAAAAAAAAAAA/wAAAAAIAAAAuOi0ytfWzOU=">
+    <标签 名称="标签6" 左边="8" 顶边="162" 宽度="48" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AgAAAAAAAAAIAAAAAAAAAICAgAD///8AgICAAAAAAAAAAAD/AQAAAAAAAACAgIAA////AICAgAAAAAAAAQAAAAAAAAAAAAAAAAAAAAQAAADOorX3AAAAAAAAAAA=" />
+    <编辑框 名称="编辑框6" 左边="72" 顶边="162" 宽度="80" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="" />
+    <标签 名称="标签5" 左边="8" 顶边="138" 宽度="48" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AgAAAAAAAAAIAAAAAAAAAICAgAD///8AgICAAAAAAAAAAAD/AQAAAAAAAACAgIAA////AICAgAAAAAAAAQAAAAAAAAAAAAAAAAAAAAYAAABjb29raWUAAAAAAAAAAA==" />
+    <编辑框 名称="编辑框5" 左边="72" 顶边="140" 宽度="128" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="" />
+    <编辑框 名称="编辑框4" 左边="72" 顶边="42" 宽度="128" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AgAAAAEAAAAAAAAA////AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACoAAAAAAAAAAAAAAAAAZAAAAAAAAAAAAAAAAAAAAAIAAAAzMAAAAAAAAAAA" />
+    <编辑框 名称="编辑框3" 左边="72" 顶边="18" 宽度="128" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AgAAAAEAAAAAAAAA////AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACoAAAAAAAAAAAAAAAAAZAAAAAAAAAAAAAAAAAAAAAQAAAC/rMzlAAAAAAAAAAA=" />
+    <按钮 名称="按钮2" 左边="72" 顶边="184" 宽度="70" 高度="24" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AQAAAAAAAAABAAAAAQAAAAAAAAAAAAAABAAAAMno1sM=">
+      <按钮.事件 索引="0" 名称="被单击" 处理器="窗口程序集1::_按钮2_被单击" />
+    </按钮>
+    <选择框 名称="选择框4" 左边="72" 顶边="115" 宽度="85" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AgAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAP8AAAAAAAAAAAAAAAAKAAAA19bM5c/Cu67P3wAAAAAAAAAA" />
+    <选择框 名称="选择框3" 左边="72" 顶边="91" 宽度="85" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AgAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAP8AAAAAAAAAAAAAAAAIAAAA19bM5cfj0LEAAAAAAAAAAA==" />
+    <选择框 名称="选择框2" 左边="72" 顶边="67" 宽度="85" 高度="20" 鼠标指针="AAAAAA==" 可停留焦点="真" 扩展属性数据="AgAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAP8BAAAAAAAAAAAAAAAIAAAA19bM5bzTtNYAAAAAAAAAAA==" />
+    <标签 名称="标签3" 左边="8" 顶边="23" 宽度="80" 高度="72" 鼠标指针="AAAAAA==" 可停留焦点="假" 扩展属性数据="AgAAAAAAAAAIAAAAAAAAAICAgAD///8AgICAAAAAAAAAAAD/AQAAAAAAAACAgIAA////AICAgAAAAAAAAQAAAAEAAAAAAAAAAAAAACYAAADX1szlw/uzxqO6DQoNCtfWzOW089Cho7oNCg0K19bM5dH5yr2jugAAAAAAAAAA" />
+  </分组框>
+</窗口>

@@ -1,0 +1,6947 @@
+﻿{
+  "constants": [
+    {
+      "id": 402781174,
+      "key": "",
+      "name": "版权信息",
+      "pageType": 1,
+      "textDigest": "95926AE551291883"
+    },
+    {
+      "id": 402781339,
+      "key": "",
+      "name": "COMET_DEFAULT_CLASSNAME",
+      "pageType": 1,
+      "textDigest": "DE2B729B1A52C8CC"
+    },
+    {
+      "id": 402782278,
+      "key": "",
+      "name": "COMET_DEFAULT_DEFFONT",
+      "pageType": 1,
+      "textDigest": "40C1EC93D72A7840"
+    },
+    {
+      "id": 402783743,
+      "key": "",
+      "name": "COMET_PREVWNDPROC",
+      "pageType": 1,
+      "textDigest": "492556B550EFFBB3"
+    },
+    {
+      "id": 402783388,
+      "key": "",
+      "name": "",
+      "pageType": 1,
+      "textDigest": "355E47459B71C216"
+    },
+    {
+      "id": 402783447,
+      "key": "",
+      "name": "歌词渐变_无渐变",
+      "pageType": 1,
+      "textDigest": "4CE82DDB91FEC150"
+    },
+    {
+      "id": 402783448,
+      "key": "",
+      "name": "歌词渐变_两色渐变",
+      "pageType": 1,
+      "textDigest": "455DC0C266C4D4D1"
+    },
+    {
+      "id": 402783449,
+      "key": "",
+      "name": "歌词渐变_三色渐变",
+      "pageType": 1,
+      "textDigest": "B903BF10D7A46361"
+    },
+    {
+      "id": 402783364,
+      "key": "",
+      "name": "",
+      "pageType": 1,
+      "textDigest": "355E47459B71C216"
+    },
+    {
+      "id": 402783367,
+      "key": "",
+      "name": "呈现模式_无效",
+      "pageType": 1,
+      "textDigest": "CC6B1410C4F06CFF"
+    },
+    {
+      "id": 402783368,
+      "key": "",
+      "name": "呈现模式_默认",
+      "pageType": 1,
+      "textDigest": "8C7038A710513AD3"
+    },
+    {
+      "id": 402783369,
+      "key": "",
+      "name": "呈现模式_高速度低质量",
+      "pageType": 1,
+      "textDigest": "9BC5E632FDB51C53"
+    },
+    {
+      "id": 402783370,
+      "key": "",
+      "name": "呈现模式_高质量低速度",
+      "pageType": 1,
+      "textDigest": "D1EB6E86C4A79AD0"
+    },
+    {
+      "id": 402783371,
+      "key": "",
+      "name": "呈现模式_不消除锯齿",
+      "pageType": 1,
+      "textDigest": "129F9276E71AFD9C"
+    },
+    {
+      "id": 402783372,
+      "key": "",
+      "name": "呈现模式_消除锯齿",
+      "pageType": 1,
+      "textDigest": "B5C75B15D7138B46"
+    },
+    {
+      "id": 402783373,
+      "key": "",
+      "name": "",
+      "pageType": 1,
+      "textDigest": "F2665C057B07C424"
+    },
+    {
+      "id": 402783374,
+      "key": "",
+      "name": "文本呈现模式_SystemDefault",
+      "pageType": 1,
+      "textDigest": "C7EACE2857C5CED6"
+    },
+    {
+      "id": 402783375,
+      "key": "",
+      "name": "文本呈现模式_SingleBitPerPixelGridFit",
+      "pageType": 1,
+      "textDigest": "AB43B62F6FF9267C"
+    },
+    {
+      "id": 402783376,
+      "key": "",
+      "name": "文本呈现模式_SingleBitPerPixel",
+      "pageType": 1,
+      "textDigest": "E32AAC74189E79ED"
+    },
+    {
+      "id": 402783377,
+      "key": "",
+      "name": "文本呈现模式_AntiAliasGridFit",
+      "pageType": 1,
+      "textDigest": "025DA4A7EED8291E"
+    },
+    {
+      "id": 402783378,
+      "key": "",
+      "name": "文本呈现模式_AntiAlias",
+      "pageType": 1,
+      "textDigest": "3B1D66C7FA2246BF"
+    },
+    {
+      "id": 402783379,
+      "key": "",
+      "name": "文本呈现模式_ClearTypeGridFit",
+      "pageType": 1,
+      "textDigest": "CE9F9A14D10DB19E"
+    },
+    {
+      "id": 402783365,
+      "key": "",
+      "name": "",
+      "pageType": 1,
+      "textDigest": "355E47459B71C216"
+    },
+    {
+      "id": 402783426,
+      "key": "",
+      "name": "字体风格_普通",
+      "pageType": 1,
+      "textDigest": "8BE2A51294911554"
+    },
+    {
+      "id": 402783427,
+      "key": "",
+      "name": "字体风格_加粗",
+      "pageType": 1,
+      "textDigest": "A348D36ECA04FCB8"
+    },
+    {
+      "id": 402783428,
+      "key": "",
+      "name": "字体风格_倾斜",
+      "pageType": 1,
+      "textDigest": "4466FB7CC8BB30A9"
+    },
+    {
+      "id": 402783429,
+      "key": "",
+      "name": "字体风格_加粗倾斜",
+      "pageType": 1,
+      "textDigest": "3832EF63448DCC39"
+    },
+    {
+      "id": 402783430,
+      "key": "",
+      "name": "字体风格_带下划线",
+      "pageType": 1,
+      "textDigest": "5621DAD890EA0C72"
+    },
+    {
+      "id": 402783431,
+      "key": "",
+      "name": "字体风格_带中间线",
+      "pageType": 1,
+      "textDigest": "0B55A095E59CEE40"
+    },
+    {
+      "id": 402783432,
+      "key": "",
+      "name": "",
+      "pageType": 1,
+      "textDigest": "E264EB79157F35D9"
+    },
+    {
+      "id": 402783433,
+      "key": "",
+      "name": "填充模式_交替",
+      "pageType": 1,
+      "textDigest": "8C72386B5F383A29"
+    },
+    {
+      "id": 402783434,
+      "key": "",
+      "name": "填充模式_环绕",
+      "pageType": 1,
+      "textDigest": "DE06EC32321B2F56"
+    },
+    {
+      "id": 402783425,
+      "key": "",
+      "name": "",
+      "pageType": 1,
+      "textDigest": "355E47459B71C216"
+    },
+    {
+      "id": 402783366,
+      "key": "",
+      "name": "",
+      "pageType": 1,
+      "textDigest": "355E47459B71C216"
+    },
+    {
+      "id": 402781175,
+      "key": "",
+      "name": "GWL_EXSTYLE",
+      "pageType": 1,
+      "textDigest": "220150A114BDAB76"
+    },
+    {
+      "id": 402781176,
+      "key": "",
+      "name": "GWL_STYLE",
+      "pageType": 1,
+      "textDigest": "631E05CC0E84027E"
+    },
+    {
+      "id": 402781177,
+      "key": "",
+      "name": "GWL_USERDATA",
+      "pageType": 1,
+      "textDigest": "E26E5660B7407965"
+    },
+    {
+      "id": 402781178,
+      "key": "",
+      "name": "GWL_WNDPROC",
+      "pageType": 1,
+      "textDigest": "1B21D4E22A68A5A4"
+    },
+    {
+      "id": 402781179,
+      "key": "",
+      "name": "SWP_ASYNCWINDOWPOS",
+      "pageType": 1,
+      "textDigest": "55503F988FFFAEB0"
+    },
+    {
+      "id": 402781180,
+      "key": "",
+      "name": "SWP_DEFERERASE",
+      "pageType": 1,
+      "textDigest": "DDE3E7C4CA2846E1"
+    },
+    {
+      "id": 402781181,
+      "key": "",
+      "name": "SWP_DRAWFRAME",
+      "pageType": 1,
+      "textDigest": "7FBBC83C04E5A72E"
+    },
+    {
+      "id": 402781182,
+      "key": "",
+      "name": "SWP_FRAMECHANGED",
+      "pageType": 1,
+      "textDigest": "A57270B32057375B"
+    },
+    {
+      "id": 402781183,
+      "key": "",
+      "name": "SWP_HIDEWINDOW",
+      "pageType": 1,
+      "textDigest": "105EB92101D43F23"
+    },
+    {
+      "id": 402781184,
+      "key": "",
+      "name": "SWP_NOACTIVATE",
+      "pageType": 1,
+      "textDigest": "F9846C9E9B41142A"
+    },
+    {
+      "id": 402781185,
+      "key": "",
+      "name": "SWP_NOCOPYBITS",
+      "pageType": 1,
+      "textDigest": "E724819AD0CC871D"
+    },
+    {
+      "id": 402781186,
+      "key": "",
+      "name": "SWP_NOMOVE",
+      "pageType": 1,
+      "textDigest": "9FA5A2AD6A937136"
+    },
+    {
+      "id": 402781187,
+      "key": "",
+      "name": "SWP_NOOWNERZORDER",
+      "pageType": 1,
+      "textDigest": "E10BBFC0BC2576DD"
+    },
+    {
+      "id": 402781188,
+      "key": "",
+      "name": "SWP_NOREDRAW",
+      "pageType": 1,
+      "textDigest": "211DB2D26A252BAC"
+    },
+    {
+      "id": 402781189,
+      "key": "",
+      "name": "SWP_NOREPOSITION",
+      "pageType": 1,
+      "textDigest": "4616FAACCC717347"
+    },
+    {
+      "id": 402781190,
+      "key": "",
+      "name": "SWP_NOSENDCHANGING",
+      "pageType": 1,
+      "textDigest": "5CD31FC772A3AAC4"
+    },
+    {
+      "id": 402781191,
+      "key": "",
+      "name": "SWP_NOSIZE",
+      "pageType": 1,
+      "textDigest": "C0FCA8125A20C899"
+    },
+    {
+      "id": 402781192,
+      "key": "",
+      "name": "SWP_NOZORDER",
+      "pageType": 1,
+      "textDigest": "856D014398A816A3"
+    },
+    {
+      "id": 402781193,
+      "key": "",
+      "name": "SWP_SHOWWINDOW",
+      "pageType": 1,
+      "textDigest": "8AF9DBF034CC7EBA"
+    },
+    {
+      "id": 402781362,
+      "key": "",
+      "name": "CS_BYTEALIGNCLIENT",
+      "pageType": 1,
+      "textDigest": "57182F8A720BCC60"
+    },
+    {
+      "id": 402781363,
+      "key": "",
+      "name": "CS_BYTEALIGNWINDOW",
+      "pageType": 1,
+      "textDigest": "43BA1B299C4A97A6"
+    },
+    {
+      "id": 402781364,
+      "key": "",
+      "name": "CS_CLASSDC",
+      "pageType": 1,
+      "textDigest": "2CC2282FEA5950C0"
+    },
+    {
+      "id": 402781365,
+      "key": "",
+      "name": "CS_DBLCLKS",
+      "pageType": 1,
+      "textDigest": "69BB9F316267D5A1"
+    },
+    {
+      "id": 402781366,
+      "key": "",
+      "name": "CS_GLOBALCLASS",
+      "pageType": 1,
+      "textDigest": "E8301D39F5C6D621"
+    },
+    {
+      "id": 402781367,
+      "key": "",
+      "name": "CS_HREDRAW",
+      "pageType": 1,
+      "textDigest": "D4216F3FBECAB267"
+    },
+    {
+      "id": 402781368,
+      "key": "",
+      "name": "CS_IME",
+      "pageType": 1,
+      "textDigest": "B061950CCFD8ED54"
+    },
+    {
+      "id": 402781369,
+      "key": "",
+      "name": "CS_INSERTCHAR",
+      "pageType": 1,
+      "textDigest": "844BDD077B9E5A47"
+    },
+    {
+      "id": 402781370,
+      "key": "",
+      "name": "CS_KEYCVTWINDOW",
+      "pageType": 1,
+      "textDigest": "7862B41DAA241571"
+    },
+    {
+      "id": 402781371,
+      "key": "",
+      "name": "CS_NOCLOSE",
+      "pageType": 1,
+      "textDigest": "9F905441FB63753D"
+    },
+    {
+      "id": 402781372,
+      "key": "",
+      "name": "CS_NOKEYCVT",
+      "pageType": 1,
+      "textDigest": "6D422581FC247221"
+    },
+    {
+      "id": 402781373,
+      "key": "",
+      "name": "CS_NOMOVECARET",
+      "pageType": 1,
+      "textDigest": "9CAB9C2003CA61C3"
+    },
+    {
+      "id": 402781374,
+      "key": "",
+      "name": "CS_OWNDC",
+      "pageType": 1,
+      "textDigest": "38C8886217A31FDF"
+    },
+    {
+      "id": 402781375,
+      "key": "",
+      "name": "CS_PARENTDC",
+      "pageType": 1,
+      "textDigest": "D54294E0A322D091"
+    },
+    {
+      "id": 402781376,
+      "key": "",
+      "name": "CS_PUBLICCLASS",
+      "pageType": 1,
+      "textDigest": "CAA479CD068B329D"
+    },
+    {
+      "id": 402781377,
+      "key": "",
+      "name": "CS_SAVEBITS",
+      "pageType": 1,
+      "textDigest": "406ED4D27A61A49F"
+    },
+    {
+      "id": 402781378,
+      "key": "",
+      "name": "CS_VREDRAW",
+      "pageType": 1,
+      "textDigest": "1A38B3F274EA91CE"
+    },
+    {
+      "id": 402781379,
+      "key": "",
+      "name": "IDC_APPSTARTING",
+      "pageType": 1,
+      "textDigest": "4D945863408BDAE8"
+    },
+    {
+      "id": 402781380,
+      "key": "",
+      "name": "IDC_ARROW",
+      "pageType": 1,
+      "textDigest": "5C5027BF5C1625BD"
+    },
+    {
+      "id": 402781381,
+      "key": "",
+      "name": "IDC_CROSS",
+      "pageType": 1,
+      "textDigest": "45D855D1FCF472A1"
+    },
+    {
+      "id": 402781382,
+      "key": "",
+      "name": "IDC_HAND",
+      "pageType": 1,
+      "textDigest": "3359F6D5FC555729"
+    },
+    {
+      "id": 402781383,
+      "key": "",
+      "name": "IDC_HELP",
+      "pageType": 1,
+      "textDigest": "2BD7A6DFD52B1118"
+    },
+    {
+      "id": 402781384,
+      "key": "",
+      "name": "IDC_IBEAM",
+      "pageType": 1,
+      "textDigest": "F43DD688527BE5C7"
+    },
+    {
+      "id": 402781385,
+      "key": "",
+      "name": "IDC_ICON",
+      "pageType": 1,
+      "textDigest": "C71D5F678FB8D131"
+    },
+    {
+      "id": 402781386,
+      "key": "",
+      "name": "IDC_NO",
+      "pageType": 1,
+      "textDigest": "ED21AA063D11C1E8"
+    },
+    {
+      "id": 402781387,
+      "key": "",
+      "name": "IDC_OFFLINE_HAND",
+      "pageType": 1,
+      "textDigest": "BF231142681036B7"
+    },
+    {
+      "id": 402781388,
+      "key": "",
+      "name": "IDC_SIZE",
+      "pageType": 1,
+      "textDigest": "E4B0892FA62A710C"
+    },
+    {
+      "id": 402781389,
+      "key": "",
+      "name": "IDC_SIZEALL",
+      "pageType": 1,
+      "textDigest": "2574CA0DCCDBEE6C"
+    },
+    {
+      "id": 402781390,
+      "key": "",
+      "name": "IDC_SIZENESW",
+      "pageType": 1,
+      "textDigest": "EBC846DBF58E6E92"
+    },
+    {
+      "id": 402781391,
+      "key": "",
+      "name": "IDC_SIZENS",
+      "pageType": 1,
+      "textDigest": "3365B2736D6DD676"
+    },
+    {
+      "id": 402781392,
+      "key": "",
+      "name": "IDC_SIZENWSE",
+      "pageType": 1,
+      "textDigest": "C7F8CCA32C15C563"
+    },
+    {
+      "id": 402781393,
+      "key": "",
+      "name": "IDC_SIZEWE",
+      "pageType": 1,
+      "textDigest": "CC81BDBF27D6AE2E"
+    },
+    {
+      "id": 402781394,
+      "key": "",
+      "name": "IDC_UPARROW",
+      "pageType": 1,
+      "textDigest": "2E0D4DBB1F64DD5E"
+    },
+    {
+      "id": 402781395,
+      "key": "",
+      "name": "IDC_WAIT",
+      "pageType": 1,
+      "textDigest": "5C19E56FD34CAAA0"
+    },
+    {
+      "id": 402781396,
+      "key": "",
+      "name": "COLOR_BTNFACE",
+      "pageType": 1,
+      "textDigest": "38B667B3FB43BA34"
+    },
+    {
+      "id": 402781420,
+      "key": "",
+      "name": "WS_ACTIVECAPTION",
+      "pageType": 1,
+      "textDigest": "C67B2B98E3FB9237"
+    },
+    {
+      "id": 402781421,
+      "key": "",
+      "name": "WS_BORDER",
+      "pageType": 1,
+      "textDigest": "F27FC96938682D86"
+    },
+    {
+      "id": 402781422,
+      "key": "",
+      "name": "WS_CAPTION",
+      "pageType": 1,
+      "textDigest": "449D77D56B7A3A83"
+    },
+    {
+      "id": 402781423,
+      "key": "",
+      "name": "WS_CHILD",
+      "pageType": 1,
+      "textDigest": "2CBAFEBC11289ABE"
+    },
+    {
+      "id": 402781424,
+      "key": "",
+      "name": "WS_CHILDWINDOW",
+      "pageType": 1,
+      "textDigest": "30D934215A152DB3"
+    },
+    {
+      "id": 402781425,
+      "key": "",
+      "name": "WS_CLIPCHILDREN",
+      "pageType": 1,
+      "textDigest": "7A16552EC7A4856E"
+    },
+    {
+      "id": 402781426,
+      "key": "",
+      "name": "WS_CLIPSIBLINGS",
+      "pageType": 1,
+      "textDigest": "1AE765A869A8E37D"
+    },
+    {
+      "id": 402781427,
+      "key": "",
+      "name": "WS_DISABLED",
+      "pageType": 1,
+      "textDigest": "3A1FF069F78A3D40"
+    },
+    {
+      "id": 402781428,
+      "key": "",
+      "name": "WS_DLGFRAME",
+      "pageType": 1,
+      "textDigest": "963F2468FBFBC622"
+    },
+    {
+      "id": 402781429,
+      "key": "",
+      "name": "WS_EX_ACCEPTFILES",
+      "pageType": 1,
+      "textDigest": "E8F7AB134670C960"
+    },
+    {
+      "id": 402781430,
+      "key": "",
+      "name": "WS_EX_APPWINDOW",
+      "pageType": 1,
+      "textDigest": "2FBAA9A250C017E4"
+    },
+    {
+      "id": 402781431,
+      "key": "",
+      "name": "WS_EX_CLIENTEDGE",
+      "pageType": 1,
+      "textDigest": "D9763A96F19F30D8"
+    },
+    {
+      "id": 402781432,
+      "key": "",
+      "name": "WS_EX_CONTEXTHELP",
+      "pageType": 1,
+      "textDigest": "1F5B83721D319751"
+    },
+    {
+      "id": 402781433,
+      "key": "",
+      "name": "WS_EX_CONTROLPARENT",
+      "pageType": 1,
+      "textDigest": "3452E41C0572D575"
+    },
+    {
+      "id": 402781434,
+      "key": "",
+      "name": "WS_EX_DLGMODALFRAME",
+      "pageType": 1,
+      "textDigest": "B4A6A40AFA26788D"
+    },
+    {
+      "id": 402781435,
+      "key": "",
+      "name": "WS_EX_LEFT",
+      "pageType": 1,
+      "textDigest": "B697CBB4E63AFADD"
+    },
+    {
+      "id": 402781436,
+      "key": "",
+      "name": "WS_EX_LEFTSCROLLBAR",
+      "pageType": 1,
+      "textDigest": "49F63E7D003F331E"
+    },
+    {
+      "id": 402781437,
+      "key": "",
+      "name": "WS_EX_LTRREADING",
+      "pageType": 1,
+      "textDigest": "7AAA0188838E9EEE"
+    },
+    {
+      "id": 402781438,
+      "key": "",
+      "name": "WS_EX_MDICHILD",
+      "pageType": 1,
+      "textDigest": "E4BDF9E3BA369941"
+    },
+    {
+      "id": 402781439,
+      "key": "",
+      "name": "WS_EX_NOPARENTNOTIFY",
+      "pageType": 1,
+      "textDigest": "240C8406B9AFDA56"
+    },
+    {
+      "id": 402781440,
+      "key": "",
+      "name": "WS_EX_OVERLAPPEDWINDOW",
+      "pageType": 1,
+      "textDigest": "BE7D46FCDB72CE65"
+    },
+    {
+      "id": 402781441,
+      "key": "",
+      "name": "WS_EX_PALETTEWINDOW",
+      "pageType": 1,
+      "textDigest": "5435F3B73029785C"
+    },
+    {
+      "id": 402781442,
+      "key": "",
+      "name": "WS_EX_RIGHT",
+      "pageType": 1,
+      "textDigest": "D861C09FEE6FD79D"
+    },
+    {
+      "id": 402781443,
+      "key": "",
+      "name": "WS_EX_RIGHTSCROLLBAR",
+      "pageType": 1,
+      "textDigest": "DAE4D449FA832FAC"
+    },
+    {
+      "id": 402781444,
+      "key": "",
+      "name": "WS_EX_RTLREADING",
+      "pageType": 1,
+      "textDigest": "6659694A31A37E33"
+    },
+    {
+      "id": 402781445,
+      "key": "",
+      "name": "WS_EX_STATICEDGE",
+      "pageType": 1,
+      "textDigest": "4EABD98CD552F940"
+    },
+    {
+      "id": 402781446,
+      "key": "",
+      "name": "WS_EX_TOOLWINDOW",
+      "pageType": 1,
+      "textDigest": "558945F68BD6A043"
+    },
+    {
+      "id": 402781447,
+      "key": "",
+      "name": "WS_EX_TOPMOST",
+      "pageType": 1,
+      "textDigest": "EAB12B2EFFA04F9B"
+    },
+    {
+      "id": 402781448,
+      "key": "",
+      "name": "WS_EX_TRANSPARENT",
+      "pageType": 1,
+      "textDigest": "C9F6D9E36661E50F"
+    },
+    {
+      "id": 402781449,
+      "key": "",
+      "name": "WS_EX_WINDOWEDGE",
+      "pageType": 1,
+      "textDigest": "F46F545F1B8C86DE"
+    },
+    {
+      "id": 402781450,
+      "key": "",
+      "name": "WS_GROUP",
+      "pageType": 1,
+      "textDigest": "C6F5125505A940D2"
+    },
+    {
+      "id": 402781451,
+      "key": "",
+      "name": "WS_HSCROLL",
+      "pageType": 1,
+      "textDigest": "1B2BAE9583FA507E"
+    },
+    {
+      "id": 402781452,
+      "key": "",
+      "name": "WS_ICONIC",
+      "pageType": 1,
+      "textDigest": "987C7F4F9A45BD6E"
+    },
+    {
+      "id": 402781453,
+      "key": "",
+      "name": "WS_MAXIMIZE",
+      "pageType": 1,
+      "textDigest": "C7591B1AF5E4561F"
+    },
+    {
+      "id": 402781454,
+      "key": "",
+      "name": "WS_MAXIMIZEBOX",
+      "pageType": 1,
+      "textDigest": "52B0498FE3CC0806"
+    },
+    {
+      "id": 402781455,
+      "key": "",
+      "name": "WS_MINIMIZE",
+      "pageType": 1,
+      "textDigest": "CA05EDA3107B3AF6"
+    },
+    {
+      "id": 402781456,
+      "key": "",
+      "name": "WS_MINIMIZEBOX",
+      "pageType": 1,
+      "textDigest": "B7CB556B88D69726"
+    },
+    {
+      "id": 402781457,
+      "key": "",
+      "name": "WS_OVERLAPPED",
+      "pageType": 1,
+      "textDigest": "21DAC440AED856DD"
+    },
+    {
+      "id": 402781458,
+      "key": "",
+      "name": "WS_OVERLAPPEDWINDOW",
+      "pageType": 1,
+      "textDigest": "FCB6C3BBE937534E"
+    },
+    {
+      "id": 402781459,
+      "key": "",
+      "name": "WS_POPUP",
+      "pageType": 1,
+      "textDigest": "7208ADE28EA66648"
+    },
+    {
+      "id": 402781460,
+      "key": "",
+      "name": "WS_POPUPWINDOW",
+      "pageType": 1,
+      "textDigest": "0B35E4D1570A7C0D"
+    },
+    {
+      "id": 402781461,
+      "key": "",
+      "name": "WS_SIZEBOX",
+      "pageType": 1,
+      "textDigest": "5047BBC9E433A236"
+    },
+    {
+      "id": 402781462,
+      "key": "",
+      "name": "WS_SYSMENU",
+      "pageType": 1,
+      "textDigest": "FBDCFDB767469CC6"
+    },
+    {
+      "id": 402781463,
+      "key": "",
+      "name": "WS_TABSTOP",
+      "pageType": 1,
+      "textDigest": "120935674AC8A96A"
+    },
+    {
+      "id": 402781464,
+      "key": "",
+      "name": "WS_THICKFRAME",
+      "pageType": 1,
+      "textDigest": "C0D4CFBF40D5931D"
+    },
+    {
+      "id": 402781465,
+      "key": "",
+      "name": "WS_TILED",
+      "pageType": 1,
+      "textDigest": "30BAF24426D2626C"
+    },
+    {
+      "id": 402781466,
+      "key": "",
+      "name": "WS_TILEDWINDOW",
+      "pageType": 1,
+      "textDigest": "AFE76E3E507F78E0"
+    },
+    {
+      "id": 402781467,
+      "key": "",
+      "name": "WS_VISIBLE",
+      "pageType": 1,
+      "textDigest": "26058669F9AFAD3B"
+    },
+    {
+      "id": 402781468,
+      "key": "",
+      "name": "WS_VSCROLL",
+      "pageType": 1,
+      "textDigest": "1ABA459C2756C7B9"
+    },
+    {
+      "id": 402781469,
+      "key": "",
+      "name": "WM_ACTIVATE",
+      "pageType": 1,
+      "textDigest": "EDF55C4D945A08D8"
+    },
+    {
+      "id": 402781470,
+      "key": "",
+      "name": "WM_ACTIVATEAPP",
+      "pageType": 1,
+      "textDigest": "352DD0469EDB6793"
+    },
+    {
+      "id": 402781471,
+      "key": "",
+      "name": "WM_AFXFIRST",
+      "pageType": 1,
+      "textDigest": "A918FCE6FC81E1DA"
+    },
+    {
+      "id": 402781472,
+      "key": "",
+      "name": "WM_AFXLAST",
+      "pageType": 1,
+      "textDigest": "2361DFDFC52B8699"
+    },
+    {
+      "id": 402781473,
+      "key": "",
+      "name": "WM_APP",
+      "pageType": 1,
+      "textDigest": "2A61588DF2ED90A7"
+    },
+    {
+      "id": 402781474,
+      "key": "",
+      "name": "WM_ASKCBFORMATNAME",
+      "pageType": 1,
+      "textDigest": "6DD0E84550300A97"
+    },
+    {
+      "id": 402781475,
+      "key": "",
+      "name": "WM_CANCELJOURNAL",
+      "pageType": 1,
+      "textDigest": "B361CE11B0274AEA"
+    },
+    {
+      "id": 402781476,
+      "key": "",
+      "name": "WM_CANCELMODE",
+      "pageType": 1,
+      "textDigest": "BC019E340331E58B"
+    },
+    {
+      "id": 402781477,
+      "key": "",
+      "name": "WM_CAPTURECHANGED",
+      "pageType": 1,
+      "textDigest": "D467792ABF621468"
+    },
+    {
+      "id": 402781478,
+      "key": "",
+      "name": "WM_CHANGECBCHAIN",
+      "pageType": 1,
+      "textDigest": "F5D6F945EC01F792"
+    },
+    {
+      "id": 402781479,
+      "key": "",
+      "name": "WM_CHAR",
+      "pageType": 1,
+      "textDigest": "C27AA5F1ACF2C02E"
+    },
+    {
+      "id": 402781480,
+      "key": "",
+      "name": "WM_CHARTOITEM",
+      "pageType": 1,
+      "textDigest": "81CEB79BD4A7981B"
+    },
+    {
+      "id": 402781481,
+      "key": "",
+      "name": "WM_CHILDACTIVATE",
+      "pageType": 1,
+      "textDigest": "80428496BA623689"
+    },
+    {
+      "id": 402781482,
+      "key": "",
+      "name": "WM_CHOOSEFONT_GETLOGFONT",
+      "pageType": 1,
+      "textDigest": "A4FA008F8B818F1F"
+    },
+    {
+      "id": 402781483,
+      "key": "",
+      "name": "WM_CLEAR",
+      "pageType": 1,
+      "textDigest": "299ADCFBF1BB496A"
+    },
+    {
+      "id": 402781484,
+      "key": "",
+      "name": "WM_CLOSE",
+      "pageType": 1,
+      "textDigest": "DF589B3ADE29FFA2"
+    },
+    {
+      "id": 402781485,
+      "key": "",
+      "name": "WM_COMMAND",
+      "pageType": 1,
+      "textDigest": "8BFBDCE9D0F0BD63"
+    },
+    {
+      "id": 402781486,
+      "key": "",
+      "name": "WM_COMMNOTIFY",
+      "pageType": 1,
+      "textDigest": "6E1FC036D4D633B9"
+    },
+    {
+      "id": 402781487,
+      "key": "",
+      "name": "WM_COMPACTING",
+      "pageType": 1,
+      "textDigest": "054C25213D0C90F2"
+    },
+    {
+      "id": 402781488,
+      "key": "",
+      "name": "WM_COMPAREITEM",
+      "pageType": 1,
+      "textDigest": "7D177344A4529F35"
+    },
+    {
+      "id": 402781489,
+      "key": "",
+      "name": "WM_CONTEXTMENU",
+      "pageType": 1,
+      "textDigest": "AD92A14929CF81C8"
+    },
+    {
+      "id": 402781490,
+      "key": "",
+      "name": "WM_CONVERTREQUESTEX",
+      "pageType": 1,
+      "textDigest": "ED68EA6A2C4432AC"
+    },
+    {
+      "id": 402781491,
+      "key": "",
+      "name": "WM_COPY",
+      "pageType": 1,
+      "textDigest": "A3CCC8D78871989C"
+    },
+    {
+      "id": 402781492,
+      "key": "",
+      "name": "WM_COPYDATA",
+      "pageType": 1,
+      "textDigest": "4DD56456B7487A8C"
+    },
+    {
+      "id": 402781493,
+      "key": "",
+      "name": "WM_CPL_LAUNCH",
+      "pageType": 1,
+      "textDigest": "100E0790F3809951"
+    },
+    {
+      "id": 402781494,
+      "key": "",
+      "name": "WM_CPL_LAUNCHED",
+      "pageType": 1,
+      "textDigest": "DCB0C4F074F9480B"
+    },
+    {
+      "id": 402781495,
+      "key": "",
+      "name": "WM_CREATE",
+      "pageType": 1,
+      "textDigest": "CD304CE7CD9228EA"
+    },
+    {
+      "id": 402781496,
+      "key": "",
+      "name": "WM_CTLCOLORBTN",
+      "pageType": 1,
+      "textDigest": "183E0EA5EDE3A43A"
+    },
+    {
+      "id": 402781497,
+      "key": "",
+      "name": "WM_CTLCOLORDLG",
+      "pageType": 1,
+      "textDigest": "554252679E232C5B"
+    },
+    {
+      "id": 402781498,
+      "key": "",
+      "name": "WM_CTLCOLOREDIT",
+      "pageType": 1,
+      "textDigest": "BB99BE59242CDD1F"
+    },
+    {
+      "id": 402781499,
+      "key": "",
+      "name": "WM_CTLCOLORLISTBOX",
+      "pageType": 1,
+      "textDigest": "38670A56EA4FB1C8"
+    },
+    {
+      "id": 402781500,
+      "key": "",
+      "name": "WM_CTLCOLORMSGBOX",
+      "pageType": 1,
+      "textDigest": "18028E339F6759EA"
+    },
+    {
+      "id": 402781501,
+      "key": "",
+      "name": "WM_CTLCOLORSCROLLBAR",
+      "pageType": 1,
+      "textDigest": "25C1972B17540299"
+    },
+    {
+      "id": 402781502,
+      "key": "",
+      "name": "WM_CTLCOLORSTATIC",
+      "pageType": 1,
+      "textDigest": "26B7D0B3CBBD7959"
+    },
+    {
+      "id": 402781503,
+      "key": "",
+      "name": "WM_CUT",
+      "pageType": 1,
+      "textDigest": "DADE13B8A06AC8F1"
+    },
+    {
+      "id": 402781504,
+      "key": "",
+      "name": "WM_DDE_ACK",
+      "pageType": 1,
+      "textDigest": "48905934F3C2074F"
+    },
+    {
+      "id": 402781505,
+      "key": "",
+      "name": "WM_DDE_ADVISE",
+      "pageType": 1,
+      "textDigest": "028858420C7D50A3"
+    },
+    {
+      "id": 402781506,
+      "key": "",
+      "name": "WM_DDE_DATA",
+      "pageType": 1,
+      "textDigest": "B8C16BE308AB5962"
+    },
+    {
+      "id": 402781507,
+      "key": "",
+      "name": "WM_DDE_EXECUTE",
+      "pageType": 1,
+      "textDigest": "44869B83873002B7"
+    },
+    {
+      "id": 402781508,
+      "key": "",
+      "name": "WM_DDE_FIRST",
+      "pageType": 1,
+      "textDigest": "20B980D7B5E88DB8"
+    },
+    {
+      "id": 402781509,
+      "key": "",
+      "name": "WM_DDE_INITIATE",
+      "pageType": 1,
+      "textDigest": "125B22D63C724D7B"
+    },
+    {
+      "id": 402781510,
+      "key": "",
+      "name": "WM_DDE_LAST",
+      "pageType": 1,
+      "textDigest": "AD1E323D686CE239"
+    },
+    {
+      "id": 402781511,
+      "key": "",
+      "name": "WM_DDE_POKE",
+      "pageType": 1,
+      "textDigest": "1FF7E13105BBBE1F"
+    },
+    {
+      "id": 402781512,
+      "key": "",
+      "name": "WM_DDE_REQUEST",
+      "pageType": 1,
+      "textDigest": "4C4515D2989D67FD"
+    },
+    {
+      "id": 402781513,
+      "key": "",
+      "name": "WM_DDE_TERMINATE",
+      "pageType": 1,
+      "textDigest": "5742B1A3BB91FEBE"
+    },
+    {
+      "id": 402781514,
+      "key": "",
+      "name": "WM_DDE_UNADVISE",
+      "pageType": 1,
+      "textDigest": "C3851B500C3EB389"
+    },
+    {
+      "id": 402781515,
+      "key": "",
+      "name": "WM_DEADCHAR",
+      "pageType": 1,
+      "textDigest": "0EEF694ACC682435"
+    },
+    {
+      "id": 402781516,
+      "key": "",
+      "name": "WM_DELETEITEM",
+      "pageType": 1,
+      "textDigest": "71398E342498AFA7"
+    },
+    {
+      "id": 402781517,
+      "key": "",
+      "name": "WM_DESTROY",
+      "pageType": 1,
+      "textDigest": "EB7A2AF4187D2916"
+    },
+    {
+      "id": 402781518,
+      "key": "",
+      "name": "WM_DESTROYCLIPBOARD",
+      "pageType": 1,
+      "textDigest": "4662D11AD20D7C70"
+    },
+    {
+      "id": 402781519,
+      "key": "",
+      "name": "WM_DEVICECHANGE",
+      "pageType": 1,
+      "textDigest": "0588FF7593967F52"
+    },
+    {
+      "id": 402781520,
+      "key": "",
+      "name": "WM_DEVMODECHANGE",
+      "pageType": 1,
+      "textDigest": "14E734CC2433EBA6"
+    },
+    {
+      "id": 402781521,
+      "key": "",
+      "name": "WM_DISPLAYCHANGE",
+      "pageType": 1,
+      "textDigest": "240DE69CA976AE09"
+    },
+    {
+      "id": 402781522,
+      "key": "",
+      "name": "WM_DLGBORDER",
+      "pageType": 1,
+      "textDigest": "DC7BC795C16B12AD"
+    },
+    {
+      "id": 402781523,
+      "key": "",
+      "name": "WM_DLGSUBCLASS",
+      "pageType": 1,
+      "textDigest": "908ED374252CA938"
+    },
+    {
+      "id": 402781524,
+      "key": "",
+      "name": "WM_DRAWCLIPBOARD",
+      "pageType": 1,
+      "textDigest": "6E8C1DB840F4EAEA"
+    },
+    {
+      "id": 402781525,
+      "key": "",
+      "name": "WM_DRAWITEM",
+      "pageType": 1,
+      "textDigest": "273A6D45F927AE5A"
+    },
+    {
+      "id": 402781526,
+      "key": "",
+      "name": "WM_DROPFILES",
+      "pageType": 1,
+      "textDigest": "882D671FB4A08E2A"
+    },
+    {
+      "id": 402781527,
+      "key": "",
+      "name": "WM_ENABLE",
+      "pageType": 1,
+      "textDigest": "DC5B015D2E2B204E"
+    },
+    {
+      "id": 402781528,
+      "key": "",
+      "name": "WM_ENDSESSION",
+      "pageType": 1,
+      "textDigest": "4AE4C59797B48F05"
+    },
+    {
+      "id": 402781529,
+      "key": "",
+      "name": "WM_ENTERIDLE",
+      "pageType": 1,
+      "textDigest": "C81F7BB7B7F9DE8D"
+    },
+    {
+      "id": 402781530,
+      "key": "",
+      "name": "WM_ENTERMENULOOP",
+      "pageType": 1,
+      "textDigest": "7F0515E4A0D67D49"
+    },
+    {
+      "id": 402781531,
+      "key": "",
+      "name": "WM_ENTERSIZEMOVE",
+      "pageType": 1,
+      "textDigest": "3662FA53388F6806"
+    },
+    {
+      "id": 402781532,
+      "key": "",
+      "name": "WM_ERASEBKGND",
+      "pageType": 1,
+      "textDigest": "3140565D0F62F570"
+    },
+    {
+      "id": 402781533,
+      "key": "",
+      "name": "WM_EXITMENULOOP",
+      "pageType": 1,
+      "textDigest": "7C4A6E321579B570"
+    },
+    {
+      "id": 402781534,
+      "key": "",
+      "name": "WM_EXITSIZEMOVE",
+      "pageType": 1,
+      "textDigest": "32F648516F0E6E7A"
+    },
+    {
+      "id": 402781535,
+      "key": "",
+      "name": "WM_FONTCHANGE",
+      "pageType": 1,
+      "textDigest": "2F4EBDD453505FC0"
+    },
+    {
+      "id": 402781536,
+      "key": "",
+      "name": "WM_GETDLGCODE",
+      "pageType": 1,
+      "textDigest": "8EA7FC8E93FBC3C4"
+    },
+    {
+      "id": 402781537,
+      "key": "",
+      "name": "WM_GETFONT",
+      "pageType": 1,
+      "textDigest": "F05799CF3055F0ED"
+    },
+    {
+      "id": 402781538,
+      "key": "",
+      "name": "WM_GETHOTKEY",
+      "pageType": 1,
+      "textDigest": "E2CADB70B1421ACF"
+    },
+    {
+      "id": 402781539,
+      "key": "",
+      "name": "WM_GETICON",
+      "pageType": 1,
+      "textDigest": "15616C7B45BFBFA7"
+    },
+    {
+      "id": 402781540,
+      "key": "",
+      "name": "WM_GETMINMAXINFO",
+      "pageType": 1,
+      "textDigest": "2BF5CA3A6BEA81EA"
+    },
+    {
+      "id": 402781541,
+      "key": "",
+      "name": "WM_GETOBJECT",
+      "pageType": 1,
+      "textDigest": "8AF9527DA4B37223"
+    },
+    {
+      "id": 402781542,
+      "key": "",
+      "name": "WM_GETTEXT",
+      "pageType": 1,
+      "textDigest": "E1D25C29E9A3EBEE"
+    },
+    {
+      "id": 402781543,
+      "key": "",
+      "name": "WM_GETTEXTLENGTH",
+      "pageType": 1,
+      "textDigest": "0EA5390BFA6C4287"
+    },
+    {
+      "id": 402781544,
+      "key": "",
+      "name": "WM_HANDHELDFIRST",
+      "pageType": 1,
+      "textDigest": "21C8D935BA269E1B"
+    },
+    {
+      "id": 402781545,
+      "key": "",
+      "name": "WM_HANDHELDLAST",
+      "pageType": 1,
+      "textDigest": "6620482B7EA5B7E8"
+    },
+    {
+      "id": 402781546,
+      "key": "",
+      "name": "WM_HELP",
+      "pageType": 1,
+      "textDigest": "A207AEC15A5E9934"
+    },
+    {
+      "id": 402781547,
+      "key": "",
+      "name": "WM_HOTKEY",
+      "pageType": 1,
+      "textDigest": "4A8ED43F36B1194E"
+    },
+    {
+      "id": 402781548,
+      "key": "",
+      "name": "WM_HSCROLL",
+      "pageType": 1,
+      "textDigest": "0F869AEA3528970A"
+    },
+    {
+      "id": 402781549,
+      "key": "",
+      "name": "WM_HSCROLLCLIPBOARD",
+      "pageType": 1,
+      "textDigest": "13A565B7898B5E05"
+    },
+    {
+      "id": 402781550,
+      "key": "",
+      "name": "WM_ICONERASEBKGND",
+      "pageType": 1,
+      "textDigest": "3C77872757CB1CD3"
+    },
+    {
+      "id": 402781551,
+      "key": "",
+      "name": "WM_IME_CHAR",
+      "pageType": 1,
+      "textDigest": "8A2BB48810072599"
+    },
+    {
+      "id": 402781552,
+      "key": "",
+      "name": "WM_IME_COMPOSITION",
+      "pageType": 1,
+      "textDigest": "2237989D4B9355DA"
+    },
+    {
+      "id": 402781553,
+      "key": "",
+      "name": "WM_IME_COMPOSITIONFULL",
+      "pageType": 1,
+      "textDigest": "2D1C74E9F58447D9"
+    },
+    {
+      "id": 402781554,
+      "key": "",
+      "name": "WM_IME_CONTROL",
+      "pageType": 1,
+      "textDigest": "11C9C1C93C71DF94"
+    },
+    {
+      "id": 402781555,
+      "key": "",
+      "name": "WM_IME_ENDCOMPOSITION",
+      "pageType": 1,
+      "textDigest": "EF409B1BEF133F2B"
+    },
+    {
+      "id": 402781556,
+      "key": "",
+      "name": "WM_IME_KEYDOWN",
+      "pageType": 1,
+      "textDigest": "4CD2FCA8FFBEFEB8"
+    },
+    {
+      "id": 402781557,
+      "key": "",
+      "name": "WM_IME_KEYLAST",
+      "pageType": 1,
+      "textDigest": "A80C60679A06C625"
+    },
+    {
+      "id": 402781558,
+      "key": "",
+      "name": "WM_IME_KEYUP",
+      "pageType": 1,
+      "textDigest": "FB370AAE65FEE4C0"
+    },
+    {
+      "id": 402781559,
+      "key": "",
+      "name": "WM_IME_NOTIFY",
+      "pageType": 1,
+      "textDigest": "BDD40D06F5B5D4DC"
+    },
+    {
+      "id": 402781560,
+      "key": "",
+      "name": "WM_IME_REQUEST",
+      "pageType": 1,
+      "textDigest": "621FF6DADB8A42E3"
+    },
+    {
+      "id": 402781561,
+      "key": "",
+      "name": "WM_IME_SELECT",
+      "pageType": 1,
+      "textDigest": "8137F6D2FAD31F44"
+    },
+    {
+      "id": 402781562,
+      "key": "",
+      "name": "WM_IME_SETCONTEXT",
+      "pageType": 1,
+      "textDigest": "129109586CC5D7F9"
+    },
+    {
+      "id": 402781563,
+      "key": "",
+      "name": "WM_IME_STARTCOMPOSITION",
+      "pageType": 1,
+      "textDigest": "CC72F59F7C9C295A"
+    },
+    {
+      "id": 402781564,
+      "key": "",
+      "name": "WM_INITDIALOG",
+      "pageType": 1,
+      "textDigest": "16C884FEAD820CFA"
+    },
+    {
+      "id": 402781565,
+      "key": "",
+      "name": "WM_INITMENU",
+      "pageType": 1,
+      "textDigest": "F65EF350033D5B83"
+    },
+    {
+      "id": 402781566,
+      "key": "",
+      "name": "WM_INITMENUPOPUP",
+      "pageType": 1,
+      "textDigest": "76C76504A0963777"
+    },
+    {
+      "id": 402781567,
+      "key": "",
+      "name": "WM_INPUTLANGCHANGE",
+      "pageType": 1,
+      "textDigest": "6AFCA6A69585448C"
+    },
+    {
+      "id": 402781568,
+      "key": "",
+      "name": "WM_INPUTLANGCHANGEREQUEST",
+      "pageType": 1,
+      "textDigest": "E09592259AF50AA7"
+    },
+    {
+      "id": 402781569,
+      "key": "",
+      "name": "WM_KEYDOWN",
+      "pageType": 1,
+      "textDigest": "716B54A2C1312316"
+    },
+    {
+      "id": 402781570,
+      "key": "",
+      "name": "WM_KEYFIRST",
+      "pageType": 1,
+      "textDigest": "5ECE7B6F35EFBDD5"
+    },
+    {
+      "id": 402781571,
+      "key": "",
+      "name": "WM_KEYLAST",
+      "pageType": 1,
+      "textDigest": "93DFF6E2D728C2D9"
+    },
+    {
+      "id": 402781572,
+      "key": "",
+      "name": "WM_KEYUP",
+      "pageType": 1,
+      "textDigest": "E92C768D654219AE"
+    },
+    {
+      "id": 402781573,
+      "key": "",
+      "name": "WM_KILLFOCUS",
+      "pageType": 1,
+      "textDigest": "881652B09748C370"
+    },
+    {
+      "id": 402781574,
+      "key": "",
+      "name": "WM_LBUTTONDBLCLK",
+      "pageType": 1,
+      "textDigest": "12A8F519BA585187"
+    },
+    {
+      "id": 402781575,
+      "key": "",
+      "name": "WM_LBUTTONDOWN",
+      "pageType": 1,
+      "textDigest": "96495A0477B8E149"
+    },
+    {
+      "id": 402781576,
+      "key": "",
+      "name": "WM_LBUTTONUP",
+      "pageType": 1,
+      "textDigest": "5BD85575E211F9BB"
+    },
+    {
+      "id": 402781577,
+      "key": "",
+      "name": "WM_MBUTTONDBLCLK",
+      "pageType": 1,
+      "textDigest": "74DE44420D034CDB"
+    },
+    {
+      "id": 402781578,
+      "key": "",
+      "name": "WM_MBUTTONDOWN",
+      "pageType": 1,
+      "textDigest": "B2D7CD74DEAD6F66"
+    },
+    {
+      "id": 402781579,
+      "key": "",
+      "name": "WM_MBUTTONUP",
+      "pageType": 1,
+      "textDigest": "13338A68B94EA123"
+    },
+    {
+      "id": 402781580,
+      "key": "",
+      "name": "WM_MDIACTIVATE",
+      "pageType": 1,
+      "textDigest": "615FC47105FDAA94"
+    },
+    {
+      "id": 402781581,
+      "key": "",
+      "name": "WM_MDICASCADE",
+      "pageType": 1,
+      "textDigest": "F1D64756E1D2C290"
+    },
+    {
+      "id": 402781582,
+      "key": "",
+      "name": "WM_MDICREATE",
+      "pageType": 1,
+      "textDigest": "014B67610306AC97"
+    },
+    {
+      "id": 402781583,
+      "key": "",
+      "name": "WM_MDIDESTROY",
+      "pageType": 1,
+      "textDigest": "B6C0DE8CDA26EADB"
+    },
+    {
+      "id": 402781584,
+      "key": "",
+      "name": "WM_MDIGETACTIVE",
+      "pageType": 1,
+      "textDigest": "CA2897719817BADC"
+    },
+    {
+      "id": 402781585,
+      "key": "",
+      "name": "WM_MDIICONARRANGE",
+      "pageType": 1,
+      "textDigest": "BC4A61FEBB7D3414"
+    },
+    {
+      "id": 402781586,
+      "key": "",
+      "name": "WM_MDIMAXIMIZE",
+      "pageType": 1,
+      "textDigest": "DB5AD638D81C642E"
+    },
+    {
+      "id": 402781587,
+      "key": "",
+      "name": "WM_MDINEXT",
+      "pageType": 1,
+      "textDigest": "08161E4DAAD26CE6"
+    },
+    {
+      "id": 402781588,
+      "key": "",
+      "name": "WM_MDIREFRESHMENU",
+      "pageType": 1,
+      "textDigest": "83568D54CD674586"
+    },
+    {
+      "id": 402781589,
+      "key": "",
+      "name": "WM_MDIRESTORE",
+      "pageType": 1,
+      "textDigest": "82B202C94F58A73D"
+    },
+    {
+      "id": 402781590,
+      "key": "",
+      "name": "WM_MDISETMENU",
+      "pageType": 1,
+      "textDigest": "3E3F0E7E930BB8DB"
+    },
+    {
+      "id": 402781591,
+      "key": "",
+      "name": "WM_MDITILE",
+      "pageType": 1,
+      "textDigest": "A956EE3FB331C616"
+    },
+    {
+      "id": 402781592,
+      "key": "",
+      "name": "WM_MEASUREITEM",
+      "pageType": 1,
+      "textDigest": "75E4FF8F5966CCA6"
+    },
+    {
+      "id": 402781593,
+      "key": "",
+      "name": "WM_MENUCHAR",
+      "pageType": 1,
+      "textDigest": "C058C9A2B18ACAA0"
+    },
+    {
+      "id": 402781594,
+      "key": "",
+      "name": "WM_MENUCOMMAND",
+      "pageType": 1,
+      "textDigest": "27C31CBBBB2B5649"
+    },
+    {
+      "id": 402781595,
+      "key": "",
+      "name": "WM_MENUDRAG",
+      "pageType": 1,
+      "textDigest": "F0E1A778F2B44D38"
+    },
+    {
+      "id": 402781596,
+      "key": "",
+      "name": "WM_MENUGETOBJECT",
+      "pageType": 1,
+      "textDigest": "B3D76C8CEE84D9EB"
+    },
+    {
+      "id": 402781597,
+      "key": "",
+      "name": "WM_MENURBUTTONUP",
+      "pageType": 1,
+      "textDigest": "CAC29A93C0ED75A9"
+    },
+    {
+      "id": 402781598,
+      "key": "",
+      "name": "WM_MENUSELECT",
+      "pageType": 1,
+      "textDigest": "12055A1EC51960F1"
+    },
+    {
+      "id": 402781599,
+      "key": "",
+      "name": "WM_MOUSEACTIVATE",
+      "pageType": 1,
+      "textDigest": "A978D7E38D42C373"
+    },
+    {
+      "id": 402781600,
+      "key": "",
+      "name": "WM_MOUSEFIRST",
+      "pageType": 1,
+      "textDigest": "7BA9AF507331A27C"
+    },
+    {
+      "id": 402781601,
+      "key": "",
+      "name": "WM_MOUSEHOVER",
+      "pageType": 1,
+      "textDigest": "5EF422154F7BBE44"
+    },
+    {
+      "id": 402781602,
+      "key": "",
+      "name": "WM_MOUSELAST",
+      "pageType": 1,
+      "textDigest": "6B7E9B677CAA5DD1"
+    },
+    {
+      "id": 402781603,
+      "key": "",
+      "name": "WM_MOUSELEAVE",
+      "pageType": 1,
+      "textDigest": "8D26BC84A7C1C6D9"
+    },
+    {
+      "id": 402781604,
+      "key": "",
+      "name": "WM_MOUSEMOVE",
+      "pageType": 1,
+      "textDigest": "16FB90602DD323E0"
+    },
+    {
+      "id": 402781605,
+      "key": "",
+      "name": "WM_MOUSEWHEEL",
+      "pageType": 1,
+      "textDigest": "1FB822E0E1B3B976"
+    },
+    {
+      "id": 402781606,
+      "key": "",
+      "name": "WM_MOVE",
+      "pageType": 1,
+      "textDigest": "7F5569ECBDE135D9"
+    },
+    {
+      "id": 402781607,
+      "key": "",
+      "name": "WM_MOVING",
+      "pageType": 1,
+      "textDigest": "A3061E77BDAB05F7"
+    },
+    {
+      "id": 402781608,
+      "key": "",
+      "name": "WM_NCACTIVATE",
+      "pageType": 1,
+      "textDigest": "74EC101B087A9A47"
+    },
+    {
+      "id": 402781609,
+      "key": "",
+      "name": "WM_NCCALCSIZE",
+      "pageType": 1,
+      "textDigest": "76D555AA73BBF045"
+    },
+    {
+      "id": 402781610,
+      "key": "",
+      "name": "WM_NCCREATE",
+      "pageType": 1,
+      "textDigest": "EA43E2EB409555AC"
+    },
+    {
+      "id": 402781611,
+      "key": "",
+      "name": "WM_NCDESTROY",
+      "pageType": 1,
+      "textDigest": "E60D577ECE32015B"
+    },
+    {
+      "id": 402781612,
+      "key": "",
+      "name": "WM_NCHITTEST",
+      "pageType": 1,
+      "textDigest": "0708B29DCDA8089C"
+    },
+    {
+      "id": 402781613,
+      "key": "",
+      "name": "WM_NCLBUTTONDBLCLK",
+      "pageType": 1,
+      "textDigest": "515E0EC236978F79"
+    },
+    {
+      "id": 402781614,
+      "key": "",
+      "name": "WM_NCLBUTTONDOWN",
+      "pageType": 1,
+      "textDigest": "F6E963CBADE01E83"
+    },
+    {
+      "id": 402781615,
+      "key": "",
+      "name": "WM_NCLBUTTONUP",
+      "pageType": 1,
+      "textDigest": "141115E2D697A3A1"
+    },
+    {
+      "id": 402781616,
+      "key": "",
+      "name": "WM_NCMBUTTONDBLCLK",
+      "pageType": 1,
+      "textDigest": "764705ECCEDC03DE"
+    },
+    {
+      "id": 402781617,
+      "key": "",
+      "name": "WM_NCMBUTTONDOWN",
+      "pageType": 1,
+      "textDigest": "FB4B0C4126033BA0"
+    },
+    {
+      "id": 402781618,
+      "key": "",
+      "name": "WM_NCMBUTTONUP",
+      "pageType": 1,
+      "textDigest": "62A9D61F55048D6A"
+    },
+    {
+      "id": 402781619,
+      "key": "",
+      "name": "WM_NCMOUSEMOVE",
+      "pageType": 1,
+      "textDigest": "48D13A7017B7B756"
+    },
+    {
+      "id": 402781620,
+      "key": "",
+      "name": "WM_NCPAINT",
+      "pageType": 1,
+      "textDigest": "1B88C79AA5A39FDC"
+    },
+    {
+      "id": 402781621,
+      "key": "",
+      "name": "WM_NCRBUTTONDBLCLK",
+      "pageType": 1,
+      "textDigest": "DD7785D0A197B696"
+    },
+    {
+      "id": 402781622,
+      "key": "",
+      "name": "WM_NCRBUTTONDOWN",
+      "pageType": 1,
+      "textDigest": "56D11438CDDD3888"
+    },
+    {
+      "id": 402781623,
+      "key": "",
+      "name": "WM_NCRBUTTONUP",
+      "pageType": 1,
+      "textDigest": "383B05977B570108"
+    },
+    {
+      "id": 402781624,
+      "key": "",
+      "name": "WM_NEXTDLGCTL",
+      "pageType": 1,
+      "textDigest": "493AA04017D37EE9"
+    },
+    {
+      "id": 402781625,
+      "key": "",
+      "name": "WM_NEXTMENU",
+      "pageType": 1,
+      "textDigest": "E0BAF45C8EAD0330"
+    },
+    {
+      "id": 402781626,
+      "key": "",
+      "name": "WM_NOTIFY",
+      "pageType": 1,
+      "textDigest": "E3225E87FAFADCD2"
+    },
+    {
+      "id": 402781627,
+      "key": "",
+      "name": "WM_NOTIFYFORMAT",
+      "pageType": 1,
+      "textDigest": "6904E21EC900E9EB"
+    },
+    {
+      "id": 402781628,
+      "key": "",
+      "name": "WM_NULL",
+      "pageType": 1,
+      "textDigest": "584E666CB3AE115A"
+    },
+    {
+      "id": 402781629,
+      "key": "",
+      "name": "WM_OTHERWINDOWCREATED",
+      "pageType": 1,
+      "textDigest": "92E7251CEDC02888"
+    },
+    {
+      "id": 402781630,
+      "key": "",
+      "name": "WM_OTHERWINDOWDESTROYED",
+      "pageType": 1,
+      "textDigest": "70729F30C45D1E88"
+    },
+    {
+      "id": 402781631,
+      "key": "",
+      "name": "WM_PAINT",
+      "pageType": 1,
+      "textDigest": "6753C395BC63CF8D"
+    },
+    {
+      "id": 402781632,
+      "key": "",
+      "name": "WM_PAINTCLIPBOARD",
+      "pageType": 1,
+      "textDigest": "F8BC78CC72FF43D2"
+    },
+    {
+      "id": 402781633,
+      "key": "",
+      "name": "WM_PAINTICON",
+      "pageType": 1,
+      "textDigest": "B425661583AAB4FB"
+    },
+    {
+      "id": 402781634,
+      "key": "",
+      "name": "WM_PALETTECHANGED",
+      "pageType": 1,
+      "textDigest": "4B76BCA6A47BB8DC"
+    },
+    {
+      "id": 402781635,
+      "key": "",
+      "name": "WM_PALETTEISCHANGING",
+      "pageType": 1,
+      "textDigest": "D6A8DEC581CBCEF5"
+    },
+    {
+      "id": 402781636,
+      "key": "",
+      "name": "WM_PARENTNOTIFY",
+      "pageType": 1,
+      "textDigest": "DC6D0EE97F13121F"
+    },
+    {
+      "id": 402781637,
+      "key": "",
+      "name": "WM_PASTE",
+      "pageType": 1,
+      "textDigest": "F25D6A399B6F6E09"
+    },
+    {
+      "id": 402781638,
+      "key": "",
+      "name": "WM_PENWINFIRST",
+      "pageType": 1,
+      "textDigest": "0015CECE411D6A6C"
+    },
+    {
+      "id": 402781639,
+      "key": "",
+      "name": "WM_PENWINLAST",
+      "pageType": 1,
+      "textDigest": "211BA5EC2D32398B"
+    },
+    {
+      "id": 402781640,
+      "key": "",
+      "name": "WM_POWER",
+      "pageType": 1,
+      "textDigest": "DD0B74C0CF8A0E65"
+    },
+    {
+      "id": 402781641,
+      "key": "",
+      "name": "WM_POWERBROADCAST",
+      "pageType": 1,
+      "textDigest": "ACC4FA7E494037CF"
+    },
+    {
+      "id": 402781642,
+      "key": "",
+      "name": "WM_PRINT",
+      "pageType": 1,
+      "textDigest": "C66F9E5110124CDA"
+    },
+    {
+      "id": 402781643,
+      "key": "",
+      "name": "WM_PRINTCLIENT",
+      "pageType": 1,
+      "textDigest": "61CE5E63834C9FA6"
+    },
+    {
+      "id": 402781644,
+      "key": "",
+      "name": "WM_PSD_ENVSTAMPRECT",
+      "pageType": 1,
+      "textDigest": "C6B95637E5531AE6"
+    },
+    {
+      "id": 402781645,
+      "key": "",
+      "name": "WM_PSD_FULLPAGERECT",
+      "pageType": 1,
+      "textDigest": "B7D56055570543B6"
+    },
+    {
+      "id": 402781646,
+      "key": "",
+      "name": "WM_PSD_GREEKTEXTRECT",
+      "pageType": 1,
+      "textDigest": "92BBBBA866C37569"
+    },
+    {
+      "id": 402781647,
+      "key": "",
+      "name": "WM_PSD_MARGINRECT",
+      "pageType": 1,
+      "textDigest": "D9E1B27379E4C4DA"
+    },
+    {
+      "id": 402781648,
+      "key": "",
+      "name": "WM_PSD_MINMARGINRECT",
+      "pageType": 1,
+      "textDigest": "1D33A0E0F818FDEE"
+    },
+    {
+      "id": 402781649,
+      "key": "",
+      "name": "WM_PSD_PAGESETUPDLG",
+      "pageType": 1,
+      "textDigest": "66A5F2C4B27F0545"
+    },
+    {
+      "id": 402781650,
+      "key": "",
+      "name": "WM_PSD_YAFULLPAGERECT",
+      "pageType": 1,
+      "textDigest": "CA04BE129B6AFB90"
+    },
+    {
+      "id": 402781651,
+      "key": "",
+      "name": "WM_QUERYDRAGICON",
+      "pageType": 1,
+      "textDigest": "94757F7BD6F7CA5E"
+    },
+    {
+      "id": 402781652,
+      "key": "",
+      "name": "WM_QUERYENDSESSION",
+      "pageType": 1,
+      "textDigest": "D8932CAF290775EE"
+    },
+    {
+      "id": 402781653,
+      "key": "",
+      "name": "WM_QUERYNEWPALETTE",
+      "pageType": 1,
+      "textDigest": "F7460BD7549302EB"
+    },
+    {
+      "id": 402781654,
+      "key": "",
+      "name": "WM_QUERYOPEN",
+      "pageType": 1,
+      "textDigest": "A635E052D1F927D1"
+    },
+    {
+      "id": 402781655,
+      "key": "",
+      "name": "WM_QUEUESYNC",
+      "pageType": 1,
+      "textDigest": "221A781D8FD7D847"
+    },
+    {
+      "id": 402781656,
+      "key": "",
+      "name": "WM_QUIT",
+      "pageType": 1,
+      "textDigest": "1EA9D4A703E44454"
+    },
+    {
+      "id": 402781657,
+      "key": "",
+      "name": "WM_RASDIALEVENT",
+      "pageType": 1,
+      "textDigest": "2E51A998854B5B69"
+    },
+    {
+      "id": 402781658,
+      "key": "",
+      "name": "WM_RBUTTONDBLCLK",
+      "pageType": 1,
+      "textDigest": "83C6AFF9AFAE7F94"
+    },
+    {
+      "id": 402781659,
+      "key": "",
+      "name": "WM_RBUTTONDOWN",
+      "pageType": 1,
+      "textDigest": "5C2ECF79522966D6"
+    },
+    {
+      "id": 402781660,
+      "key": "",
+      "name": "WM_RBUTTONUP",
+      "pageType": 1,
+      "textDigest": "B93D3068D978EBA2"
+    },
+    {
+      "id": 402781661,
+      "key": "",
+      "name": "WM_RENDERALLFORMATS",
+      "pageType": 1,
+      "textDigest": "26C591C8EAD37CDE"
+    },
+    {
+      "id": 402781662,
+      "key": "",
+      "name": "WM_RENDERFORMAT",
+      "pageType": 1,
+      "textDigest": "5B94285B4E2A9213"
+    },
+    {
+      "id": 402781663,
+      "key": "",
+      "name": "WM_SETCURSOR",
+      "pageType": 1,
+      "textDigest": "2CE70A990D14C736"
+    },
+    {
+      "id": 402781664,
+      "key": "",
+      "name": "WM_SETFOCUS",
+      "pageType": 1,
+      "textDigest": "4837BF4CA430195A"
+    },
+    {
+      "id": 402781665,
+      "key": "",
+      "name": "WM_SETFONT",
+      "pageType": 1,
+      "textDigest": "A11DD9FDE6C53654"
+    },
+    {
+      "id": 402781666,
+      "key": "",
+      "name": "WM_SETHOTKEY",
+      "pageType": 1,
+      "textDigest": "30076F3B77AD787E"
+    },
+    {
+      "id": 402781667,
+      "key": "",
+      "name": "WM_SETICON",
+      "pageType": 1,
+      "textDigest": "4F2E585F90539580"
+    },
+    {
+      "id": 402781668,
+      "key": "",
+      "name": "WM_SETREDRAW",
+      "pageType": 1,
+      "textDigest": "5B98EF3AC26E8B3A"
+    },
+    {
+      "id": 402781669,
+      "key": "",
+      "name": "WM_SETTEXT",
+      "pageType": 1,
+      "textDigest": "A3D809694C3351AF"
+    },
+    {
+      "id": 402781670,
+      "key": "",
+      "name": "WM_SETTINGCHANGE",
+      "pageType": 1,
+      "textDigest": "1638EB86E0E63276"
+    },
+    {
+      "id": 402781671,
+      "key": "",
+      "name": "WM_SHOWWINDOW",
+      "pageType": 1,
+      "textDigest": "2AA21587BFAB12C1"
+    },
+    {
+      "id": 402781672,
+      "key": "",
+      "name": "WM_SIZE",
+      "pageType": 1,
+      "textDigest": "4054E6CC4C8791AF"
+    },
+    {
+      "id": 402781673,
+      "key": "",
+      "name": "WM_SIZECLIPBOARD",
+      "pageType": 1,
+      "textDigest": "CFD776BD431B6482"
+    },
+    {
+      "id": 402781674,
+      "key": "",
+      "name": "WM_SIZING",
+      "pageType": 1,
+      "textDigest": "1AB401A056BC34F9"
+    },
+    {
+      "id": 402781675,
+      "key": "",
+      "name": "WM_SPOOLERSTATUS",
+      "pageType": 1,
+      "textDigest": "53E661C6B2B0342F"
+    },
+    {
+      "id": 402781676,
+      "key": "",
+      "name": "WM_STYLECHANGED",
+      "pageType": 1,
+      "textDigest": "2B5A367DBE1B8B04"
+    },
+    {
+      "id": 402781677,
+      "key": "",
+      "name": "WM_STYLECHANGING",
+      "pageType": 1,
+      "textDigest": "AA498487629B4687"
+    },
+    {
+      "id": 402781678,
+      "key": "",
+      "name": "WM_SYNCPAINT",
+      "pageType": 1,
+      "textDigest": "E3396F1619874B0F"
+    },
+    {
+      "id": 402781679,
+      "key": "",
+      "name": "WM_SYSCHAR",
+      "pageType": 1,
+      "textDigest": "A8A26B2D26A9BAFD"
+    },
+    {
+      "id": 402781680,
+      "key": "",
+      "name": "WM_SYSCOLORCHANGE",
+      "pageType": 1,
+      "textDigest": "31C4EFD0383A0A31"
+    },
+    {
+      "id": 402781681,
+      "key": "",
+      "name": "WM_SYSCOMMAND",
+      "pageType": 1,
+      "textDigest": "93B4888A6D39820C"
+    },
+    {
+      "id": 402781682,
+      "key": "",
+      "name": "WM_SYSDEADCHAR",
+      "pageType": 1,
+      "textDigest": "D63A8E428BC10722"
+    },
+    {
+      "id": 402781683,
+      "key": "",
+      "name": "WM_SYSKEYDOWN",
+      "pageType": 1,
+      "textDigest": "C52DD3FBA626413D"
+    },
+    {
+      "id": 402781684,
+      "key": "",
+      "name": "WM_SYSKEYUP",
+      "pageType": 1,
+      "textDigest": "916682D04FEAE5E1"
+    },
+    {
+      "id": 402781685,
+      "key": "",
+      "name": "WM_TCARD",
+      "pageType": 1,
+      "textDigest": "3B019155C825873F"
+    },
+    {
+      "id": 402781686,
+      "key": "",
+      "name": "WM_TIMECHANGE",
+      "pageType": 1,
+      "textDigest": "FF2CDD60016FD442"
+    },
+    {
+      "id": 402781687,
+      "key": "",
+      "name": "WM_TIMER",
+      "pageType": 1,
+      "textDigest": "D505C6DCE26F1BA7"
+    },
+    {
+      "id": 402781688,
+      "key": "",
+      "name": "WM_UNDO",
+      "pageType": 1,
+      "textDigest": "CC62B733961D2339"
+    },
+    {
+      "id": 402781689,
+      "key": "",
+      "name": "WM_UNINITMENUPOPUP",
+      "pageType": 1,
+      "textDigest": "AB643358625ED9F6"
+    },
+    {
+      "id": 402781690,
+      "key": "",
+      "name": "WM_USER",
+      "pageType": 1,
+      "textDigest": "D6978B1D24D56360"
+    },
+    {
+      "id": 402781691,
+      "key": "",
+      "name": "WM_USERCHANGED",
+      "pageType": 1,
+      "textDigest": "5E7B0F8AFE2559B8"
+    },
+    {
+      "id": 402781692,
+      "key": "",
+      "name": "WM_VKEYTOITEM",
+      "pageType": 1,
+      "textDigest": "E1E578AD838BD633"
+    },
+    {
+      "id": 402781693,
+      "key": "",
+      "name": "WM_VSCROLL",
+      "pageType": 1,
+      "textDigest": "7ECA7B97210DAB65"
+    },
+    {
+      "id": 402781694,
+      "key": "",
+      "name": "WM_VSCROLLCLIPBOARD",
+      "pageType": 1,
+      "textDigest": "1BD6788DDB171C94"
+    },
+    {
+      "id": 402781695,
+      "key": "",
+      "name": "WM_WINDOWPOSCHANGED",
+      "pageType": 1,
+      "textDigest": "AB5B5D257DA90DF6"
+    },
+    {
+      "id": 402781696,
+      "key": "",
+      "name": "WM_WINDOWPOSCHANGING",
+      "pageType": 1,
+      "textDigest": "9EDAE7E9764E54E7"
+    },
+    {
+      "id": 402781697,
+      "key": "",
+      "name": "WM_WININICHANGE",
+      "pageType": 1,
+      "textDigest": "2AB4E352EA0E20D8"
+    },
+    {
+      "id": 402781698,
+      "key": "",
+      "name": "CW_USEDEFAULT",
+      "pageType": 1,
+      "textDigest": "35A85DC1A7DB569D"
+    },
+    {
+      "id": 402781735,
+      "key": "",
+      "name": "SW_SHOW",
+      "pageType": 1,
+      "textDigest": "EBC4470F045CA80D"
+    },
+    {
+      "id": 402781736,
+      "key": "",
+      "name": "SW_HIDE",
+      "pageType": 1,
+      "textDigest": "AB58FF5F9834B26F"
+    },
+    {
+      "id": 402781917,
+      "key": "",
+      "name": "HTCAPTION",
+      "pageType": 1,
+      "textDigest": "3037984EBD4A74D4"
+    },
+    {
+      "id": 402782103,
+      "key": "",
+      "name": "ULW_ALPHA",
+      "pageType": 1,
+      "textDigest": "DCC10A02809691B9"
+    },
+    {
+      "id": 402782110,
+      "key": "",
+      "name": "WS_EX_LAYERED",
+      "pageType": 1,
+      "textDigest": "E517D32B4111CC25"
+    },
+    {
+      "id": 402782113,
+      "key": "",
+      "name": "SRCCOPY",
+      "pageType": 1,
+      "textDigest": "6EEABAE9D83B4B88"
+    },
+    {
+      "id": 402782135,
+      "key": "",
+      "name": "SPI_GETWORKAREA",
+      "pageType": 1,
+      "textDigest": "499128BFEC69D441"
+    },
+    {
+      "id": 402782201,
+      "key": "",
+      "name": "DT_ACCEPT_DBCS",
+      "pageType": 1,
+      "textDigest": "7F9659FDC72B93D7"
+    },
+    {
+      "id": 402782202,
+      "key": "",
+      "name": "DT_AGENT",
+      "pageType": 1,
+      "textDigest": "634353066A09A548"
+    },
+    {
+      "id": 402782203,
+      "key": "",
+      "name": "DT_BOTTOM",
+      "pageType": 1,
+      "textDigest": "30389902DE98A2C2"
+    },
+    {
+      "id": 402782204,
+      "key": "",
+      "name": "DT_CALCRECT",
+      "pageType": 1,
+      "textDigest": "F262E7D15194570C"
+    },
+    {
+      "id": 402782205,
+      "key": "",
+      "name": "DT_CENTER",
+      "pageType": 1,
+      "textDigest": "9B5475D2237F1089"
+    },
+    {
+      "id": 402782206,
+      "key": "",
+      "name": "DT_CHARSTREAM",
+      "pageType": 1,
+      "textDigest": "7DB0C80B881EE7D7"
+    },
+    {
+      "id": 402782207,
+      "key": "",
+      "name": "DT_DISPFILE",
+      "pageType": 1,
+      "textDigest": "4F6BB26E92CC2159"
+    },
+    {
+      "id": 402782208,
+      "key": "",
+      "name": "DT_DISTLIST",
+      "pageType": 1,
+      "textDigest": "9587746864C00F6C"
+    },
+    {
+      "id": 402782209,
+      "key": "",
+      "name": "DT_EDITABLE",
+      "pageType": 1,
+      "textDigest": "9220373000E362A3"
+    },
+    {
+      "id": 402782210,
+      "key": "",
+      "name": "DT_EDITCONTROL",
+      "pageType": 1,
+      "textDigest": "1C8291014C50B83E"
+    },
+    {
+      "id": 402782211,
+      "key": "",
+      "name": "DT_END_ELLIPSIS",
+      "pageType": 1,
+      "textDigest": "5160D9CBE79525D2"
+    },
+    {
+      "id": 402782212,
+      "key": "",
+      "name": "DT_EXPANDTABS",
+      "pageType": 1,
+      "textDigest": "888EBAED5943AF64"
+    },
+    {
+      "id": 402782213,
+      "key": "",
+      "name": "DT_EXTERNALLEADING",
+      "pageType": 1,
+      "textDigest": "01A834C8570FD9B9"
+    },
+    {
+      "id": 402782214,
+      "key": "",
+      "name": "DT_FOLDER_LINK",
+      "pageType": 1,
+      "textDigest": "C56729BBB3CABDB9"
+    },
+    {
+      "id": 402782215,
+      "key": "",
+      "name": "DT_FOLDER_SPECIAL",
+      "pageType": 1,
+      "textDigest": "5AE1A4C4130BB38C"
+    },
+    {
+      "id": 402782216,
+      "key": "",
+      "name": "DT_FOLDER",
+      "pageType": 1,
+      "textDigest": "1108A551E9C93149"
+    },
+    {
+      "id": 402782217,
+      "key": "",
+      "name": "DT_FORUM",
+      "pageType": 1,
+      "textDigest": "F3ABE0097ACDC01D"
+    },
+    {
+      "id": 402782218,
+      "key": "",
+      "name": "DT_GLOBAL",
+      "pageType": 1,
+      "textDigest": "72D6D91D35277B39"
+    },
+    {
+      "id": 402782219,
+      "key": "",
+      "name": "DT_INTERNAL",
+      "pageType": 1,
+      "textDigest": "86A787F17A39FE6A"
+    },
+    {
+      "id": 402782220,
+      "key": "",
+      "name": "DT_LEFT",
+      "pageType": 1,
+      "textDigest": "8B6DADA3602A00AA"
+    },
+    {
+      "id": 402782221,
+      "key": "",
+      "name": "DT_LOCAL",
+      "pageType": 1,
+      "textDigest": "CF44D88486A80512"
+    },
+    {
+      "id": 402782222,
+      "key": "",
+      "name": "DT_MAILUSER",
+      "pageType": 1,
+      "textDigest": "CB6CBC3B8F6824BD"
+    },
+    {
+      "id": 402782223,
+      "key": "",
+      "name": "DT_METAFILE",
+      "pageType": 1,
+      "textDigest": "781F0FD74FD1A805"
+    },
+    {
+      "id": 402782224,
+      "key": "",
+      "name": "DT_MODIFIABLE",
+      "pageType": 1,
+      "textDigest": "976B3DD9921D8396"
+    },
+    {
+      "id": 402782225,
+      "key": "",
+      "name": "DT_MODIFYSTRING",
+      "pageType": 1,
+      "textDigest": "55A1F5F69430B18B"
+    },
+    {
+      "id": 402782226,
+      "key": "",
+      "name": "DT_MULTILINE",
+      "pageType": 1,
+      "textDigest": "BEB3F0995812C5EC"
+    },
+    {
+      "id": 402782227,
+      "key": "",
+      "name": "DT_NOCLIP",
+      "pageType": 1,
+      "textDigest": "6638399EDDF08331"
+    },
+    {
+      "id": 402782228,
+      "key": "",
+      "name": "DT_NOPREFIX",
+      "pageType": 1,
+      "textDigest": "E2657052759722FB"
+    },
+    {
+      "id": 402782229,
+      "key": "",
+      "name": "DT_NOT_SPECIFIC",
+      "pageType": 1,
+      "textDigest": "987586514394CF76"
+    },
+    {
+      "id": 402782230,
+      "key": "",
+      "name": "DT_ORGANIZATION",
+      "pageType": 1,
+      "textDigest": "130AB6C81F2B5428"
+    },
+    {
+      "id": 402782231,
+      "key": "",
+      "name": "DT_PASSWORD_EDIT",
+      "pageType": 1,
+      "textDigest": "F636B284320BF5C8"
+    },
+    {
+      "id": 402782232,
+      "key": "",
+      "name": "DT_PATH_ELLIPSIS",
+      "pageType": 1,
+      "textDigest": "8B251A26CC8ADEC9"
+    },
+    {
+      "id": 402782233,
+      "key": "",
+      "name": "DT_PLOTTER",
+      "pageType": 1,
+      "textDigest": "6D420A16988D04CC"
+    },
+    {
+      "id": 402782234,
+      "key": "",
+      "name": "DT_PRIVATE_DISTLIST",
+      "pageType": 1,
+      "textDigest": "82A68538267F2E68"
+    },
+    {
+      "id": 402782235,
+      "key": "",
+      "name": "DT_RASCAMERA",
+      "pageType": 1,
+      "textDigest": "9A2F8354A696A7E4"
+    },
+    {
+      "id": 402782236,
+      "key": "",
+      "name": "DT_RASDISPLAY",
+      "pageType": 1,
+      "textDigest": "DB4FB3948993FD4E"
+    },
+    {
+      "id": 402782237,
+      "key": "",
+      "name": "DT_RASPRINTER",
+      "pageType": 1,
+      "textDigest": "A3C91E79FBA95C6F"
+    },
+    {
+      "id": 402782238,
+      "key": "",
+      "name": "DT_REMOTE_MAILUSER",
+      "pageType": 1,
+      "textDigest": "B81377077D18AAC9"
+    },
+    {
+      "id": 402782239,
+      "key": "",
+      "name": "DT_REQUIRED",
+      "pageType": 1,
+      "textDigest": "D61322184FF3CBCE"
+    },
+    {
+      "id": 402782240,
+      "key": "",
+      "name": "DT_RIGHT",
+      "pageType": 1,
+      "textDigest": "7B7D391F5CCE6E4C"
+    },
+    {
+      "id": 402782241,
+      "key": "",
+      "name": "DT_RTLREADING",
+      "pageType": 1,
+      "textDigest": "F07459AFC54527A8"
+    },
+    {
+      "id": 402782242,
+      "key": "",
+      "name": "DT_SET_IMMEDIATE",
+      "pageType": 1,
+      "textDigest": "C8413F1E451F5CD6"
+    },
+    {
+      "id": 402782243,
+      "key": "",
+      "name": "DT_SET_SELECTION",
+      "pageType": 1,
+      "textDigest": "57BE18F6485606DC"
+    },
+    {
+      "id": 402782244,
+      "key": "",
+      "name": "DT_SINGLELINE",
+      "pageType": 1,
+      "textDigest": "8E8C87B66A4D734F"
+    },
+    {
+      "id": 402782245,
+      "key": "",
+      "name": "DT_TABSTOP",
+      "pageType": 1,
+      "textDigest": "3366898B24AF07A2"
+    },
+    {
+      "id": 402782246,
+      "key": "",
+      "name": "DT_TOP",
+      "pageType": 1,
+      "textDigest": "C33B83564598F2DF"
+    },
+    {
+      "id": 402782247,
+      "key": "",
+      "name": "DT_VCENTER",
+      "pageType": 1,
+      "textDigest": "7733B533B78737B7"
+    },
+    {
+      "id": 402782248,
+      "key": "",
+      "name": "DT_WAN",
+      "pageType": 1,
+      "textDigest": "1FAC03291CFDF368"
+    },
+    {
+      "id": 402782249,
+      "key": "",
+      "name": "DT_WORD_ELLIPSIS",
+      "pageType": 1,
+      "textDigest": "DC1BFB6A04186EB6"
+    },
+    {
+      "id": 402782250,
+      "key": "",
+      "name": "DT_WORDBREAK",
+      "pageType": 1,
+      "textDigest": "B55B83144734DDAD"
+    },
+    {
+      "id": 402782371,
+      "key": "",
+      "name": "StringAlignmentNear",
+      "pageType": 1,
+      "textDigest": "DE2854186823B95E"
+    },
+    {
+      "id": 402782372,
+      "key": "",
+      "name": "StringAlignmentCenter",
+      "pageType": 1,
+      "textDigest": "DCD404C92BC29758"
+    },
+    {
+      "id": 402782373,
+      "key": "",
+      "name": "StringAlignmentFar",
+      "pageType": 1,
+      "textDigest": "05A4E1331867D694"
+    },
+    {
+      "id": 402783470,
+      "key": "",
+      "name": "StringFormatFlagsNoWrap",
+      "pageType": 1,
+      "textDigest": "BD501746D0DF8224"
+    },
+    {
+      "id": 402783471,
+      "key": "",
+      "name": "StringFormatFlagsNoClip",
+      "pageType": 1,
+      "textDigest": "AEAEA49F09EF72CA"
+    },
+    {
+      "id": 402782380,
+      "key": "",
+      "name": "WS_EX_NOACTIVATE",
+      "pageType": 1,
+      "textDigest": "47CB4F02557A4E75"
+    },
+    {
+      "id": 402783457,
+      "key": "",
+      "name": "单位_世界坐标",
+      "pageType": 1,
+      "textDigest": "63E62C0CCB30F2C4"
+    },
+    {
+      "id": 402783458,
+      "key": "",
+      "name": "单位_Display",
+      "pageType": 1,
+      "textDigest": "7E536DFA9FA9F13F"
+    },
+    {
+      "id": 402783459,
+      "key": "",
+      "name": "单位_像素",
+      "pageType": 1,
+      "textDigest": "9AFCA1F7E2C15BE9"
+    },
+    {
+      "id": 402783460,
+      "key": "",
+      "name": "单位_点",
+      "pageType": 1,
+      "textDigest": "9BB8B70E7AC3D8E5"
+    },
+    {
+      "id": 402783461,
+      "key": "",
+      "name": "单位_英寸",
+      "pageType": 1,
+      "textDigest": "704ACAC3602EEF38"
+    },
+    {
+      "id": 402783462,
+      "key": "",
+      "name": "单位_Document",
+      "pageType": 1,
+      "textDigest": "B5DC3C2C947F169F"
+    },
+    {
+      "id": 402783463,
+      "key": "",
+      "name": "单位_毫米",
+      "pageType": 1,
+      "textDigest": "E608897015DAE1DA"
+    },
+    {
+      "id": 402783516,
+      "key": "",
+      "name": "环绕模式_平铺",
+      "pageType": 1,
+      "textDigest": "76687F2A3BE8B8FF"
+    },
+    {
+      "id": 402783517,
+      "key": "",
+      "name": "环绕模式_水平反转后平铺",
+      "pageType": 1,
+      "textDigest": "D81351486185F9B4"
+    },
+    {
+      "id": 402783518,
+      "key": "",
+      "name": "环绕模式_垂直反转后平铺",
+      "pageType": 1,
+      "textDigest": "68DFCED4C677D356"
+    },
+    {
+      "id": 402783519,
+      "key": "",
+      "name": "环绕模式_水平垂直反转后平铺",
+      "pageType": 1,
+      "textDigest": "2CBF043901916CD5"
+    },
+    {
+      "id": 402783520,
+      "key": "",
+      "name": "环绕模式_不平铺",
+      "pageType": 1,
+      "textDigest": "DC61AAFC975AECE9"
+    },
+    {
+      "id": 402783657,
+      "key": "",
+      "name": "合并模式_替代",
+      "pageType": 1,
+      "textDigest": "18E5F79439B17C4C"
+    },
+    {
+      "id": 402783658,
+      "key": "",
+      "name": "合并模式_交集",
+      "pageType": 1,
+      "textDigest": "888A46809F4B8A08"
+    },
+    {
+      "id": 402783659,
+      "key": "",
+      "name": "合并模式_并集",
+      "pageType": 1,
+      "textDigest": "DACC36D99784BF88"
+    },
+    {
+      "id": 402783660,
+      "key": "",
+      "name": "合并模式_并集减交集",
+      "pageType": 1,
+      "textDigest": "35E94B4C7E206C6B"
+    },
+    {
+      "id": 402783661,
+      "key": "",
+      "name": "合并模式_排除新区域",
+      "pageType": 1,
+      "textDigest": "9CCC6E7023C7FDB4"
+    },
+    {
+      "id": 402783662,
+      "key": "",
+      "name": "合并模式_排除旧区域",
+      "pageType": 1,
+      "textDigest": "6B39A7217D217FCB"
+    },
+    {
+      "id": 402783678,
+      "key": "",
+      "name": "HWND_BOTTOM",
+      "pageType": 1,
+      "textDigest": "83A878DED30C4146"
+    },
+    {
+      "id": 402783679,
+      "key": "",
+      "name": "HWND_BROADCAST",
+      "pageType": 1,
+      "textDigest": "AB5676512D09C9F0"
+    },
+    {
+      "id": 402783680,
+      "key": "",
+      "name": "HWND_DESKTOP",
+      "pageType": 1,
+      "textDigest": "76AA266456572284"
+    },
+    {
+      "id": 402783681,
+      "key": "",
+      "name": "HWND_MESSAGE",
+      "pageType": 1,
+      "textDigest": "B4FD0D1806881635"
+    },
+    {
+      "id": 402783682,
+      "key": "",
+      "name": "HWND_NOTOPMOST",
+      "pageType": 1,
+      "textDigest": "EDD7766C4A761E3B"
+    },
+    {
+      "id": 402783683,
+      "key": "",
+      "name": "HWND_TOP",
+      "pageType": 1,
+      "textDigest": "71D659A45661A45B"
+    },
+    {
+      "id": 402783684,
+      "key": "",
+      "name": "HWND_TOPMOST",
+      "pageType": 1,
+      "textDigest": "4C3A86B67A7C9B4D"
+    }
+  ],
+  "dlls": [
+    {
+      "id": 167898537,
+      "memoryAddress": 39511728,
+      "name": "CallWindowProc",
+      "paramIds": [
+        1157754437,
+        1157754438,
+        1157754439,
+        1157754440,
+        1157754441
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "CBA8D86E24E9A43A"
+    },
+    {
+      "id": 167898538,
+      "memoryAddress": 39511648,
+      "name": "DeleteDC",
+      "paramIds": [
+        1157754442
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "A83B4A52DB790315"
+    },
+    {
+      "id": 167898539,
+      "memoryAddress": 39511568,
+      "name": "DeleteObject",
+      "paramIds": [
+        1157754443
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "8E199E45FB899213"
+    },
+    {
+      "id": 167898540,
+      "memoryAddress": 39511488,
+      "name": "GetClientRect",
+      "paramIds": [
+        1157754444,
+        1157754445
+      ],
+      "paramTypes": [
+        -2147482879,
+        1090588445
+      ],
+      "returnType": -2147482879,
+      "textDigest": "FE5339F7FC7C77F0"
+    },
+    {
+      "id": 167898541,
+      "memoryAddress": 39511408,
+      "name": "GetDC",
+      "paramIds": [
+        1157754446
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "F29314D1278E5083"
+    },
+    {
+      "id": 167898542,
+      "memoryAddress": 39511328,
+      "name": "GetProp",
+      "paramIds": [
+        1157754447,
+        1157754448
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147483644
+      ],
+      "returnType": -2147482879,
+      "textDigest": "BEF1F685185AC249"
+    },
+    {
+      "id": 167898543,
+      "memoryAddress": 39511248,
+      "name": "GetWindowDC",
+      "paramIds": [
+        1157754449
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "EA128D9946BF5D05"
+    },
+    {
+      "id": 167898544,
+      "memoryAddress": 39511168,
+      "name": "GetWindowLong",
+      "paramIds": [
+        1157754450,
+        1157754451
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "604829C1B270E2D1"
+    },
+    {
+      "id": 167898545,
+      "memoryAddress": 39511088,
+      "name": "GetWindowRect",
+      "paramIds": [
+        1157754452,
+        1157754453
+      ],
+      "paramTypes": [
+        -2147482879,
+        1090588445
+      ],
+      "returnType": -2147482879,
+      "textDigest": "5AD2419A16C265E6"
+    },
+    {
+      "id": 167898546,
+      "memoryAddress": 39511008,
+      "name": "GetWindowText",
+      "paramIds": [
+        1157754454,
+        1157754455,
+        1157754456
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147483644,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "866E642749D00DA0"
+    },
+    {
+      "id": 167898547,
+      "memoryAddress": 39510928,
+      "name": "GetWindowTextLength",
+      "paramIds": [
+        1157754457
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "346D082E122976ED"
+    },
+    {
+      "id": 167898548,
+      "memoryAddress": 39510848,
+      "name": "ReleaseDC",
+      "paramIds": [
+        1157754458,
+        1157754459
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "7B9F04961AE97BC4"
+    },
+    {
+      "id": 167898549,
+      "memoryAddress": 39510768,
+      "name": "SetProp",
+      "paramIds": [
+        1157754460,
+        1157754461,
+        1157754462
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147483644,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "351A567F06CBFE8D"
+    },
+    {
+      "id": 167898550,
+      "memoryAddress": 39510688,
+      "name": "SetWindowLong",
+      "paramIds": [
+        1157754463,
+        1157754464,
+        1157754465
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "F5C35722B99B145C"
+    },
+    {
+      "id": 167898551,
+      "memoryAddress": 39510608,
+      "name": "SendMessage",
+      "paramIds": [
+        1157754466,
+        1157754467,
+        1157754468,
+        1157754469
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "B9FE94E608343F74"
+    },
+    {
+      "id": 167898552,
+      "memoryAddress": 39510528,
+      "name": "IsWindow",
+      "paramIds": [
+        1157754470
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "74F5AF97325F265E"
+    },
+    {
+      "id": 167898553,
+      "memoryAddress": 39510448,
+      "name": "ValidateRect",
+      "paramIds": [
+        1157754471,
+        1157754472
+      ],
+      "paramTypes": [
+        -2147482879,
+        1090588445
+      ],
+      "returnType": -2147482879,
+      "textDigest": "A0ED2B071924D2A3"
+    },
+    {
+      "id": 167898554,
+      "memoryAddress": 39510368,
+      "name": "InvalidateRect",
+      "paramIds": [
+        1157754473,
+        1157754474,
+        1157754475
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "3640B7EB3EF17BEE"
+    },
+    {
+      "id": 167898555,
+      "memoryAddress": 39510288,
+      "name": "InvalidateRect2",
+      "paramIds": [
+        1157754476,
+        1157754477,
+        1157754478
+      ],
+      "paramTypes": [
+        -2147482879,
+        1090588445,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "A857F60F8ECB5FDC"
+    },
+    {
+      "id": 167898556,
+      "memoryAddress": 39510208,
+      "name": "BeginPaint",
+      "paramIds": [
+        1157754479,
+        1157754480
+      ],
+      "paramTypes": [
+        -2147482879,
+        1090592698
+      ],
+      "returnType": -2147482879,
+      "textDigest": "46966FD68D6E522A"
+    },
+    {
+      "id": 167898557,
+      "memoryAddress": 39510128,
+      "name": "EndPaint",
+      "paramIds": [
+        1157754481,
+        1157754482
+      ],
+      "paramTypes": [
+        -2147482879,
+        1090592698
+      ],
+      "returnType": -2147482879,
+      "textDigest": "7C4D651872ECA8B5"
+    },
+    {
+      "id": 167898558,
+      "memoryAddress": 39510048,
+      "name": "SetWindowPos",
+      "paramIds": [
+        1157754483,
+        1157754484,
+        1157754485,
+        1157754486,
+        1157754487,
+        1157754488,
+        1157754489
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "613E3908B2A9AC3A"
+    },
+    {
+      "id": 167898559,
+      "memoryAddress": 39518128,
+      "name": "GetParent",
+      "paramIds": [
+        1157754490
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "FC06F62C94C233E0"
+    },
+    {
+      "id": 167898560,
+      "memoryAddress": 39518048,
+      "name": "ClientToScreen",
+      "paramIds": [
+        1157754491,
+        1157754492
+      ],
+      "paramTypes": [
+        -2147482879,
+        1090600529
+      ],
+      "returnType": -2147482879,
+      "textDigest": "9DB0D725D8F36C53"
+    },
+    {
+      "id": 167898561,
+      "memoryAddress": 39517968,
+      "name": "ScreenToClient",
+      "paramIds": [
+        1157754493,
+        1157754494
+      ],
+      "paramTypes": [
+        -2147482879,
+        1090600529
+      ],
+      "returnType": -2147482879,
+      "textDigest": "A7B7C45BDDCF1ACB"
+    },
+    {
+      "id": 167898562,
+      "memoryAddress": 39517888,
+      "name": "GetWindow",
+      "paramIds": [
+        1157754495,
+        1157754496
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "ADB066496DDC699D"
+    },
+    {
+      "id": 167898563,
+      "memoryAddress": 39517808,
+      "name": "SetWindowText",
+      "paramIds": [
+        1157754497,
+        1157754498
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147483644
+      ],
+      "returnType": -2147482879,
+      "textDigest": "18809C2BDBB76F75"
+    },
+    {
+      "id": 167898564,
+      "memoryAddress": 39517728,
+      "name": "TrackMouseEvent",
+      "paramIds": [
+        1157754499
+      ],
+      "paramTypes": [
+        1090601427
+      ],
+      "returnType": -2147482879,
+      "textDigest": "42B3F4D99F9CB3D5"
+    },
+    {
+      "id": 167898565,
+      "memoryAddress": 39517648,
+      "name": "GetStockObject",
+      "paramIds": [
+        1157754500
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "C76C2837762B2E9B"
+    },
+    {
+      "id": 167898566,
+      "memoryAddress": 39517568,
+      "name": "CreateWindowEx",
+      "paramIds": [
+        1157754501,
+        1157754502,
+        1157754503,
+        1157754504,
+        1157754505,
+        1157754506,
+        1157754507,
+        1157754508,
+        1157754509,
+        1157754510,
+        1157754511,
+        1157754512
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147483644,
+        -2147483644,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "DC88222A6EE46771"
+    },
+    {
+      "id": 167898567,
+      "memoryAddress": 39517488,
+      "name": "SendMessageA_TOOLINFO",
+      "paramIds": [
+        1157754513,
+        1157754514,
+        1157754515,
+        1157754516
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        1090600942
+      ],
+      "returnType": -2147482879,
+      "textDigest": "B51F236EA9B28002"
+    },
+    {
+      "id": 167898568,
+      "memoryAddress": 39517408,
+      "name": "CreateCompatibleDC",
+      "paramIds": [
+        1157754517
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "63CD4234BC9FEA1C"
+    },
+    {
+      "id": 167898569,
+      "memoryAddress": 39517328,
+      "name": "CreateCompatibleBitmap",
+      "paramIds": [
+        1157754518,
+        1157754519,
+        1157754520
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "22ADFDCDDE2F5D31"
+    },
+    {
+      "id": 167898570,
+      "memoryAddress": 39517248,
+      "name": "BitBlt",
+      "paramIds": [
+        1157754521,
+        1157754522,
+        1157754523,
+        1157754524,
+        1157754525,
+        1157754526,
+        1157754527,
+        1157754528,
+        1157754529
+      ],
+      "paramTypes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "returnType": -2147482879,
+      "textDigest": "DDD4B8AFD4F39347"
+    },
+    {
+      "id": 167898571,
+      "memoryAddress": 39517168,
+      "name": "SelectObject",
+      "paramIds": [
+        1157754530,
+        1157754531
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "5851593F28D3D3E7"
+    },
+    {
+      "id": 167898572,
+      "memoryAddress": 39517088,
+      "name": "GetDCEx",
+      "paramIds": [
+        1157754532,
+        1157754533,
+        1157754534
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "7F4AA621F5F48E0D"
+    },
+    {
+      "id": 167898573,
+      "memoryAddress": 39517008,
+      "name": "DefWindowProc",
+      "paramIds": [
+        1157754535,
+        1157754536,
+        1157754537,
+        1157754538
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "C95AA2D2708B8EFD"
+    },
+    {
+      "id": 167898574,
+      "memoryAddress": 39516928,
+      "name": "RtlMoveMemory_NMHDR",
+      "paramIds": [
+        1157754539,
+        1157754540,
+        1157754541
+      ],
+      "paramTypes": [
+        1090601321,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": 0,
+      "textDigest": "DED78FB45BD200E1"
+    },
+    {
+      "id": 167898575,
+      "memoryAddress": 39516848,
+      "name": "写到内存_整数",
+      "paramIds": [
+        1157754542,
+        1157754543,
+        1157754544
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": 0,
+      "textDigest": "09A7AA4BDA550182"
+    },
+    {
+      "id": 167898576,
+      "memoryAddress": 39516768,
+      "name": "lstrcpyn_int",
+      "paramIds": [
+        1157754545,
+        1157754546,
+        1157754547
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "42B80F75E329DC91"
+    },
+    {
+      "id": 167898577,
+      "memoryAddress": 39516688,
+      "name": "CreateDIBSection",
+      "paramIds": [
+        1157754548,
+        1157754549,
+        1157754550,
+        1157754551,
+        1157754552,
+        1157754553
+      ],
+      "paramTypes": [
+        -2147482879,
+        1090601740,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "9FBE0572CB4368E1"
+    },
+    {
+      "id": 167898578,
+      "memoryAddress": 39516608,
+      "name": "UpdateLayeredWindow",
+      "paramIds": [
+        1157754554,
+        1157754555,
+        1157754556,
+        1157754557,
+        1157754558,
+        1157754559,
+        1157754560,
+        1157754561,
+        1157754562
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        1090645166,
+        -2147482879,
+        1090600529,
+        -2147482879,
+        1090601761,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "E63859B84CF54109"
+    },
+    {
+      "id": 167898579,
+      "memoryAddress": 39516528,
+      "name": "RemoveProp",
+      "paramIds": [
+        1157754563,
+        1157754564
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147483644
+      ],
+      "returnType": -2147482879,
+      "textDigest": "ABE9CA508642F646"
+    },
+    {
+      "id": 167898580,
+      "memoryAddress": 39516448,
+      "name": "RedrawWindow",
+      "paramIds": [
+        1157754565,
+        1157754566,
+        1157754567,
+        1157754568
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "FE4F8B4C59CBE756"
+    },
+    {
+      "id": 167898581,
+      "memoryAddress": 39516368,
+      "name": "GetClassName",
+      "paramIds": [
+        1157754569,
+        1157754570,
+        1157754571
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147483644,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "EB71F2F5D9169324"
+    },
+    {
+      "id": 167898582,
+      "memoryAddress": 39516288,
+      "name": "SetBkMode",
+      "paramIds": [
+        1157754572,
+        1157754573
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "5E4B78DAA4234DA6"
+    },
+    {
+      "id": 167898583,
+      "memoryAddress": 39516208,
+      "name": "CreatePen",
+      "paramIds": [
+        1157754574,
+        1157754575,
+        1157754576
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "024207C0E7717179"
+    },
+    {
+      "id": 167898584,
+      "memoryAddress": 39516128,
+      "name": "FillRect",
+      "paramIds": [
+        1157754577,
+        1157754578,
+        1157754579
+      ],
+      "paramTypes": [
+        -2147482879,
+        1090588445,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "41A103E7050E89AC"
+    },
+    {
+      "id": 167898585,
+      "memoryAddress": 39516048,
+      "name": "FrameRect",
+      "paramIds": [
+        1157754580,
+        1157754581,
+        1157754582
+      ],
+      "paramTypes": [
+        -2147482879,
+        1090588445,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "3368D87D2671FB95"
+    },
+    {
+      "id": 167898586,
+      "memoryAddress": 39515968,
+      "name": "CreateBrushIndirect",
+      "paramIds": [
+        1157754583
+      ],
+      "paramTypes": [
+        1090606720
+      ],
+      "returnType": -2147482879,
+      "textDigest": "E548C6F3DCF1964A"
+    },
+    {
+      "id": 167898587,
+      "memoryAddress": 39515888,
+      "name": "CreateSolidBrush",
+      "paramIds": [
+        1157754584
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "9FEEAAC8E00006F2"
+    },
+    {
+      "id": 167898588,
+      "memoryAddress": 39515808,
+      "name": "RtlMoveMemory_NCCALCSIZE_PARAMS",
+      "paramIds": [
+        1157754585,
+        1157754586,
+        1157754587
+      ],
+      "paramTypes": [
+        1090606733,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": 0,
+      "textDigest": "3F13BE03FC352202"
+    },
+    {
+      "id": 167898589,
+      "memoryAddress": 39515728,
+      "name": "SetTextColor",
+      "paramIds": [
+        1157754588,
+        1157754589
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "44843595335F2804"
+    },
+    {
+      "id": 167898590,
+      "memoryAddress": 39515648,
+      "name": "OffsetRgn",
+      "paramIds": [
+        1157754590,
+        1157754591,
+        1157754592
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "B934F15DE9F207A8"
+    },
+    {
+      "id": 167898591,
+      "memoryAddress": 39515568,
+      "name": "OffsetRect",
+      "paramIds": [
+        1157754593,
+        1157754594,
+        1157754595
+      ],
+      "paramTypes": [
+        1090588445,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "D6935721E096DC70"
+    },
+    {
+      "id": 167898592,
+      "memoryAddress": 39515488,
+      "name": "ExcludeClipRect",
+      "paramIds": [
+        1157754596,
+        1157754597,
+        1157754598,
+        1157754599,
+        1157754600
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "CFCE9A52A04D539F"
+    },
+    {
+      "id": 167898593,
+      "memoryAddress": 39515408,
+      "name": "SelectClipRgn",
+      "paramIds": [
+        1157754601,
+        1157754602
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "988DC5A1F9F715AC"
+    },
+    {
+      "id": 167898594,
+      "memoryAddress": 39515328,
+      "name": "GdipDrawImageRectRect_空",
+      "paramIds": [
+        1157754603,
+        1157754604,
+        1157754605,
+        1157754606,
+        1157754607,
+        1157754608,
+        1157754609,
+        1157754610,
+        1157754611,
+        1157754612,
+        1157754613,
+        1157754614,
+        1157754615,
+        1157754616
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482367,
+        -2147482367,
+        -2147482367,
+        -2147482367,
+        -2147482367,
+        -2147482367,
+        -2147482367,
+        -2147482367,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "5F5A69A88FC5372A"
+    },
+    {
+      "id": 167898595,
+      "memoryAddress": 39515248,
+      "name": "ShowCaret",
+      "paramIds": [
+        1157754617
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "35A6707F78476740"
+    },
+    {
+      "id": 167898596,
+      "memoryAddress": 39515168,
+      "name": "CreateCaret",
+      "paramIds": [
+        1157754618,
+        1157754619,
+        1157754620,
+        1157754621
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "00862AAA9C7FD2AF"
+    },
+    {
+      "id": 167898597,
+      "memoryAddress": 39515088,
+      "name": "GetCaretPos",
+      "paramIds": [
+        1157754622
+      ],
+      "paramTypes": [
+        1090600529
+      ],
+      "returnType": -2147482879,
+      "textDigest": "DA656E107EE0934F"
+    },
+    {
+      "id": 167898598,
+      "memoryAddress": 39515008,
+      "name": "KillTimer",
+      "paramIds": [
+        1157754623,
+        1157754624
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "87D296BB13FFE7F6"
+    },
+    {
+      "id": 167898599,
+      "memoryAddress": 39514928,
+      "name": "SetTimer",
+      "paramIds": [
+        1157754625,
+        1157754626,
+        1157754627,
+        1157754628
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "F5A8498D7AD6CBF9"
+    },
+    {
+      "id": 167898600,
+      "memoryAddress": 39514848,
+      "name": "GdipSetImageAttributesColorMatrix2",
+      "paramIds": [
+        1157754629,
+        1157754630,
+        1157754631,
+        1157754632,
+        1157754633,
+        1157754634
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147483646,
+        1090642488,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "806A9BB1180DF105"
+    },
+    {
+      "id": 167898601,
+      "memoryAddress": 39514768,
+      "name": "PeekMessage",
+      "paramIds": [
+        1157754635,
+        1157754636,
+        1157754637,
+        1157754638,
+        1157754639
+      ],
+      "paramTypes": [
+        1090642532,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "BCD009C83D51684C"
+    },
+    {
+      "id": 167898602,
+      "memoryAddress": 39514688,
+      "name": "DispatchMessage",
+      "paramIds": [
+        1157754640
+      ],
+      "paramTypes": [
+        1090642532
+      ],
+      "returnType": -2147482879,
+      "textDigest": "2D89C8E2B4490CBA"
+    },
+    {
+      "id": 167898603,
+      "memoryAddress": 39514608,
+      "name": "TranslateMessage",
+      "paramIds": [
+        1157754641
+      ],
+      "paramTypes": [
+        1090642532
+      ],
+      "returnType": -2147482879,
+      "textDigest": "83009D5BFDF04AD5"
+    },
+    {
+      "id": 167898604,
+      "memoryAddress": 39514528,
+      "name": "RegisterClassEx",
+      "paramIds": [
+        1157754642
+      ],
+      "paramTypes": [
+        1090642590
+      ],
+      "returnType": -2147482879,
+      "textDigest": "53762B14DD6A8B23"
+    },
+    {
+      "id": 167898605,
+      "memoryAddress": 39514448,
+      "name": "LocalSize_WNDCLASSEX",
+      "paramIds": [
+        1157754643
+      ],
+      "paramTypes": [
+        1090642590
+      ],
+      "returnType": -2147482879,
+      "textDigest": "7C48B99DA41B43EF"
+    },
+    {
+      "id": 167898606,
+      "memoryAddress": 39514368,
+      "name": "GetModuleHandle",
+      "paramIds": [
+        1157754644
+      ],
+      "paramTypes": [
+        -2147483644
+      ],
+      "returnType": -2147482879,
+      "textDigest": "601FBAFC105E48B2"
+    },
+    {
+      "id": 167898607,
+      "memoryAddress": 39514288,
+      "name": "LoadCursor",
+      "paramIds": [
+        1157754645,
+        1157754646
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "0611B6F7F810A2A1"
+    },
+    {
+      "id": 167898608,
+      "memoryAddress": 39514208,
+      "name": "TerminateThread",
+      "paramIds": [
+        1157754647,
+        1157754648
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "5DCAC0E54924622A"
+    },
+    {
+      "id": 167898609,
+      "memoryAddress": 39514128,
+      "name": "CloseHandle",
+      "paramIds": [
+        1157754649
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "259BC42D48B4A7CB"
+    },
+    {
+      "id": 167898610,
+      "memoryAddress": 39481360,
+      "name": "CreateThread",
+      "paramIds": [
+        1157754650,
+        1157754651,
+        1157754652,
+        1157754653,
+        1157754654,
+        1157754655
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147483642,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "E85258CF73E5AE38"
+    },
+    {
+      "id": 167898611,
+      "memoryAddress": 39484976,
+      "name": "GetSystemMetrics",
+      "paramIds": [
+        1157754656
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "C4B1A80AC84B45D9"
+    },
+    {
+      "id": 167898612,
+      "memoryAddress": 39470240,
+      "name": "SystemParametersInfo",
+      "paramIds": [
+        1157754657,
+        1157754658,
+        1157754659,
+        1157754660
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        1090588445,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "F1DB42DF63156437"
+    },
+    {
+      "id": 167898613,
+      "memoryAddress": 39480992,
+      "name": "ReleaseCapture",
+      "paramIds": [],
+      "paramTypes": [],
+      "returnType": -2147482879,
+      "textDigest": "273E8CF23C56FDBD"
+    },
+    {
+      "id": 167898614,
+      "memoryAddress": 39469504,
+      "name": "PostMessage",
+      "paramIds": [
+        1157754661,
+        1157754662,
+        1157754663,
+        1157754664
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "3AA336F72EC54759"
+    },
+    {
+      "id": 167898615,
+      "memoryAddress": 39480256,
+      "name": "CreateRoundRectRgn",
+      "paramIds": [
+        1157754665,
+        1157754666,
+        1157754667,
+        1157754668,
+        1157754669,
+        1157754670
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "62D8C5E0B915C104"
+    },
+    {
+      "id": 167898616,
+      "memoryAddress": 39477040,
+      "name": "SetWindowRgn",
+      "paramIds": [
+        1157754671,
+        1157754672,
+        1157754673
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "F6A8F41DAE1F4F7D"
+    },
+    {
+      "id": 167898617,
+      "memoryAddress": 39467392,
+      "name": "SetStretchBltMode",
+      "paramIds": [
+        1157754674,
+        1157754675
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "C4F2AE00FE529270"
+    },
+    {
+      "id": 167898618,
+      "memoryAddress": 39460960,
+      "name": "SetBrushOrgEx",
+      "paramIds": [
+        1157754676,
+        1157754677,
+        1157754678,
+        1157754679
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "CA1359018CAD1506"
+    },
+    {
+      "id": 167898619,
+      "memoryAddress": 39460880,
+      "name": "LoadIcon",
+      "paramIds": [
+        1157754680,
+        1157754681
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "DDC24E34FB8CDFA8"
+    },
+    {
+      "id": 167898620,
+      "memoryAddress": 39468976,
+      "name": "LoadIconByStr",
+      "paramIds": [
+        1157754682,
+        1157754683
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147483644
+      ],
+      "returnType": -2147482879,
+      "textDigest": "A9CE5A623DEA6A67"
+    },
+    {
+      "id": 167898621,
+      "memoryAddress": 39468896,
+      "name": "DrawIconEx",
+      "paramIds": [
+        1157754684,
+        1157754685,
+        1157754686,
+        1157754687,
+        1157754688,
+        1157754689,
+        1157754690,
+        1157754691,
+        1157754692
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "936AA282AC653190"
+    },
+    {
+      "id": 167898622,
+      "memoryAddress": 39468816,
+      "name": "IsZoomed",
+      "paramIds": [
+        1157754693
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "96FA935D293780E9"
+    },
+    {
+      "id": 167898623,
+      "memoryAddress": 39468400,
+      "name": "PtInRect",
+      "paramIds": [
+        1157754694,
+        1157754695,
+        1157754696
+      ],
+      "paramTypes": [
+        1090588445,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "B01F9113DF2560A1"
+    },
+    {
+      "id": 167898624,
+      "memoryAddress": 39468320,
+      "name": "CopyMemory_IconDirEntry",
+      "paramIds": [
+        1157754697,
+        1157754698,
+        1157754699
+      ],
+      "paramTypes": [
+        1090643860,
+        -2147483643,
+        -2147482879
+      ],
+      "returnType": 0,
+      "textDigest": "71C42E73FE8824C0"
+    },
+    {
+      "id": 167898625,
+      "memoryAddress": 39468240,
+      "name": "CreateIconFromResource",
+      "paramIds": [
+        1157754700,
+        1157754701,
+        1157754702,
+        1157754703
+      ],
+      "paramTypes": [
+        -2147483643,
+        0,
+        -2147483646,
+        0
+      ],
+      "returnType": -2147482879,
+      "textDigest": "236A0CAF498ED096"
+    },
+    {
+      "id": 167898626,
+      "memoryAddress": 39468160,
+      "name": "GetPixel",
+      "paramIds": [
+        1157754704,
+        1157754705,
+        1157754706
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "7EE2172F22D1FB81"
+    },
+    {
+      "id": 167898627,
+      "memoryAddress": 39468080,
+      "name": "CopyMemory_MINMAXINFO",
+      "paramIds": [
+        1157754707,
+        1157754708,
+        1157754709
+      ],
+      "paramTypes": [
+        1090644400,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": 0,
+      "textDigest": "CE54CAE684FE917E"
+    },
+    {
+      "id": 167898628,
+      "memoryAddress": 39482304,
+      "name": "CopyMemory_MINMAXINFO2",
+      "paramIds": [
+        1157754710,
+        1157754711,
+        1157754712
+      ],
+      "paramTypes": [
+        -2147482879,
+        1090644400,
+        -2147482879
+      ],
+      "returnType": 0,
+      "textDigest": "D8FD0546534A2B31"
+    },
+    {
+      "id": 167898629,
+      "memoryAddress": 39482224,
+      "name": "MoveWindow",
+      "paramIds": [
+        1157754713,
+        1157754714,
+        1157754715,
+        1157754716,
+        1157754717,
+        1157754718
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "466870DA27A258A7"
+    },
+    {
+      "id": 167898630,
+      "memoryAddress": 39482144,
+      "name": "ShowWindow",
+      "paramIds": [
+        1157754719,
+        1157754720
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "14E43BCB1F565183"
+    },
+    {
+      "id": 167898631,
+      "memoryAddress": 39482064,
+      "name": "SetParent",
+      "paramIds": [
+        1157754721,
+        1157754722
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "97CB15E8944CB6FF"
+    },
+    {
+      "id": 167898632,
+      "memoryAddress": 39481984,
+      "name": "CallWindowProc_Bin",
+      "paramIds": [
+        1157754723,
+        1157754724,
+        1157754725,
+        1157754726,
+        1157754727
+      ],
+      "paramTypes": [
+        -2147483643,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "0F3B6A17AC64C365"
+    },
+    {
+      "id": 167898633,
+      "memoryAddress": 39464544,
+      "name": "GetSystemMenu",
+      "paramIds": [
+        1157754728,
+        1157754729
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "FE79FA7123ABF04C"
+    },
+    {
+      "id": 167898634,
+      "memoryAddress": 39464464,
+      "name": "GetMenuState",
+      "paramIds": [
+        1157754730,
+        1157754731,
+        1157754732
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "655A9E94729E2454"
+    },
+    {
+      "id": 167898635,
+      "memoryAddress": 39464384,
+      "name": "CopyMemory_Rect",
+      "paramIds": [
+        1157754733,
+        1157754734,
+        1157754735
+      ],
+      "paramTypes": [
+        1090588445,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": 0,
+      "textDigest": "18611A3CD4540C1E"
+    },
+    {
+      "id": 167901846,
+      "memoryAddress": 39464304,
+      "name": "CopyMemory_Rect2",
+      "paramIds": [
+        1157757591,
+        1157757592,
+        1157757593
+      ],
+      "paramTypes": [
+        -2147482879,
+        1090588445,
+        -2147482879
+      ],
+      "returnType": 0,
+      "textDigest": "213744A6FF4981F9"
+    },
+    {
+      "id": 167898636,
+      "memoryAddress": 39464224,
+      "name": "SHGetFileInfo",
+      "paramIds": [
+        1157754736,
+        1157754737,
+        1157754738,
+        1157754739,
+        1157754740
+      ],
+      "paramTypes": [
+        -2147483644,
+        -2147482879,
+        1090645084,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "9AADCBA70B843DA5"
+    },
+    {
+      "id": 167898637,
+      "memoryAddress": 39464144,
+      "name": "CreateStreamOnHGlobal",
+      "paramIds": [
+        1157754741,
+        1157754742,
+        1157754743
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "4D9C58778D301F04"
+    },
+    {
+      "id": 167898638,
+      "memoryAddress": 39464064,
+      "name": "GdipLoadImageFromStream",
+      "paramIds": [
+        1157754744,
+        1157754745
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "A79E9D538CC4FB5D"
+    },
+    {
+      "id": 167898639,
+      "memoryAddress": 39463984,
+      "name": "GdipLoadImageFromFile",
+      "paramIds": [
+        1157754746,
+        1157754747
+      ],
+      "paramTypes": [
+        -2147483643,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "7E750400408147E1"
+    },
+    {
+      "id": 167898640,
+      "memoryAddress": 39463904,
+      "name": "GlobalFree",
+      "paramIds": [
+        1157754748
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "364D60650331FEBB"
+    },
+    {
+      "id": 167898641,
+      "memoryAddress": 39463824,
+      "name": "CLSIDFromString",
+      "paramIds": [
+        1157754749,
+        1157754750
+      ],
+      "paramTypes": [
+        -2147483643,
+        -2147483643
+      ],
+      "returnType": -2147482879,
+      "textDigest": "25AB528EBA928D5A"
+    },
+    {
+      "id": 167898642,
+      "memoryAddress": 39463744,
+      "name": "GdiplusStartup",
+      "paramIds": [
+        1157754751,
+        1157754752,
+        1157754753
+      ],
+      "paramTypes": [
+        -2147482879,
+        1090645180,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "1B000C1A1BD39C0B"
+    },
+    {
+      "id": 167898643,
+      "memoryAddress": 39463664,
+      "name": "GdipCreatePen1",
+      "paramIds": [
+        1157754754,
+        1157754755,
+        1157754756,
+        1157754757
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482367,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "6C303F509CE1C8D5"
+    },
+    {
+      "id": 167898644,
+      "memoryAddress": 39463584,
+      "name": "GdipCreateStringFormat",
+      "paramIds": [
+        1157754758,
+        1157754759,
+        1157754760
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "B0B1F8C32D888832"
+    },
+    {
+      "id": 167898645,
+      "memoryAddress": 39522224,
+      "name": "GdipStringFormatGetGenericDefault",
+      "paramIds": [
+        1157754761
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "C1B2C1E27B757FAA"
+    },
+    {
+      "id": 167898646,
+      "memoryAddress": 39522144,
+      "name": "GdipStringFormatGetGenericTypographic",
+      "paramIds": [
+        1157754762
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "DD80875F1A0E2764"
+    },
+    {
+      "id": 167898647,
+      "memoryAddress": 39522064,
+      "name": "GdipDeleteStringFormat",
+      "paramIds": [
+        1157754763
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "2C93B757E7451A7C"
+    },
+    {
+      "id": 167898648,
+      "memoryAddress": 39521984,
+      "name": "GdipCloneStringFormat",
+      "paramIds": [
+        1157754764,
+        1157754765
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "59480D19C5690724"
+    },
+    {
+      "id": 167898649,
+      "memoryAddress": 39521904,
+      "name": "GdipSetStringFormatFlags",
+      "paramIds": [
+        1157754766,
+        1157754767
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "F485C5DC14E13E82"
+    },
+    {
+      "id": 167898650,
+      "memoryAddress": 39521824,
+      "name": "GdipGetStringFormatFlags",
+      "paramIds": [
+        1157754768,
+        1157754769
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "8BCC14F9CD92276B"
+    },
+    {
+      "id": 167898651,
+      "memoryAddress": 39521744,
+      "name": "GdipSetStringFormatAlign",
+      "paramIds": [
+        1157754770,
+        1157754771
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "66150F5034044023"
+    },
+    {
+      "id": 167898652,
+      "memoryAddress": 39521664,
+      "name": "GdipGetStringFormatAlign",
+      "paramIds": [
+        1157754772,
+        1157754773
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "A79D3E7796F6E4E2"
+    },
+    {
+      "id": 167898653,
+      "memoryAddress": 39521584,
+      "name": "GdipSetStringFormatLineAlign",
+      "paramIds": [
+        1157754774,
+        1157754775
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "3158A0EF8D21E9DF"
+    },
+    {
+      "id": 167898654,
+      "memoryAddress": 39521504,
+      "name": "GdipGetStringFormatLineAlign",
+      "paramIds": [
+        1157754776,
+        1157754777
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "1A0958E3A2EA91EE"
+    },
+    {
+      "id": 167898655,
+      "memoryAddress": 39521424,
+      "name": "GdipSetStringFormatTrimming",
+      "paramIds": [
+        1157754778,
+        1157754779
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "7AE87A886F7603A9"
+    },
+    {
+      "id": 167898656,
+      "memoryAddress": 39521344,
+      "name": "GdipGetStringFormatTrimming",
+      "paramIds": [
+        1157754780,
+        1157754781
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "EB6CD07ACEF6BA01"
+    },
+    {
+      "id": 167898657,
+      "memoryAddress": 39521264,
+      "name": "GdipSetStringFormatHotkeyPrefix",
+      "paramIds": [
+        1157754782,
+        1157754783
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "00E6FE2661A286AD"
+    },
+    {
+      "id": 167898658,
+      "memoryAddress": 39521184,
+      "name": "GdipGetStringFormatHotkeyPrefix",
+      "paramIds": [
+        1157754784,
+        1157754785
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "F44389F6EF6CE435"
+    },
+    {
+      "id": 167898659,
+      "memoryAddress": 39521104,
+      "name": "GdipSetStringFormatTabStops",
+      "paramIds": [
+        1157754786,
+        1157754787,
+        1157754788,
+        1157754789
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482367,
+        -2147482879,
+        -2147482367
+      ],
+      "returnType": -2147482879,
+      "textDigest": "554C56C2624A3974"
+    },
+    {
+      "id": 167898660,
+      "memoryAddress": 39521024,
+      "name": "GdipGetStringFormatTabStops",
+      "paramIds": [
+        1157754790,
+        1157754791,
+        1157754792,
+        1157754793
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482367,
+        -2147482367
+      ],
+      "returnType": -2147482879,
+      "textDigest": "04E3977A37F896A5"
+    },
+    {
+      "id": 167898661,
+      "memoryAddress": 39520944,
+      "name": "GdipGetStringFormatTabStopCount",
+      "paramIds": [
+        1157754794,
+        1157754795
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "3AF47B628613810A"
+    },
+    {
+      "id": 167898662,
+      "memoryAddress": 39520864,
+      "name": "GdipSetStringFormatDigitSubstitution",
+      "paramIds": [
+        1157754796,
+        1157754797,
+        1157754798
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "E2A28C19B2C03458"
+    },
+    {
+      "id": 167898663,
+      "memoryAddress": 39520784,
+      "name": "GdipGetStringFormatDigitSubstitution",
+      "paramIds": [
+        1157754799,
+        1157754800,
+        1157754801
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "3E8AA995197AE5FA"
+    },
+    {
+      "id": 167898664,
+      "memoryAddress": 39520704,
+      "name": "GdipGetStringFormatMeasurableCharacterRangeCount",
+      "paramIds": [
+        1157754802,
+        1157754803
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "ED740C6A522CC6D4"
+    },
+    {
+      "id": 167898665,
+      "memoryAddress": 39520624,
+      "name": "GdipSetStringFormatMeasurableCharacterRanges",
+      "paramIds": [
+        1157754804,
+        1157754805,
+        1157754806
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "453B11205CBE64A2"
+    },
+    {
+      "id": 167898666,
+      "memoryAddress": 39520544,
+      "name": "GdipImageGetFrameDimensionsCount",
+      "paramIds": [
+        1157754807,
+        1157754808
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "BDD6739A4AF2BB12"
+    },
+    {
+      "id": 167898667,
+      "memoryAddress": 39520464,
+      "name": "GdipImageGetFrameDimensionsList",
+      "paramIds": [
+        1157754809,
+        1157754810,
+        1157754811
+      ],
+      "paramTypes": [
+        -2147482879,
+        131085,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "15962D53650C8F1D"
+    },
+    {
+      "id": 167898668,
+      "memoryAddress": 39520384,
+      "name": "GdipImageGetFrameCount",
+      "paramIds": [
+        1157754812,
+        1157754813,
+        1157754814
+      ],
+      "paramTypes": [
+        -2147482879,
+        131085,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "E6A8823431B629E3"
+    },
+    {
+      "id": 167898669,
+      "memoryAddress": 39520304,
+      "name": "GdipImageSelectActiveFrame",
+      "paramIds": [
+        1157754815,
+        1157754816,
+        1157754817
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147483643,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "9439C5F3E20E3930"
+    },
+    {
+      "id": 167898670,
+      "memoryAddress": 39520224,
+      "name": "GdipGetPropertyItemSize",
+      "paramIds": [
+        1157754818,
+        1157754819,
+        1157754820
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "BD9334F0F905DECC"
+    },
+    {
+      "id": 167898671,
+      "memoryAddress": 39520144,
+      "name": "GdipGetPropertyItem",
+      "paramIds": [
+        1157754821,
+        1157754822,
+        1157754823,
+        1157754824
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147483643
+      ],
+      "returnType": -2147482879,
+      "textDigest": "498241EE8AD01657"
+    },
+    {
+      "id": 167898672,
+      "memoryAddress": 39520064,
+      "name": "GdipGetPropertySize",
+      "paramIds": [
+        1157754825,
+        1157754826,
+        1157754827
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "F8B77F07C558C78A"
+    },
+    {
+      "id": 167898673,
+      "memoryAddress": 39519984,
+      "name": "GlobalAlloc",
+      "paramIds": [
+        1157754828,
+        1157754829
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "C6EF67F01DCACDA0"
+    },
+    {
+      "id": 167898674,
+      "memoryAddress": 39519904,
+      "name": "GlobalLock",
+      "paramIds": [
+        1157754830
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "936D90081FFC86F5"
+    },
+    {
+      "id": 167898675,
+      "memoryAddress": 39519824,
+      "name": "GlobalUnlock",
+      "paramIds": [
+        1157754831
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "9BD0C4BF2168F79F"
+    },
+    {
+      "id": 167898676,
+      "memoryAddress": 39519744,
+      "name": "GdipGetImageWidth",
+      "paramIds": [
+        1157754832,
+        1157754833
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "5A09FF44F903913A"
+    },
+    {
+      "id": 167898677,
+      "memoryAddress": 39519664,
+      "name": "GdipGetImageHeight",
+      "paramIds": [
+        1157754834,
+        1157754835
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "D316DCC439E4C443"
+    },
+    {
+      "id": 167898678,
+      "memoryAddress": 39519584,
+      "name": "GdipDisposeImage",
+      "paramIds": [
+        1157754836
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "BFBEB507E14C06C6"
+    },
+    {
+      "id": 167898679,
+      "memoryAddress": 39519504,
+      "name": "GdipDeleteBrush",
+      "paramIds": [
+        1157754837
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "47BD6BC7BD1ADB9B"
+    },
+    {
+      "id": 167898680,
+      "memoryAddress": 39519424,
+      "name": "GdipCreateSolidFill",
+      "paramIds": [
+        1157754838,
+        1157754839
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "9587E4C67AD82805"
+    },
+    {
+      "id": 167898681,
+      "memoryAddress": 39519344,
+      "name": "GdipCreateFromHDC",
+      "paramIds": [
+        1157754840,
+        1157754841
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "BC2864C9221DCB86"
+    },
+    {
+      "id": 167898682,
+      "memoryAddress": 39519264,
+      "name": "GdipFillRectangle",
+      "paramIds": [
+        1157754842,
+        1157754843,
+        1157754844,
+        1157754845,
+        1157754846,
+        1157754847
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482367,
+        -2147482367,
+        -2147482367,
+        -2147482367
+      ],
+      "returnType": -2147482879,
+      "textDigest": "1103A73D00F521CA"
+    },
+    {
+      "id": 167898683,
+      "memoryAddress": 39519184,
+      "name": "GdipCreateLineBrush",
+      "paramIds": [
+        1157754848,
+        1157754849,
+        1157754850,
+        1157754851,
+        1157754852,
+        1157754853
+      ],
+      "paramTypes": [
+        1090645158,
+        1090645158,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "5C1D65E7824CD06D"
+    },
+    {
+      "id": 167898684,
+      "memoryAddress": 39519104,
+      "name": "GdipDrawRectangle",
+      "paramIds": [
+        1157754854,
+        1157754855,
+        1157754856,
+        1157754857,
+        1157754858,
+        1157754859
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482367,
+        -2147482367,
+        -2147482367,
+        -2147482367
+      ],
+      "returnType": -2147482879,
+      "textDigest": "20CDBC842CB6E4C4"
+    },
+    {
+      "id": 167898685,
+      "memoryAddress": 39519024,
+      "name": "GdipDeleteGraphics",
+      "paramIds": [
+        1157754860
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "06702BDFEF4C21C6"
+    },
+    {
+      "id": 167898686,
+      "memoryAddress": 39518944,
+      "name": "GdipDrawString",
+      "paramIds": [
+        1157754861,
+        1157754862,
+        1157754863,
+        1157754864,
+        1157754865,
+        1157754866,
+        1157754867
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147483643,
+        -2147482879,
+        -2147482879,
+        1090645159,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "60C0257C79437439"
+    },
+    {
+      "id": 167898687,
+      "memoryAddress": 39518864,
+      "name": "GdipCreateFontFamilyFromName",
+      "paramIds": [
+        1157754868,
+        1157754869,
+        1157754870
+      ],
+      "paramTypes": [
+        -2147483643,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "421BE67D9466C5EF"
+    },
+    {
+      "id": 167898688,
+      "memoryAddress": 39518784,
+      "name": "GdipCreateFont",
+      "paramIds": [
+        1157754871,
+        1157754872,
+        1157754873,
+        1157754874,
+        1157754875
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482367,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "A6A0C059C0A2E2E3"
+    },
+    {
+      "id": 167898689,
+      "memoryAddress": 39518704,
+      "name": "GdipCloneFont",
+      "paramIds": [
+        1157754876,
+        1157754877
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "D958EF84A40AEA04"
+    },
+    {
+      "id": 167898690,
+      "memoryAddress": 39518624,
+      "name": "GdipDeleteFontFamily",
+      "paramIds": [
+        1157754878
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "881D24EBC48F66D8"
+    },
+    {
+      "id": 167898691,
+      "memoryAddress": 39518544,
+      "name": "GdipDrawImageRect",
+      "paramIds": [
+        1157754879,
+        1157754880,
+        1157754881,
+        1157754882,
+        1157754883,
+        1157754884
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482367,
+        -2147482367,
+        -2147482367,
+        -2147482367
+      ],
+      "returnType": -2147482879,
+      "textDigest": "33A3E07FC622A689"
+    },
+    {
+      "id": 167898692,
+      "memoryAddress": 39518464,
+      "name": "MultiByteToWideChar",
+      "paramIds": [
+        1157754885,
+        1157754886,
+        1157754887,
+        1157754888,
+        1157754889,
+        1157754890
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147483644,
+        -2147482879,
+        -2147483643,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "CA0FD67BE71EDFC7"
+    },
+    {
+      "id": 167899234,
+      "memoryAddress": 39518384,
+      "name": "IsWindowEnabled",
+      "paramIds": [
+        1157754980
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "BC7CCF14C04A2664"
+    },
+    {
+      "id": 167899235,
+      "memoryAddress": 39518304,
+      "name": "IsWindowVisible",
+      "paramIds": [
+        1157754981
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "41EE249A42734C85"
+    },
+    {
+      "id": 167899518,
+      "memoryAddress": 39518224,
+      "name": "StretchBlt",
+      "paramIds": [
+        1157755263,
+        1157755264,
+        1157755265,
+        1157755266,
+        1157755267,
+        1157755268,
+        1157755269,
+        1157755270,
+        1157755271,
+        1157755272,
+        1157755273
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "6C05433568DA4A20"
+    },
+    {
+      "id": 167899530,
+      "memoryAddress": 39526320,
+      "name": "lstrcpyn",
+      "paramIds": [
+        1157755275,
+        1157755276,
+        1157755277
+      ],
+      "paramTypes": [
+        -2147483643,
+        -2147483643,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "5DE9F7C4B6FE377D"
+    },
+    {
+      "id": 167899534,
+      "memoryAddress": 39526240,
+      "name": "CreateDIBitmap2",
+      "paramIds": [
+        1157755279,
+        1157755280,
+        1157755281,
+        1157755282,
+        1157755283,
+        1157755284
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "A6677BA537C2906E"
+    },
+    {
+      "id": 167899576,
+      "memoryAddress": 39526160,
+      "name": "TransparentBlt",
+      "paramIds": [
+        1157755321,
+        1157755322,
+        1157755323,
+        1157755324,
+        1157755325,
+        1157755326,
+        1157755327,
+        1157755328,
+        1157755329,
+        1157755330,
+        1157755331
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "4E7C518A2FC8F5E0"
+    },
+    {
+      "id": 167899590,
+      "memoryAddress": 39526080,
+      "name": "DrawText",
+      "paramIds": [
+        1157755335,
+        1157755336,
+        1157755337,
+        1157755338,
+        1157755339
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147483644,
+        -2147482879,
+        1090588445,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "E9E2355F9B7EB235"
+    },
+    {
+      "id": 167899942,
+      "memoryAddress": 39526000,
+      "name": "GetSysColor",
+      "paramIds": [
+        1157755687
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "03454D3234CCCD58"
+    },
+    {
+      "id": 167900111,
+      "memoryAddress": 39525920,
+      "name": "SetCursor",
+      "paramIds": [
+        1157755856
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "C59AF9078BD9785B"
+    },
+    {
+      "id": 167900387,
+      "memoryAddress": 39525840,
+      "name": "GetMessage",
+      "paramIds": [
+        1157756134,
+        1157756135,
+        1157756136,
+        1157756137
+      ],
+      "paramTypes": [
+        1090642532,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "0E55670CA3382C16"
+    },
+    {
+      "id": 167900913,
+      "memoryAddress": 39525760,
+      "name": "UpdateWindow",
+      "paramIds": [
+        1157756658
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "789B541A5D5AAF0D"
+    },
+    {
+      "id": 167901080,
+      "memoryAddress": 39525680,
+      "name": "GdipGetImageDimension",
+      "paramIds": [
+        1157756825,
+        1157756826,
+        1157756827
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482367,
+        -2147482367
+      ],
+      "returnType": -2147482879,
+      "textDigest": "42D419268D30665E"
+    },
+    {
+      "id": 167901105,
+      "memoryAddress": 39525600,
+      "name": "DestroyWindow",
+      "paramIds": [
+        1157756850
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "BB9D185F215B413C"
+    },
+    {
+      "id": 167901150,
+      "memoryAddress": 39525520,
+      "name": "GdipDeleteFont",
+      "paramIds": [
+        1157756895
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "5AB9EEDF69D19F7E"
+    },
+    {
+      "id": 167901152,
+      "memoryAddress": 39525440,
+      "name": "CreateFont",
+      "paramIds": [
+        1157756897,
+        1157756898,
+        1157756899,
+        1157756900,
+        1157756901,
+        1157756902,
+        1157756903,
+        1157756904,
+        1157756905,
+        1157756906,
+        1157756907,
+        1157756908,
+        1157756909,
+        1157756910
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147483644
+      ],
+      "returnType": -2147482879,
+      "textDigest": "0A82004BE01CEFEE"
+    },
+    {
+      "id": 167901945,
+      "memoryAddress": 39525360,
+      "name": "GdipCreatePath",
+      "paramIds": [
+        1157757690,
+        1157757691
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "06846F6DB83DC2FE"
+    },
+    {
+      "id": 167901950,
+      "memoryAddress": 39525280,
+      "name": "GdipGetFontStyle",
+      "paramIds": [
+        1157757695,
+        1157757696
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "641C2D1185213086"
+    },
+    {
+      "id": 167901957,
+      "memoryAddress": 39525200,
+      "name": "GdipGetFamily",
+      "paramIds": [
+        1157757702,
+        1157757703
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "C24F7E27BCBB4887"
+    },
+    {
+      "id": 167901960,
+      "memoryAddress": 39525120,
+      "name": "GdipAddPathString",
+      "paramIds": [
+        1157757705,
+        1157757706,
+        1157757707,
+        1157757708,
+        1157757709,
+        1157757710,
+        1157757711,
+        1157757712
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147483643,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482367,
+        1090645159,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "C7E6131309ED5FBB"
+    },
+    {
+      "id": 167901972,
+      "memoryAddress": 39525040,
+      "name": "GdipGetPathWorldBounds",
+      "paramIds": [
+        1157757717,
+        1157757718,
+        1157757719,
+        1157757720
+      ],
+      "paramTypes": [
+        -2147482879,
+        1090645159,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "1376A4F83AFF25D8"
+    },
+    {
+      "id": 167901978,
+      "memoryAddress": 39524960,
+      "name": "GdipDeletePath",
+      "paramIds": [
+        1157757723
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "FFE04801F4C9B21E"
+    },
+    {
+      "id": 167901983,
+      "memoryAddress": 39524880,
+      "name": "GdipGetFontSize",
+      "paramIds": [
+        1157757728,
+        1157757729
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482367
+      ],
+      "returnType": -2147482879,
+      "textDigest": "7B3DE80E35680C17"
+    },
+    {
+      "id": 167901990,
+      "memoryAddress": 39524800,
+      "name": "lstrlenW",
+      "paramIds": [
+        1157757735
+      ],
+      "paramTypes": [
+        -2147483643
+      ],
+      "returnType": -2147482879,
+      "textDigest": "1AF292A0C3BD2D8F"
+    },
+    {
+      "id": 167902006,
+      "memoryAddress": 39524720,
+      "name": "GdipMeasureString",
+      "paramIds": [
+        1157757751,
+        1157757752,
+        1157757753,
+        1157757754,
+        1157757755,
+        1157757756,
+        1157757757,
+        1157757758,
+        1157757759
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147483643,
+        -2147482879,
+        -2147482879,
+        1090645159,
+        -2147482879,
+        1090645159,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "EEB7C552E46F3AD0"
+    },
+    {
+      "id": 167902356,
+      "memoryAddress": 39524640,
+      "name": "GdipSetSmoothingMode",
+      "paramIds": [
+        1157758101,
+        1157758102
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "111B7CB66A8E88B0"
+    },
+    {
+      "id": 167902359,
+      "memoryAddress": 39524560,
+      "name": "GdipSetTextRenderingHint",
+      "paramIds": [
+        1157758104,
+        1157758105
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "C21115A7E0162A45"
+    },
+    {
+      "id": 167902431,
+      "memoryAddress": 39524480,
+      "name": "GdipDeletePen",
+      "paramIds": [
+        1157758176
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "1F7E5167A2F3CA0D"
+    },
+    {
+      "id": 167902538,
+      "memoryAddress": 39524400,
+      "name": "GdipFillPath",
+      "paramIds": [
+        1157758283,
+        1157758284,
+        1157758285
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "42DD92C533AAFFE3"
+    },
+    {
+      "id": 167902542,
+      "memoryAddress": 39524320,
+      "name": "GdipDrawPath",
+      "paramIds": [
+        1157758287,
+        1157758288,
+        1157758289
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "8A6D1E5A58BB120F"
+    },
+    {
+      "id": 167902616,
+      "memoryAddress": 39524240,
+      "name": "GdipCreateRegionRect",
+      "paramIds": [
+        1157758361,
+        1157758362
+      ],
+      "paramTypes": [
+        1090645159,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "4B2FB01114F7866E"
+    },
+    {
+      "id": 167902620,
+      "memoryAddress": 39524160,
+      "name": "GdipDeleteRegion",
+      "paramIds": [
+        1157758365
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "BE208C358BBA65C3"
+    },
+    {
+      "id": 167902629,
+      "memoryAddress": 39524080,
+      "name": "GdipSetClipRegion",
+      "paramIds": [
+        1157758374,
+        1157758375,
+        1157758376
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "744E8F33E25A24AE"
+    },
+    {
+      "id": 167902711,
+      "memoryAddress": 39524000,
+      "name": "GetProcAddress",
+      "paramIds": [
+        1157758456,
+        1157758457
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147483644
+      ],
+      "returnType": -2147482879,
+      "textDigest": "746B090273D0D996"
+    }
+  ],
+  "globals": [
+    {
+      "dataType": -2147482879,
+      "id": 84014694,
+      "name": "g_HandCursor",
+      "textDigest": "1FC4576DBE6F4A72"
+    },
+    {
+      "dataType": -2147482879,
+      "id": 84014695,
+      "name": "g_ArrowCursor",
+      "textDigest": "0AE0DC370C1CF6D1"
+    },
+    {
+      "dataType": -2147482879,
+      "id": 84014693,
+      "name": "g_SizeAllCursor",
+      "textDigest": "130CA259C9898719"
+    }
+  ],
+  "programHeader": {
+    "debugCommandLine": "",
+    "flag1": 0,
+    "flag2": 0,
+    "icon": "",
+    "supportLibraryInfo": [
+      "krnln\rd09f2340818511d396f6aaf844c7e325\r5\r7\r系统核心支持库",
+      "ogrelib\r2EAE87405D754ad780D8FE57432002EA\r2\r0\rDirectX3D支持库"
+    ],
+    "unk1": 51113791,
+    "unk2_1": "gAIAAAAAAAA=",
+    "unk2_2": "AAANAA==",
+    "unk2_3": "QwAAAA==",
+    "unk3Op": "",
+    "versionFlag1": 130643
+  },
+  "structs": [
+    {
+      "id": 1090588445,
+      "memberIds": [
+        889261868,
+        889261869,
+        889261870,
+        889261871
+      ],
+      "memberTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "memoryAddress": 39496768,
+      "name": "RECT",
+      "textDigest": "221B8E081E135DC2"
+    },
+    {
+      "id": 1090592698,
+      "memberIds": [
+        889266109,
+        889266110,
+        889266111,
+        889266112,
+        889266113,
+        889266114
+      ],
+      "memberTypes": [
+        -2147482879,
+        -2147482879,
+        1090588445,
+        -2147482879,
+        -2147482879,
+        -2147483391
+      ],
+      "memoryAddress": 39490000,
+      "name": "PAINTSTRUCT",
+      "textDigest": "56E4E6E6ACA06D9A"
+    },
+    {
+      "id": 1090600529,
+      "memberIds": [
+        889273940,
+        889273941
+      ],
+      "memberTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "memoryAddress": 39490352,
+      "name": "POINT",
+      "textDigest": "87612CBFF0CCB877"
+    },
+    {
+      "id": 1090601427,
+      "memberIds": [
+        889274836,
+        889274837,
+        889274838,
+        889274839
+      ],
+      "memberTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "memoryAddress": 39513152,
+      "name": "TRACKMOUSEEVENT",
+      "textDigest": "A8EE2C317FCAA9C4"
+    },
+    {
+      "id": 1090600942,
+      "memberIds": [
+        889274351,
+        889274352,
+        889274353,
+        889274354,
+        889274355,
+        889274356,
+        889274357,
+        889274358
+      ],
+      "memberTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        1090588445,
+        -2147482879,
+        -2147483644,
+        -2147482879
+      ],
+      "memoryAddress": 39513088,
+      "name": "TOOLINFO",
+      "textDigest": "899087CA82859DE9"
+    },
+    {
+      "id": 1090601321,
+      "memberIds": [
+        889274732,
+        889274733,
+        889274734
+      ],
+      "memberTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "memoryAddress": 39513024,
+      "name": "NMHDR",
+      "textDigest": "D226C1AF75336CD0"
+    },
+    {
+      "id": 1090601740,
+      "memberIds": [
+        889275151,
+        889275152
+      ],
+      "memberTypes": [
+        1090601741,
+        0
+      ],
+      "memoryAddress": 39512960,
+      "name": "BITMAPINFO",
+      "textDigest": "C196A972532122F5"
+    },
+    {
+      "id": 1090601741,
+      "memberIds": [
+        889275153,
+        889275154,
+        889275155,
+        889275156,
+        889275157,
+        889275158,
+        889275159,
+        889275160,
+        889275161,
+        889275162,
+        889275163
+      ],
+      "memberTypes": [
+        0,
+        0,
+        0,
+        -2147483135,
+        -2147483135,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "memoryAddress": 39512896,
+      "name": "BITMAPINFOHEADER",
+      "textDigest": "6B10EF920B7E7501"
+    },
+    {
+      "id": 1090601742,
+      "memberIds": [
+        889275164,
+        889275165,
+        889275166,
+        889275167,
+        889275168
+      ],
+      "memberTypes": [
+        -2147483135,
+        0,
+        -2147483135,
+        -2147483135,
+        0
+      ],
+      "memoryAddress": 39512832,
+      "name": "BITMAPFILEHEADER",
+      "textDigest": "2E64E1A314664C96"
+    },
+    {
+      "id": 1090601761,
+      "memberIds": [
+        889275170,
+        889275171,
+        889275172,
+        889275173
+      ],
+      "memberTypes": [
+        -2147483391,
+        -2147483391,
+        -2147483391,
+        -2147483391
+      ],
+      "memoryAddress": 39512768,
+      "name": "BLENDFUNCTION",
+      "textDigest": "81A0335117BC0556"
+    },
+    {
+      "id": 1090606720,
+      "memberIds": [
+        889280131,
+        889280132,
+        889280133
+      ],
+      "memberTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "memoryAddress": 39512704,
+      "name": "LOGBRUSH",
+      "textDigest": "CE4EBF283C6CA931"
+    },
+    {
+      "id": 1090606733,
+      "memberIds": [
+        889280142,
+        889280145
+      ],
+      "memberTypes": [
+        1090588445,
+        1090606739
+      ],
+      "memoryAddress": 39512640,
+      "name": "NCCALCSIZE_PARAMS",
+      "textDigest": "D3952B58197733B9"
+    },
+    {
+      "id": 1090606739,
+      "memberIds": [
+        889280149,
+        889280150,
+        889280151,
+        889280152,
+        889280153,
+        889280154,
+        889280155
+      ],
+      "memberTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "memoryAddress": 39512576,
+      "name": "WINDOWPOS",
+      "textDigest": "37C8401EE9AC31B6"
+    },
+    {
+      "id": 1090642488,
+      "memberIds": [
+        889315897
+      ],
+      "memberTypes": [
+        -2147482367
+      ],
+      "memoryAddress": 39512512,
+      "name": "ColorMatrix",
+      "textDigest": "4D486B8530DC9461"
+    },
+    {
+      "id": 1090642532,
+      "memberIds": [
+        889315941,
+        889315942,
+        889315943,
+        889315944,
+        889315945,
+        889315946
+      ],
+      "memberTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        1090600529
+      ],
+      "memoryAddress": 39512448,
+      "name": "MSG",
+      "textDigest": "500B43A149E08AD5"
+    },
+    {
+      "id": 1090642590,
+      "memberIds": [
+        889315999,
+        889316000,
+        889316001,
+        889316002,
+        889316003,
+        889316004,
+        889316005,
+        889316006,
+        889316007,
+        889316008,
+        889316009,
+        889316010
+      ],
+      "memberTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147483644,
+        -2147483644,
+        -2147482879
+      ],
+      "memoryAddress": 39512384,
+      "name": "WNDCLASSEX",
+      "textDigest": "3FB92E2BD5681164"
+    },
+    {
+      "id": 1090643853,
+      "memberIds": [
+        889317262,
+        889317263,
+        889317264,
+        889317265,
+        889317266
+      ],
+      "memberTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "memoryAddress": 39512320,
+      "name": "ICONINFO",
+      "textDigest": "9A2878F7DBE6B3F0"
+    },
+    {
+      "id": 1090643859,
+      "memberIds": [
+        889317269,
+        889317270,
+        889317271,
+        889317272
+      ],
+      "memberTypes": [
+        -2147483135,
+        -2147483135,
+        -2147483135,
+        1090643860
+      ],
+      "memoryAddress": 39512256,
+      "name": "IconDir",
+      "textDigest": "5CE74A7F108ADE63"
+    },
+    {
+      "id": 1090643860,
+      "memberIds": [
+        889317273,
+        889317274,
+        889317275,
+        889317276,
+        889317277,
+        889317278,
+        889317279,
+        889317280
+      ],
+      "memberTypes": [
+        -2147483391,
+        -2147483391,
+        -2147483391,
+        -2147483391,
+        -2147483135,
+        -2147483135,
+        -2147482879,
+        -2147482879
+      ],
+      "memoryAddress": 39512192,
+      "name": "IconDirEntry",
+      "textDigest": "61E6218B2B24D128"
+    },
+    {
+      "id": 1090644400,
+      "memberIds": [
+        889317809,
+        889317811,
+        889317812,
+        889317813,
+        889317814
+      ],
+      "memberTypes": [
+        1090600529,
+        1090600529,
+        1090600529,
+        1090600529,
+        1090600529
+      ],
+      "memoryAddress": 39512128,
+      "name": "MINMAXINFO",
+      "textDigest": "5C3F0DB6FCD8BC49"
+    },
+    {
+      "id": 1090645084,
+      "memberIds": [
+        889318493,
+        889318494,
+        889318495,
+        889318496,
+        889318497
+      ],
+      "memberTypes": [
+        0,
+        0,
+        0,
+        -2147483391,
+        -2147483391
+      ],
+      "memoryAddress": 39512064,
+      "name": "SHFILEINFO",
+      "textDigest": "1E516FE4E4182499"
+    },
+    {
+      "id": 1090645158,
+      "memberIds": [
+        889318568,
+        889318569
+      ],
+      "memberTypes": [
+        -2147482367,
+        -2147482367
+      ],
+      "memoryAddress": 39512000,
+      "name": "PointF",
+      "textDigest": "AFBB0BFE5F35CDEE"
+    },
+    {
+      "id": 1090645159,
+      "memberIds": [
+        889318570,
+        889318571,
+        889318572,
+        889318573
+      ],
+      "memberTypes": [
+        -2147482367,
+        -2147482367,
+        -2147482367,
+        -2147482367
+      ],
+      "memoryAddress": 39511936,
+      "name": "RectF",
+      "textDigest": "89A180EB7815E868"
+    },
+    {
+      "id": 1090645166,
+      "memberIds": [
+        889318575,
+        889318576
+      ],
+      "memberTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "memoryAddress": 39511872,
+      "name": "Size",
+      "textDigest": "A91E349200A36976"
+    },
+    {
+      "id": 1090645180,
+      "memberIds": [
+        889318589,
+        889318590,
+        889318591,
+        889318592
+      ],
+      "memberTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "memoryAddress": 39511808,
+      "name": "GdiplusStartupInput",
+      "textDigest": "66D9DC272A7AABE8"
+    }
+  ]
+}

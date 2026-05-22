@@ -1,0 +1,170 @@
+﻿.版本 2
+
+.数据类型 RECT, , 矩形;
+    .成员 Left, 整数型
+    .成员 Top, 整数型
+    .成员 Right, 整数型
+    .成员 Bottom, 整数型
+
+.数据类型 PAINTSTRUCT
+    .成员 hdc, 整数型
+    .成员 fErase, 整数型
+    .成员 rcPaint, RECT
+    .成员 fRestore, 整数型
+    .成员 fIncUpdate, 整数型
+    .成员 rgbReserved, 字节型, , "32"
+
+.数据类型 POINT, , 坐标;
+    .成员 x, 整数型
+    .成员 y, 整数型
+
+.数据类型 TRACKMOUSEEVENT
+    .成员 cbSize, 整数型
+    .成员 dwFlags, 整数型
+    .成员 hwndTrack, 整数型
+    .成员 dwHoverTime, 整数型
+
+.数据类型 TOOLINFO
+    .成员 cbSize, 整数型
+    .成员 uFlags, 整数型
+    .成员 hwnd, 整数型
+    .成员 uId, 整数型
+    .成员 rect, RECT
+    .成员 hinst, 整数型
+    .成员 lpszText, 文本型
+    .成员 lParam, 整数型
+
+.数据类型 NMHDR
+    .成员 hwndFrom, 整数型
+    .成员 idFrom, 整数型
+    .成员 code, 整数型
+
+.数据类型 BITMAPINFO
+    .成员 BITMAPINFOHEADER, BITMAPINFOHEADER
+    .成员 bmiColors, , , , RGBQUAD          bmiColors[1];
+
+.数据类型 BITMAPINFOHEADER
+    .成员 biSize
+    .成员 biWidth
+    .成员 biHeight
+    .成员 biPlanes, 短整数型
+    .成员 biBitCount, 短整数型
+    .成员 biCompression
+    .成员 biSizeImage
+    .成员 biXPelsPerMeter
+    .成员 biYPelsPerMeter
+    .成员 biClrUsed
+    .成员 biClrImportant
+
+.数据类型 BITMAPFILEHEADER
+    .成员 bfType, 短整数型
+    .成员 bfSize
+    .成员 bfReserved1, 短整数型
+    .成员 bfReserved2, 短整数型
+    .成员 bfOffBits
+
+.数据类型 BLENDFUNCTION
+    .成员 BlendOp, 字节型
+    .成员 BlendFlags, 字节型
+    .成员 SourceConstantAlpha, 字节型
+    .成员 AlphaFormat, 字节型
+
+.数据类型 LOGBRUSH, , 刷子结构;
+    .成员 lbStyle, 整数型
+    .成员 lbColor, 整数型
+    .成员 lbHatch, 整数型
+
+.数据类型 NCCALCSIZE_PARAMS
+    .成员 rgrc, RECT, , "3"
+    .成员 lppos, WINDOWPOS
+
+.数据类型 WINDOWPOS
+    .成员 hwnd, 整数型, , , 欲定位的窗口
+    .成员 hWndInsertAfter, 整数型, , , 窗口句柄。在窗口列表中，窗口hwnd会置于这个窗口句柄的后面。也可能选用下述值之一：;HWND_BOTTOM：将窗口置于窗口列表底部;HWND_TOP：将窗口置于Z序列的顶部；Z序列代表在分级结构中，窗口针对一个给定级别的窗口显示的顺序;HWND_TOPMOST：将窗口置于列表顶部，并位于任何最顶部窗口的前面;HWND_NOTOPMOST：将窗口置于列表顶部，并位于任何最顶部窗口的后面
+    .成员 x, 整数型, , , 窗口新的x坐标。如hwnd是一个子窗口，则x用父窗口的客户区坐标表示
+    .成员 y, 整数型, , , 窗口新的y坐标。如hwnd是一个子窗口，则y用父窗口的客户区坐标表示
+    .成员 cx, 整数型, , , 指定新的窗口宽度
+    .成员 cy, 整数型
+    .成员 wFlags, 整数型, , , 包含了旗标的一个整数;SWP_DRAWFRAME：围绕窗口画一个框;SWP_HIDEWINDOW：隐藏窗口;SWP_NOACTIVATE：不激活窗口;SWP_NOMOVE：保持当前位置（x和y设定将被忽略）;SWP_NOREDRAW：窗口不自动重画;SWP_NOSIZE：保持当前大小（cx和cy会被忽略）;SWP_NOZORDER：保持窗口在列表的当前位置（hWndInsertAfter将被忽略）;SWP_SHOWWINDOW：显示窗口;SWP_FRAMECHANGED：强迫一条WM_NCCALCSIZE消息进入窗口，即使窗口的大小没有改变;
+
+.数据类型 ColorMatrix
+    .成员 cColorMatrix, 小数型, , "5,5"
+
+.数据类型 MSG
+    .成员 hwnd, 整数型
+    .成员 message, 整数型
+    .成员 wParam, 整数型
+    .成员 lParam, 整数型
+    .成员 time, 整数型
+    .成员 pt, POINT
+
+.数据类型 WNDCLASSEX, , 窗口类
+    .成员 cbSize, 整数型, , , 结构字节数
+    .成员 style, 整数型, , , 类风格
+    .成员 lpfnWndProc, 整数型, , , 窗口过程地址
+    .成员 cbClsExtra, 整数型, , , 窗口预留空间
+    .成员 cbWndExtra, 整数型, , , 结构预留空间
+    .成员 hInstance, 整数型, , , 窗口属于的模块句柄
+    .成员 hIcon, 整数型, , , 图标句柄
+    .成员 hCursor, 整数型, , , 光标句柄
+    .成员 hbrBackground, 整数型, , , 窗口背景色
+    .成员 lpszMenuName, 文本型, , , 默认菜单
+    .成员 lpszClassName, 文本型, , , 窗口类名称
+    .成员 hIconSm, 整数型, , , 小图标句柄
+
+.数据类型 ICONINFO, , 图标信息;
+    .成员 fIcon, 整数型
+    .成员 xHotspot, 整数型
+    .成员 yHotspot, 整数型
+    .成员 hbmMask, 整数型
+    .成员 hbmColor, 整数型
+
+.数据类型 IconDir
+    .成员 idReserved, 短整数型, , , 保留
+    .成员 idType, 短整数型, , , 图标类型：1、图标；2、光标
+    .成员 idCount, 短整数型, , , 图标数量
+    .成员 idEntries, IconDirEntry, , "1", idEntries 的内存分配总量=tagIconDir.idCount * SizeOf(tagIconDirEntry)
+
+.数据类型 IconDirEntry, , 16
+    .成员 bWidth, 字节型, , , 图标图片的显示宽度
+    .成员 bHeight, 字节型, , , 图标图片的显示高度
+    .成员 bColorCount, 字节型, , , 图标图片的颜色数
+    .成员 bReserved, 字节型, , , 保留域总是 0
+    .成员 wPlanes, 短整数型, , , 图标图片的位面数
+    .成员 wBitCount, 短整数型, , , 图标图片的颜色深度
+    .成员 dwBytesInRes, 整数型, , , 图标图片占用的数据量
+    .成员 dwImageOffset, 整数型, , , 图标图片的开始位置
+
+.数据类型 MINMAXINFO
+    .成员 ptReserved, POINT
+    .成员 ptMaxSize, POINT
+    .成员 ptMaxPosition, POINT
+    .成员 ptMinTrackSize, POINT
+    .成员 ptMaxTrackSize, POINT
+
+.数据类型 SHFILEINFO
+    .成员 hIcon
+    .成员 iIcon
+    .成员 dwAttributes
+    .成员 szDisplayName, 字节型, , "256"
+    .成员 szTypeName, 字节型, , "80"
+
+.数据类型 PointF
+    .成员 x, 小数型
+    .成员 y, 小数型
+
+.数据类型 RectF
+    .成员 X, 小数型
+    .成员 Y, 小数型
+    .成员 Width, 小数型
+    .成员 Height, 小数型
+
+.数据类型 Size
+    .成员 Width, 整数型
+    .成员 Height, 整数型
+
+.数据类型 GdiplusStartupInput
+    .成员 GdiplusVersion, 整数型
+    .成员 DebugEventCallback, 整数型
+    .成员 SuppressBackgroundThread, 整数型
+    .成员 SuppressExternalCodecs, 整数型

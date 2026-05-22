@@ -1,0 +1,232 @@
+﻿.版本 2
+
+.程序集 类_队列, <对象>, 公开, 【先进先出】
+
+.程序集变量 临界资源, 临界许可, , , 临界许可 用来做线程兼容的
+.程序集变量 Heap, 整数型, , , 堆句柄
+.程序集变量 Ptr, 整数型, , , 内存块句柄
+.程序集变量 Ptrlen, 整数型, , , 内存块当前长度
+.程序集变量 Tmplen, 整数型, , , 缓冲区大小
+.程序集变量 Pushi, 整数型, , , 压入位置
+.程序集变量 Popi, 整数型, , , 弹出位置
+.程序集变量 Count, 整数型, , , 队列数量
+
+.子程序 _初始化
+
+InitializeCriticalSection_临界许可 (临界资源)
+Tmplen = 1048576
+Heap = HeapCreate (1, Tmplen, 0)
+Ptr = HeapAlloc (Heap, 8, Tmplen)
+Ptrlen = Tmplen
+Pushi = 0
+Popi = 0
+Count = 0
+
+
+.子程序 _销毁
+
+HeapDestroy (Heap)
+Count = 0
+Ptr = 0
+Heap = 0
+DeleteCriticalSection_临界许可 (临界资源)
+
+
+.子程序 增量缓冲区, 逻辑型
+.参数 匿名参数_1, 整数型
+.局部变量 匿名局部变量_1, 整数型
+.局部变量 匿名局部变量_2, 整数型
+
+匿名局部变量_1 = Ptrlen - Popi
+Ptrlen = 匿名局部变量_1 + Tmplen + 匿名参数_1
+匿名局部变量_2 = HeapAlloc (Heap, 8, Ptrlen)
+.如果真 (匿名局部变量_2 == 0)
+    Ptrlen = 匿名局部变量_1 + Popi
+    返回 (假)
+.如果真结束
+RtlMoveMemory (匿名局部变量_2, Ptr + Popi, 匿名局部变量_1)
+匿名API_308 (Heap, 1, Ptr)
+Ptr = 匿名局部变量_2
+Pushi = Pushi - Popi
+Popi = 0
+返回 (真)
+
+
+.子程序 收缩缓冲区
+.局部变量 匿名局部变量_1, 整数型
+.局部变量 匿名局部变量_2, 整数型
+
+
+匿名局部变量_1 = Ptrlen - Popi
+匿名局部变量_2 = HeapAlloc (Heap, 8, 匿名局部变量_1)
+.如果真 (匿名局部变量_2 == 0)
+    返回 ()
+.如果真结束
+RtlMoveMemory (匿名局部变量_2, Ptr + Popi, 匿名局部变量_1)
+匿名API_308 (Heap, 1, Ptr)
+Ptr = 匿名局部变量_2
+Ptrlen = 匿名局部变量_1
+Pushi = Pushi - Popi
+Popi = 0
+返回 ()
+
+
+.子程序 置缓冲区大小, , 公开, 置缓冲区大小 缓冲区大小建议是压入数据长度的倍数。（缓冲区大小不影响队列的容量）
+.参数 缓冲区大小, 整数型, 可空, 单位：KB，缓冲区大小 默认1M
+.局部变量 匿名局部变量_1, 整数型
+
+EnterCriticalSection_临界许可 (临界资源)
+.如果 (缓冲区大小 == 0)
+    Tmplen = 1024 * 1024
+.否则
+    Tmplen = 缓冲区大小 * 1024
+.如果结束
+LeaveCriticalSection_临界许可 (临界资源)
+
+
+.子程序 压入字节集, 逻辑型, 公开, 压入字节集 。成功返回真，失败返回假。
+.参数 bin, 字节集, , 要压入的数据
+.局部变量 匿名局部变量_1, 整数型
+
+匿名局部变量_1 = 取字节集长度 (bin)
+.如果真 (匿名局部变量_1 < 1)
+    返回 (假)
+.如果真结束
+EnterCriticalSection_临界许可 (临界资源)
+.如果真 (Pushi + 4 + 匿名局部变量_1 > Ptrlen)
+    .如果真 (增量缓冲区 (匿名局部变量_1 + 4) == 假)
+        LeaveCriticalSection_临界许可 (临界资源)
+        返回 (假)
+    .如果真结束
+    
+.如果真结束
+RtlMoveMemory_Eint_int (Ptr + Pushi, 匿名局部变量_1, 4)
+Pushi = Pushi + 4
+RtlMoveMemory_Ebin_int (Ptr + Pushi, bin, 匿名局部变量_1)
+Pushi = Pushi + 匿名局部变量_1
+Count = Count + 1
+LeaveCriticalSection_临界许可 (临界资源)
+返回 (真)
+
+
+.子程序 弹出字节集, 逻辑型, 公开, 弹出字节集 。成功返回真，失败返回假。
+.参数 bin, 字节集, 参考, 用来接收弹出数据的变量
+.局部变量 匿名局部变量_1, 整数型
+
+EnterCriticalSection_临界许可 (临界资源)
+.如果真 (Count < 1)
+    LeaveCriticalSection_临界许可 (临界资源)
+    返回 (假)
+.如果真结束
+.如果真 (Popi > Tmplen)
+    收缩缓冲区 ()
+.如果真结束
+匿名局部变量_1 = 0
+RtlMoveMemory_整数传址1 (匿名局部变量_1, Ptr + Popi, 4)
+Popi = Popi + 4
+bin = 取空白字节集 (匿名局部变量_1)
+RtlMoveMemory_字节集传址1 (bin, Ptr + Popi, 匿名局部变量_1)
+Popi = Popi + 匿名局部变量_1
+Count = Count - 1
+LeaveCriticalSection_临界许可 (临界资源)
+返回 (真)
+
+
+.子程序 压入文本, 逻辑型, 公开, 压入文本 。成功返回真，失败返回假。
+.参数 str, 文本型, , 要压入的数据
+.局部变量 匿名局部变量_1, 整数型
+
+匿名局部变量_1 = 取文本长度 (str)
+.如果真 (匿名局部变量_1 < 1)
+    返回 (假)
+.如果真结束
+EnterCriticalSection_临界许可 (临界资源)
+.如果真 (Pushi + 4 + 匿名局部变量_1 > Ptrlen)
+    .如果真 (增量缓冲区 (匿名局部变量_1 + 4) == 假)
+        LeaveCriticalSection_临界许可 (临界资源)
+        返回 (假)
+    .如果真结束
+    
+.如果真结束
+RtlMoveMemory_Eint_int (Ptr + Pushi, 匿名局部变量_1, 4)
+Pushi = Pushi + 4
+RtlMoveMemory_Estr_int (Ptr + Pushi, str, 匿名局部变量_1)
+Pushi = Pushi + 匿名局部变量_1
+Count = Count + 1
+LeaveCriticalSection_临界许可 (临界资源)
+返回 (真)
+
+
+.子程序 弹出文本, 逻辑型, 公开, 弹出文本 。成功返回真，失败返回假。
+.参数 str, 文本型, 参考, 用来接收弹出数据的变量
+.局部变量 匿名局部变量_1, 整数型
+
+EnterCriticalSection_临界许可 (临界资源)
+.如果真 (Count < 1)
+    LeaveCriticalSection_临界许可 (临界资源)
+    返回 (假)
+.如果真结束
+.如果真 (Popi > Tmplen)
+    收缩缓冲区 ()
+.如果真结束
+匿名局部变量_1 = 0
+RtlMoveMemory_整数传址1 (匿名局部变量_1, Ptr + Popi, 4)
+Popi = Popi + 4
+str = 取空白文本 (匿名局部变量_1)
+RtlMoveMemory (取指针_文本型 (str), Ptr + Popi, 匿名局部变量_1)
+Popi = Popi + 匿名局部变量_1
+Count = Count - 1
+LeaveCriticalSection_临界许可 (临界资源)
+返回 (真)
+
+
+.子程序 压入整数, 逻辑型, 公开, 压入整数 。成功返回真，失败返回假。
+.参数 int, 整数型, , 要压入的数据
+
+EnterCriticalSection_临界许可 (临界资源)
+.如果真 (Pushi + 8 > Ptrlen)
+    .如果真 (增量缓冲区 (8) == 假)
+        LeaveCriticalSection_临界许可 (临界资源)
+        返回 (假)
+    .如果真结束
+    
+.如果真结束
+RtlMoveMemory_Eint_int (Ptr + Pushi, 4, 4)
+Pushi = Pushi + 4
+RtlMoveMemory_Eint_int (Ptr + Pushi, int, 4)
+Pushi = Pushi + 4
+Count = Count + 1
+LeaveCriticalSection_临界许可 (临界资源)
+返回 (真)
+
+
+.子程序 弹出整数, 逻辑型, 公开, 弹出整数 。成功返回真，失败返回假。
+.参数 int, 整数型, 参考, 用来接收弹出数据的变量
+
+EnterCriticalSection_临界许可 (临界资源)
+.如果真 (Count < 1)
+    LeaveCriticalSection_临界许可 (临界资源)
+    返回 (假)
+.如果真结束
+.如果真 (Popi > Tmplen)
+    收缩缓冲区 ()
+.如果真结束
+Popi = Popi + 4
+RtlMoveMemory_整数传址1 (int, Ptr + Popi, 4)
+Popi = Popi + 4
+Count = Count - 1
+LeaveCriticalSection_临界许可 (临界资源)
+返回 (真)
+
+
+.子程序 取数量, 整数型, 公开
+
+返回 (Count)
+
+
+.子程序 清空, , 公开
+
+memset (Ptr, 0, Tmplen)
+Ptrlen = Tmplen
+连续赋值 (0, Pushi, Popi, Count)
+

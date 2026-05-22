@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "CMake: build debug",
+      "type": "shell",
+      "command": "cmake --build --preset mingw-debug",
+      "problemMatcher": "$gcc",
+      "group": "build"
+    },
+    {
+      "label": "Run tests",
+      "type": "shell",
+      "command": "${workspaceFolder}/build/mingw-debug/SMTCLyricsTests.exe",
+      "dependsOn": "CMake: build debug",
+      "problemMatcher": []
+    }
+  ]
+}

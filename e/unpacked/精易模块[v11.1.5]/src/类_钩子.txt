@@ -1,0 +1,262 @@
+﻿.版本 2
+
+.程序集 类_钩子, <对象>, 公开
+
+.程序集变量 Keyboard, 匿名数据类型_167
+.程序集变量 Mouse, 匿名数据类型_167
+
+.子程序 _初始化
+
+
+
+
+.子程序 _销毁
+
+
+
+
+.子程序 LowLevelKeyboardProc, 整数型
+.参数 匿名参数_1, 整数型
+.参数 匿名参数_2, 整数型
+.参数 匿名参数_3, 整数型
+.局部变量 匿名局部变量_1, 匿名数据类型_165
+
+.如果真 (匿名参数_1 == #HC_ACTION && 匿名参数_3 != #NULL)
+    .如果真 (匿名参数_2 == #匿名常量_105 || 匿名参数_2 == #匿名常量_106 || 匿名参数_2 == #匿名常量_107)
+        匿名API_456 (匿名局部变量_1, 匿名参数_3, 20)
+        .如果真 (程序_执行整数子程序 (Keyboard.匿名成员_1, 匿名参数_2, 匿名局部变量_1.匿名成员_1, 0) == 1)
+            返回 (1)
+        .如果真结束
+        
+    .如果真结束
+    
+.如果真结束
+返回 (CallNextHookEx (Keyboard.匿名成员_2, 匿名参数_1, 匿名参数_2, 匿名参数_3))
+
+
+.子程序 KeyboardProc, 整数型
+.参数 匿名参数_1, 整数型
+.参数 匿名参数_2, 整数型
+.参数 匿名参数_3, 整数型
+.局部变量 匿名局部变量_1, 逻辑型
+
+.如果真 (匿名参数_1 == #HC_ACTION && 匿名参数_3 != #NULL)
+    取键盘消息lParam (匿名参数_3, , , , , , 匿名局部变量_1)
+    .如果真 (程序_执行整数子程序 (Keyboard.匿名成员_1, 选择 (匿名局部变量_1, #匿名常量_106, #匿名常量_105), 匿名参数_2, 0) == 1)
+        返回 (1)
+    .如果真结束
+    
+.如果真结束
+返回 (CallNextHookEx (Keyboard.匿名成员_2, 匿名参数_1, 匿名参数_2, 匿名参数_3))
+
+
+.子程序 LowLevelMouseProc, 整数型
+.参数 匿名参数_1, 整数型
+.参数 匿名参数_2, 整数型
+.参数 匿名参数_3, 整数型
+.局部变量 匿名局部变量_1, 匿名数据类型_168
+.局部变量 匿名局部变量_2, 整数型
+.局部变量 匿名局部变量_3, 整数型
+.局部变量 匿名局部变量_4, 整数型
+
+.如果真 (匿名参数_1 == #HC_ACTION && 匿名参数_3 != #NULL)
+    匿名API_457 (匿名局部变量_1, 匿名参数_3, 24)
+    .判断开始 (匿名参数_2 == #WM_LBUTTONDOWN)
+        匿名局部变量_2 = #KEYCODE_LBUTTON
+        匿名局部变量_3 = #KEYSTATUS_DOWN
+    .判断 (匿名参数_2 == #WM_LBUTTONUP)
+        匿名局部变量_2 = #KEYCODE_LBUTTON
+        匿名局部变量_3 = #KEYSTATUS_UP
+    .判断 (匿名参数_2 == #WM_LBUTTONDBLCLK)
+        匿名局部变量_2 = #KEYCODE_LBUTTON
+        匿名局部变量_3 = #KEYSTATUS_DBLCLK
+    .判断 (匿名参数_2 == #WM_RBUTTONDOWN)
+        匿名局部变量_2 = #KEYCODE_RBUTTON
+        匿名局部变量_3 = #KEYSTATUS_DOWN
+    .判断 (匿名参数_2 == #WM_RBUTTONUP)
+        匿名局部变量_2 = #KEYCODE_RBUTTON
+        匿名局部变量_3 = #KEYSTATUS_UP
+    .判断 (匿名参数_2 == #WM_RBUTTONDBLCLK)
+        匿名局部变量_2 = #KEYCODE_RBUTTON
+        匿名局部变量_3 = #KEYSTATUS_DBLCLK
+    .判断 (匿名参数_2 == #WM_MBUTTONDOWN)
+        匿名局部变量_2 = #KEYCODE_MBUTTON
+        匿名局部变量_3 = #KEYSTATUS_DOWN
+    .判断 (匿名参数_2 == #WM_MBUTTONUP)
+        匿名局部变量_2 = #KEYCODE_MBUTTON
+        匿名局部变量_3 = #KEYSTATUS_UP
+    .判断 (匿名参数_2 == #WM_MBUTTONDBLCLK)
+        匿名局部变量_2 = #KEYCODE_MBUTTON
+        匿名局部变量_3 = #KEYSTATUS_DBLCLK
+    .判断 (匿名参数_2 == #WM_MOUSEWHEEL)
+        匿名局部变量_4 = HIWORD (匿名局部变量_1.匿名成员_2)
+        .如果 (匿名局部变量_4 == #匿名常量_388)
+            匿名局部变量_2 = #KEYCODE_WHEEL
+            匿名局部变量_3 = #KEYSTATUS_WHEELUP
+        .否则
+            匿名局部变量_2 = #KEYCODE_WHEEL
+            匿名局部变量_3 = #KEYSTATUS_WHEELDOWN
+        .如果结束
+        
+    .判断 (匿名参数_2 == #匿名常量_127)
+        匿名局部变量_4 = HIWORD (匿名局部变量_1.匿名成员_2)
+        .判断开始 (匿名局部变量_4 == #匿名常量_387)
+            匿名局部变量_2 = #KEYCODE_SIDEKEYUP
+            匿名局部变量_3 = #KEYSTATUS_DOWN
+        .判断 (匿名局部变量_4 == #匿名常量_386)
+            匿名局部变量_2 = #KEYCODE_SIDEKEYDOWN
+            匿名局部变量_3 = #KEYSTATUS_DOWN
+        .默认
+            
+        .判断结束
+        
+    .判断 (匿名参数_2 == #匿名常量_128)
+        匿名局部变量_4 = HIWORD (匿名局部变量_1.匿名成员_2)
+        .判断开始 (匿名局部变量_4 == #匿名常量_387)
+            匿名局部变量_2 = #KEYCODE_SIDEKEYUP
+            匿名局部变量_3 = #KEYSTATUS_UP
+        .判断 (匿名局部变量_4 == #匿名常量_386)
+            匿名局部变量_2 = #KEYCODE_SIDEKEYDOWN
+            匿名局部变量_3 = #KEYSTATUS_UP
+        .默认
+            
+        .判断结束
+        
+    .默认
+        
+    .判断结束
+    
+    .如果真 (程序_执行整数子程序 (Mouse.匿名成员_1, 匿名局部变量_2, 匿名局部变量_3, 0) == 1)
+        返回 (1)
+    .如果真结束
+    
+.如果真结束
+返回 (CallNextHookEx (Mouse.匿名成员_2, 匿名参数_1, 匿名参数_2, 匿名参数_3))
+
+
+.子程序 MouseProc, 整数型
+.参数 匿名参数_1, 整数型
+.参数 匿名参数_2, 整数型
+.参数 匿名参数_3, 整数型
+.局部变量 匿名局部变量_1, MOUSEHOOKSTRUCT
+.局部变量 匿名局部变量_2, 整数型
+.局部变量 匿名局部变量_3, 整数型
+.局部变量 匿名局部变量_4, 整数型
+
+.如果真 (匿名参数_1 >= #HC_ACTION && 匿名参数_3 != #NULL)
+    匿名API_351 (匿名局部变量_1, 匿名参数_3, 20)
+    .判断开始 (匿名参数_2 == #WM_LBUTTONDOWN)
+        匿名局部变量_2 = #KEYCODE_LBUTTON
+        匿名局部变量_3 = #KEYSTATUS_DOWN
+    .判断 (匿名参数_2 == #WM_LBUTTONUP)
+        匿名局部变量_2 = #KEYCODE_LBUTTON
+        匿名局部变量_3 = #KEYSTATUS_UP
+    .判断 (匿名参数_2 == #WM_LBUTTONDBLCLK)
+        匿名局部变量_2 = #KEYCODE_LBUTTON
+        匿名局部变量_3 = #KEYSTATUS_DBLCLK
+    .判断 (匿名参数_2 == #WM_RBUTTONDOWN)
+        匿名局部变量_2 = #KEYCODE_RBUTTON
+        匿名局部变量_3 = #KEYSTATUS_DOWN
+    .判断 (匿名参数_2 == #WM_RBUTTONUP)
+        匿名局部变量_2 = #KEYCODE_RBUTTON
+        匿名局部变量_3 = #KEYSTATUS_UP
+    .判断 (匿名参数_2 == #WM_RBUTTONDBLCLK)
+        匿名局部变量_2 = #KEYCODE_RBUTTON
+        匿名局部变量_3 = #KEYSTATUS_DBLCLK
+    .判断 (匿名参数_2 == #WM_MBUTTONDOWN)
+        匿名局部变量_2 = #KEYCODE_MBUTTON
+        匿名局部变量_3 = #KEYSTATUS_DOWN
+    .判断 (匿名参数_2 == #WM_MBUTTONUP)
+        匿名局部变量_2 = #KEYCODE_MBUTTON
+        匿名局部变量_3 = #KEYSTATUS_UP
+    .判断 (匿名参数_2 == #WM_MBUTTONDBLCLK)
+        匿名局部变量_2 = #KEYCODE_MBUTTON
+        匿名局部变量_3 = #KEYSTATUS_DBLCLK
+    .默认
+        
+    .判断结束
+    
+    .如果真 (程序_执行整数子程序 (Mouse.匿名成员_1, 匿名局部变量_2, 匿名局部变量_3, 0) == 1)
+        返回 (1)
+    .如果真结束
+    
+.如果真结束
+返回 (CallNextHookEx (Mouse.匿名成员_2, 匿名参数_1, 匿名参数_2, 匿名参数_3))
+
+
+.子程序 安装钩子_键盘, 整数型, 公开, 成功安装返回钩子句柄，失败返回0
+.参数 窗口句柄, 整数型
+.参数 钩子回调函数, 子程序指针, 可空, 参数一[按键类型],256=按下，257=放开,258=单击,参数二[键代码]
+.参数 是否全局, 逻辑型, 可空, 可空，默认为全局。注意，为假 局部时 无单击消息
+.局部变量 匿名局部变量_1, 子程序指针
+
+.如果真 (是否为空 (是否全局))
+    是否全局 = 真
+.如果真结束
+
+.如果 (是否全局)
+    Keyboard.匿名成员_3 = 类_取内部方法地址 (3)
+    匿名局部变量_1 = lstrcpynA_指针 (Keyboard.匿名成员_3, Keyboard.匿名成员_3, 0)
+    Keyboard.匿名成员_2 = SetWindowsHookExA (#WH_KEYBOARD_LL, 匿名局部变量_1, GetModuleHandleA1 (#NULL), 0)
+.否则
+    Keyboard.匿名成员_3 = 类_取内部方法地址 (4)
+    匿名局部变量_1 = lstrcpynA_指针 (Keyboard.匿名成员_3, Keyboard.匿名成员_3, 0)
+    Keyboard.匿名成员_2 = SetWindowsHookExA (#WH_KEYBOARD, 匿名局部变量_1, GetModuleHandleA1 (#NULL), GetWindowThreadProcessId (窗口句柄, 0))
+.如果结束
+Keyboard.匿名成员_1 = 钩子回调函数
+返回 (Keyboard.匿名成员_2)
+
+
+.子程序 卸载, 逻辑型, 公开, 可以卸载所有使用“钩子_安装xx”命令安装的钩子
+.参数 钩子句柄, 整数型, 可空, 通过“钩子_安装xx”返回的钩子句柄
+.局部变量 匿名局部变量_1, 逻辑型
+
+.如果真 (钩子句柄 != 0)
+    返回 (UnhookWindowsHookEx (钩子句柄))
+.如果真结束
+
+.如果真 (Keyboard.匿名成员_2 != 0)
+    匿名局部变量_1 = UnhookWindowsHookEx (Keyboard.匿名成员_2)
+    Keyboard.匿名成员_2 = 0
+.如果真结束
+
+.如果真 (Keyboard.匿名成员_3 != 0)
+    类_释放内部方法地址 (Keyboard.匿名成员_3)
+    Keyboard.匿名成员_3 = 0
+.如果真结束
+
+.如果真 (Mouse.匿名成员_2 != 0)
+    匿名局部变量_1 = UnhookWindowsHookEx (Mouse.匿名成员_2)
+    Mouse.匿名成员_2 = 0
+.如果真结束
+
+.如果真 (Mouse.匿名成员_3 != 0)
+    类_释放内部方法地址 (Mouse.匿名成员_3)
+    Mouse.匿名成员_3 = 0
+.如果真结束
+
+返回 (匿名局部变量_1)
+
+
+.子程序 安装钩子_鼠标, 整数型, 公开, 成功安装返回钩子句柄，失败返回0
+.参数 窗口句柄, 整数型
+.参数 钩子回调函数, 子程序指针, 可空, 参数一[键代码],1=左键 2=右键 3=中键 4=滚轮 5=侧键上 6=侧键下,参数二[按键类型] 1=按下 2=弹起 3=双击 4=滚轮往上 5=滚轮往下
+.参数 是否全局, 逻辑型, 可空, 可空，默认为全局。为 假 局部时无滚轮上下消息及侧键消息
+.局部变量 匿名局部变量_1, 子程序指针
+
+.如果真 (是否为空 (是否全局))
+    是否全局 = 真
+.如果真结束
+
+.如果 (是否全局)
+    Mouse.匿名成员_3 = 类_取内部方法地址 (5)
+    匿名局部变量_1 = lstrcpynA_指针 (Mouse.匿名成员_3, Mouse.匿名成员_3, 0)
+    Mouse.匿名成员_2 = SetWindowsHookExA (#WH_MOUSE_LL, 匿名局部变量_1, GetModuleHandleA1 (#NULL), 0)
+.否则
+    Mouse.匿名成员_3 = 类_取内部方法地址 (6)
+    匿名局部变量_1 = lstrcpynA_指针 (Mouse.匿名成员_3, Mouse.匿名成员_3, 0)
+    Mouse.匿名成员_2 = SetWindowsHookExA (#WH_MOUSE, 匿名局部变量_1, GetModuleHandleA1 (#NULL), GetWindowThreadProcessId (窗口句柄, 0))
+.如果结束
+Mouse.匿名成员_1 = 钩子回调函数
+返回 (Mouse.匿名成员_2)
+

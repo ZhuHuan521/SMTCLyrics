@@ -1,0 +1,86 @@
+﻿.版本 2
+
+.程序集 文件拖放, <对象>, 公开, 文件拖放
+
+.程序集变量 hWndControl, 整数型
+.程序集变量 WndProc, 整数型
+.程序集变量 oldWndProc, 整数型
+.程序集变量 lpPrevWndFunc, 整数型
+.程序集变量 iswchar, 逻辑型
+
+.子程序 _初始化
+
+
+
+
+.子程序 _销毁
+
+拖放对象_撤销 ()
+
+
+.子程序 拖放对象_注册, , 公开, 将类命令声明到程序集，局部变量会失败
+.参数 窗口句柄, 整数型
+.参数 挂接拖放事件, 子程序指针, , 创建一个取回文件名子程序.需要带参数;   参数1:文本型
+.参数 使用Unicode字符集, 逻辑型, 可空, 为真时挂接拖放事件接收宽字符
+
+hWndControl = 窗口句柄
+lpPrevWndFunc = 到整数 (挂接拖放事件)
+iswchar = 使用Unicode字符集
+.如果真 (_WIN32_WINNT >= #_WIN32_WINNT_VISTA)
+    ChangeWindowMessageFilter (#匿名常量_102, #MSGFLT_ADD)
+    ChangeWindowMessageFilter (#匿名常量_104, #MSGFLT_ADD)
+    ChangeWindowMessageFilter (#匿名常量_103, #MSGFLT_ADD)
+.如果真结束
+DragAcceptFiles (hWndControl, 1)
+WndProc = 类_取内部方法地址 (5)
+oldWndProc = SetWindowLongW (hWndControl, #GWL_WNDPROC, WndProc)
+
+
+.子程序 拖放对象_撤销, , 公开
+
+DragAcceptFiles (hWndControl, 0)
+.如果真 (oldWndProc != #NULL)
+    SetWindowLongW (hWndControl, #GWL_WNDPROC, oldWndProc)
+    oldWndProc = #NULL
+.如果真结束
+.如果真 (WndProc != #NULL)
+    类_释放内部方法地址 (WndProc)
+    WndProc = #NULL
+.如果真结束
+lpPrevWndFunc = #NULL
+iswchar = 假
+
+
+.子程序 拖放对象回调, 整数型
+.参数 匿名参数_1, 整数型
+.参数 匿名参数_2, 整数型
+.参数 匿名参数_3, 整数型
+.参数 匿名参数_4, 整数型
+.局部变量 匿名局部变量_1, 整数型
+.局部变量 匿名局部变量_2, 文本型
+.局部变量 匿名局部变量_3, 整数型
+.局部变量 匿名局部变量_4, 整数型
+
+.如果真 (匿名参数_2 == #匿名常量_102)
+    匿名局部变量_3 = 匿名API_163 (匿名参数_3, -1, #NULL, 0)
+    .如果真 (匿名局部变量_3 > 0)
+        匿名局部变量_1 = LocalAlloc (#LMEM_ZEROINIT, 1025 * 2)
+        .如果真 (匿名局部变量_1 != #NULL)
+            .变量循环首 (0, 匿名局部变量_3 - 1, 1, 匿名局部变量_4)
+                memset (匿名局部变量_1, 0, 1025 * 2)
+                .如果 (iswchar)
+                    匿名API_163 (匿名参数_3, 匿名局部变量_4, 匿名局部变量_1, 1024)
+                .否则
+                    DragQueryFileA (匿名参数_3, 匿名局部变量_4, 匿名局部变量_1, 1024)
+                .如果结束
+                调用子程序_ (lpPrevWndFunc, 匿名局部变量_1, , , , , , , , , , , , , , )
+            .变量循环尾 ()
+            LocalFree (匿名局部变量_1)
+        .如果真结束
+        
+    .如果真结束
+    DragFinish (匿名参数_3)
+    返回 (0)
+.如果真结束
+返回 (匿名API_83 (oldWndProc, 匿名参数_1, 匿名参数_2, 匿名参数_3, 匿名参数_4))
+

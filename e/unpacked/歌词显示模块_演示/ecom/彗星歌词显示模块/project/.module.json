@@ -1,0 +1,27 @@
+﻿{
+  "dependencies": [
+    {
+      "fileName": "krnln",
+      "guid": "d09f2340818511d396f6aaf844c7e325",
+      "kind": "elib",
+      "name": "系统核心支持库",
+      "path": "",
+      "reExport": false,
+      "resolvedPath": "D:\\eyuyan\\eyy\\lib\\krnln",
+      "versionText": "5.7"
+    },
+    {
+      "fileName": "ogrelib",
+      "guid": "2EAE87405D754ad780D8FE57432002EA",
+      "kind": "elib",
+      "name": "DirectX3D支持库",
+      "path": "",
+      "reExport": false,
+      "resolvedPath": "D:\\eyuyan\\eyy\\lib\\ogrelib",
+      "versionText": "2.0"
+    }
+  ],
+  "projectName": "彗星歌词显示模块",
+  "sourcePath": "D:\\编程\\SMTC歌词\\彗星歌词显示模块2.ec",
+  "versionText": "1.0"
+}

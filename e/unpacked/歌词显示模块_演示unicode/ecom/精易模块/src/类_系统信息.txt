@@ -1,0 +1,397 @@
+﻿.版本 2
+
+.程序集 类_系统信息, <对象>, 公开, http://msdn.microsoft.com/en-us/library/aa394239(v=vs.85).aspx
+
+.子程序 _初始化
+
+
+
+
+.子程序 _销毁
+
+
+
+
+.子程序 取建立号码, 整数型, 公开
+
+返回 (查询类属性 (“Select BuildNumber From Win32_OperatingSystem”, “BuildNumber”).取数值 ())
+
+
+.子程序 取引导设备, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select BootDevice From Win32_OperatingSystem”, “BootDevice”).取文本 ()))
+
+
+.子程序 取内部版本类型, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select BuildType From Win32_OperatingSystem”, “BuildType”).取文本 ()))
+
+
+.子程序 取标题, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select Caption From Win32_OperatingSystem”, “Caption”).取文本 ()))
+
+
+.子程序 取代码集, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select CodeSet From Win32_OperatingSystem”, “CodeSet”).取文本 ()))
+
+
+.子程序 取国家代码, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select CountryCode From Win32_OperatingSystem”, “CountryCode”).取文本 ()))
+
+
+.子程序 取最后服务包, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select CSDVersion From Win32_OperatingSystem”, “CSDVersion”).取文本 ()))
+
+
+.子程序 取域名称, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select CSName From Win32_OperatingSystem”, “CSName”).取文本 ()))
+
+
+.子程序 取当前时区, 整数型, 公开
+
+返回 (查询类属性 (“Select CurrentTimeZone From Win32_OperatingSystem”, “CurrentTimeZone”).取数值 ())
+
+
+.子程序 数据执行保护_是否有效, 逻辑型, 公开, 不支持2003系统。
+
+返回 (查询类属性 (“Select DataExecutionPrevention_Available From Win32_OperatingSystem”, “DataExecutionPrevention_Available”).取逻辑值 ())
+
+
+.子程序 数据执行保护_支持32位程序, 逻辑型, 公开, 不支持2003系统。
+
+返回 (查询类属性 (“Select DataExecutionPrevention_32BitApplications From Win32_OperatingSystem”, “DataExecutionPrevention_32BitApplications”).取逻辑值 ())
+
+
+.子程序 数据执行保护_设备正常, 逻辑型, 公开, 不支持2003系统。
+
+返回 (查询类属性 (“Select DataExecutionPrevention_Drivers From Win32_OperatingSystem”, “DataExecutionPrevention_Drivers”).取逻辑值 ())
+
+
+.子程序 数据执行保护_支持方式, 整数型, 公开, 不支持2003系统。
+
+返回 (查询类属性 (“Select DataExecutionPrevention_SupportPolicy From Win32_OperatingSystem”, “DataExecutionPrevention_SupportPolicy”).取数值 ())
+
+
+.子程序 是否支持调试, 逻辑型, 公开
+
+返回 (查询类属性 (“Select Debug From Win32_OperatingSystem”, “Debug”).取逻辑值 ())
+
+
+.子程序 取描述, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select Description From Win32_OperatingSystem”, “Description”).取文本 ()))
+
+
+.子程序 是否分布式系统, 逻辑型, 公开
+
+返回 (查询类属性 (“Select Distributed From Win32_OperatingSystem”, “Distributed”).取逻辑值 ())
+
+
+.子程序 取加密位数, 整数型, 公开
+
+返回 (查询类属性 (“Select EncryptionLevel From Win32_OperatingSystem”, “EncryptionLevel”).取数值 ())
+
+
+.子程序 前台程序加速, 整数型, 公开, 0表示无，1最小，2最大(默认)
+
+返回 (查询类属性 (“Select ForegroundApplicationBoost From Win32_OperatingSystem”, “ForegroundApplicationBoost”).取数值 ())
+
+
+.子程序 取剩余物理内存, 长整数型, 公开
+
+返回 (查询类属性 (“Select FreePhysicalMemory From Win32_OperatingSystem”, “FreePhysicalMemory”).取数值 ())
+
+
+.子程序 取可用页面文件, 长整数型, 公开
+
+返回 (查询类属性 (“Select FreeSpaceInPagingFiles From Win32_OperatingSystem”, “FreeSpaceInPagingFiles”).取数值 ())
+
+
+.子程序 取操作系统名称, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select Caption From Win32_OperatingSystem”, “Caption”).取文本 ()))
+
+
+.子程序 取可用虚拟内存, 长整数型, 公开
+
+返回 (查询类属性 (“Select FreeVirtualMemory From Win32_OperatingSystem”, “FreeVirtualMemory”).取数值 ())
+
+
+.子程序 取安装日期, 日期时间型, 公开
+
+返回 (时间_WMI时间转日期 (删首尾空 (查询类属性 (“Select InstallDate From Win32_OperatingSystem”, “InstallDate”).取文本 ())))
+
+
+.子程序 取最后关机时间, 日期时间型, 公开
+
+返回 (时间_WMI时间转日期 (删首尾空 (查询类属性 (“Select LastBootUpTime From Win32_OperatingSystem”, “LastBootUpTime”).取文本 ())))
+
+
+.子程序 取现行时间, 日期时间型, 公开
+
+返回 (时间_WMI时间转日期 (删首尾空 (查询类属性 (“Select LocalDateTime From Win32_OperatingSystem”, “LocalDateTime”).取文本 ())))
+
+
+.子程序 取语言环境, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select Locale From Win32_OperatingSystem”, “Locale”).取文本 ()))
+
+
+.子程序 取制造商, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select Manufacturer From Win32_OperatingSystem”, “Manufacturer”).取文本 ()))
+
+
+.子程序 取最大进程数, 整数型, 公开
+
+返回 (查询类属性 (“Select MaxNumberOfProcesses From Win32_OperatingSystem”, “MaxNumberOfProcesses”).取数值 ())
+
+
+.子程序 取最大进程内存, 长整数型, 公开
+
+返回 (查询类属性 (“Select MaxProcessMemorySize From Win32_OperatingSystem”, “MaxProcessMemorySize”).取数值 ())
+
+
+.子程序 取多国语言包, 整数型, 公开
+.参数 返回语言包, 文本型, 数组, 变量储存返回值。
+.局部变量 匿名局部变量_1, 整数型
+.局部变量 匿名局部变量_2, 变体型
+.局部变量 匿名局部变量_3, 整数型
+
+匿名局部变量_2 = 查询类属性 (“Select MUILanguages From Win32_OperatingSystem”, “MUILanguages”)
+匿名局部变量_1 = 匿名局部变量_2.取数组成员数 ()
+.变量循环首 (1, 匿名局部变量_1, 1, 匿名局部变量_3)
+    加入成员 (返回语言包, 匿名局部变量_2.取变体型 (匿名局部变量_3).取文本 ())
+.变量循环尾 ()
+返回 (匿名局部变量_1)
+
+
+.子程序 取授权用户数, 整数型
+
+返回 (查询类属性 (“Select NumberOfLicensedUsers From Win32_OperatingSystem”, “NumberOfLicensedUsers”).取数值 ())
+
+
+.子程序 取进程数, 整数型, 公开
+
+返回 (查询类属性 (“Select NumberOfProcesses From Win32_OperatingSystem”, “NumberOfProcesses”).取数值 ())
+
+
+.子程序 取用户会话数, 整数型, 公开
+
+返回 (查询类属性 (“Select NumberOfUsers From Win32_OperatingSystem”, “NumberOfUsers”).取数值 ())
+
+
+.子程序 取系统SKU, 整数型, 公开, 不支持，Windows Server 2003:返回值；0=未定；1=终极版；2=家庭基础版；3=家庭高级版；4=企业版；5=家庭基本版N版;6=商业版;7=标准服务器版;8=数据中心服务器版;9=小型企业服务器版;10=企业服务器版;11=入门版;12=数据中心服务器核心版;13=标准的服务器核心版;14=企业服务器核心版;15=企业服务器版itanium系统;16=企业版N版;17=Web服务器版;18=集群服务器版;19=家庭服务器版;20=存储Express服务器版;21=存储标准服务器版;22=存储工作组服务器版;23=存储企业服务器版;24=服务器为小型企业版;25=Small Business Server Premium Edition;29=Web Server, Server Core;39=Datacenter Edition without Hyper-V, Server Core;40=Standard Edition without Hyper-V, Server Core;41=Enterprise Edition without Hyper-V, Server Core;42=Hyper-V服务器。
+
+返回 (查询类属性 (“Select OperatingSystemSKU From Win32_OperatingSystem”, “OperatingSystemSKU”).取数值 ())
+
+
+.子程序 取国家, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select Organization From Win32_OperatingSystem”, “Organization”).取文本 ()))
+
+
+.子程序 取系统位数, 文本型, 公开, 不支持，Windows Server 2003:
+
+返回 (删首尾空 (查询类属性 (“Select OSArchitecture From Win32_OperatingSystem”, “OSArchitecture”).取文本 ()))
+
+
+.子程序 取系统语言, 整数型, 公开, 如2052表示，中文(简体)-中华人民共和国
+
+返回 (查询类属性 (“Select OSLanguage From Win32_OperatingSystem”, “OSLanguage”).取数值 ())
+
+
+.子程序 取系统套件, 整数型, 公开
+
+返回 (查询类属性 (“Select OSProductSuite From Win32_OperatingSystem”, “OSProductSuite”).取数值 ())
+
+
+.子程序 取系统类型, 整数型, 公开, 0=未知；1=其它；2=宏命令；3=ATTUNIX；4=DGUX；5=DECNT；
+
+返回 (查询类属性 (“Select OSType From Win32_OperatingSystem”, “OSType”).取数值 ())
+
+
+.子程序 是否为NT系统, 逻辑型, 公开
+.局部变量 匿名局部变量_1, 整数型
+
+匿名局部变量_1 = 查询类属性 (“Select OSType From Win32_OperatingSystem”, “OSType”).取数值 ()
+返回 (匿名局部变量_1 == 18)
+
+
+.子程序 取其它类型描述, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select OtherTypeDescription From Win32_OperatingSystem”, “OtherTypeDescription”).取文本 ()))
+
+
+.子程序 PAE是否启用, 逻辑型, 公开
+
+返回 (查询类属性 (“Select PAEEnabled From Win32_OperatingSystem”, “PAEEnabled”).取逻辑值 ())
+
+
+.子程序 取附加产品ID, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select PlusProductID From Win32_OperatingSystem”, “PlusProductID”).取文本 ()))
+
+
+.子程序 取附加版本号, 整数型, 公开
+
+返回 (查询类属性 (“Select PlusVersionNumber From Win32_OperatingSystem”, “PlusVersionNumber”).取数值 ())
+
+
+.子程序 是否便携式系统, 逻辑型, 公开
+
+返回 (查询类属性 (“Select PortableOperatingSystem From Win32_OperatingSystem”, “PortableOperatingSystem”).取逻辑值 ())
+
+
+.子程序 是否主系统, 逻辑型, 公开
+
+返回 (查询类属性 (“Select Primary From Win32_OperatingSystem”, “Primary”).取逻辑值 ())
+
+
+.子程序 是否为服务器, 逻辑型, 公开
+.局部变量 匿名局部变量_1, 整数型
+
+匿名局部变量_1 = 查询类属性 (“Select Producttype From Win32_OperatingSystem”, “Producttype”).取数值 ()
+返回 (匿名局部变量_1 == 3)
+
+
+.子程序 取注册用户名, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select RegisteredUser From Win32_OperatingSystem”, “RegisteredUser”).取文本 ()))
+
+
+.子程序 取序列号, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select SerialNumber From Win32_OperatingSystem”, “SerialNumber”).取文本 ()))
+
+
+.子程序 取服务包主版本号, 整数型, 公开
+
+返回 (查询类属性 (“Select ServicePackMajorVersion From Win32_OperatingSystem”, “ServicePackMajorVersion”).取数值 ())
+
+
+.子程序 取服务包次版本号, 整数型, 公开
+
+返回 (查询类属性 (“Select ServicePackMinorVersion From Win32_OperatingSystem”, “ServicePackMinorVersion”).取数值 ())
+
+
+.子程序 取存储的分页大小, 长整数型, 公开
+
+返回 (查询类属性 (“Select SizeStoredInPagingFiles From Win32_OperatingSystem”, “SizeStoredInPagingFiles”).取数值 ())
+
+
+.子程序 取状态, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select Status From Win32_OperatingSystem”, “Status”).取文本 ()))
+
+
+.子程序 取嵌套掩码, 整数型, 公开
+
+返回 (查询类属性 (“Select SuiteMask From Win32_OperatingSystem”, “SuiteMask”).取数值 ())
+
+
+.子程序 取系统设备, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select SystemDevice From Win32_OperatingSystem”, “SystemDevice”).取文本 ()))
+
+
+.子程序 取系统目录, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select SystemDirectory From Win32_OperatingSystem”, “SystemDirectory”).取文本 ()))
+
+
+.子程序 取系统盘, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select SystemDrive From Win32_OperatingSystem”, “SystemDrive”).取文本 ()))
+
+
+.子程序 取总交换空间, 长整数型, 公开
+
+返回 (查询类属性 (“Select TotalSwapSpaceSize From Win32_OperatingSystem”, “TotalSwapSpaceSize”).取数值 ())
+
+
+.子程序 取总虚拟内存, 长整数型, 公开
+
+返回 (查询类属性 (“Select TotalVirtualMemorySize From Win32_OperatingSystem”, “TotalVirtualMemorySize”).取数值 ())
+
+
+.子程序 取总物理内存, 长整数型, 公开
+
+返回 (查询类属性 (“Select TotalVisibleMemorySize From Win32_OperatingSystem”, “TotalVisibleMemorySize”).取数值 ())
+
+
+.子程序 取版本, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select Version From Win32_OperatingSystem”, “Version”).取文本 ()))
+
+
+.子程序 取系统安装目录, 文本型, 公开
+
+返回 (删首尾空 (查询类属性 (“Select WindowsDirectory From Win32_OperatingSystem”, “WindowsDirectory”).取文本 ()))
+
+
+.子程序 是否为域控制器, 逻辑型, 公开
+.局部变量 匿名局部变量_1, 整数型
+
+匿名局部变量_1 = 查询类属性 (“Select Producttype From Win32_OperatingSystem”, “Producttype”).取数值 ()
+返回 (匿名局部变量_1 == 2)
+
+
+.子程序 是否为工作站, 逻辑型, 公开
+.局部变量 匿名局部变量_1, 整数型
+
+匿名局部变量_1 = 查询类属性 (“Select Producttype From Win32_OperatingSystem”, “Producttype”).取数值 ()
+返回 (匿名局部变量_1 == 1)
+
+
+.子程序 取当前用户, 文本型, 公开
+.局部变量 匿名局部变量_1, 整数型
+.局部变量 匿名局部变量_2, 文本型
+
+匿名局部变量_2 = 取空白文本 (256)
+.如果真 (GetUserNameA (匿名局部变量_2, 256) == 1)
+    返回 (匿名局部变量_2)
+.如果真结束
+返回 (“”)
+
+
+.子程序 取时区, 文本型, 公开
+.局部变量 匿名局部变量_1, 文本型
+.局部变量 匿名局部变量_2, 匿名数据类型_125
+.局部变量 匿名局部变量_3, 整数型
+
+匿名局部变量_3 = 匿名API_267 (匿名局部变量_2)
+匿名局部变量_1 = 编码_Unicode到Ansi (到字节集 (匿名局部变量_2.匿名成员_2))
+返回 (匿名局部变量_1)
+
+
+.子程序 取货币符号, 文本型, 公开
+.局部变量 匿名局部变量_1, 文本型
+
+匿名局部变量_1 = 取空白文本 (256)
+匿名API_268 (0, 20, 匿名局部变量_1, 256)
+返回 (匿名局部变量_1)
+
+
+.子程序 取日期格式, 文本型, 公开
+.局部变量 匿名局部变量_1, 文本型
+
+匿名局部变量_1 = 取空白文本 (256)
+匿名API_268 (0, 32, 匿名局部变量_1, 256)
+返回 (匿名局部变量_1)
+
+
+
+.子程序 取时间格式, 文本型, 公开
+.局部变量 匿名局部变量_1, 文本型
+
+匿名局部变量_1 = 取空白文本 (256)
+匿名API_268 (0, 4099, 匿名局部变量_1, 256)
+返回 (匿名局部变量_1)
+
+

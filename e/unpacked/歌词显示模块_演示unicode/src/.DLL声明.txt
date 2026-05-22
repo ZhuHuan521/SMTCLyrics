@@ -1,0 +1,51 @@
+﻿.版本 2
+
+.DLL命令 WideCharToMultiByte, 整数型, "kernel32.dll", "WideCharToMultiByte", , kernel32.dll将通配符映像为多字节
+    .参数 CodePage, 整数型
+    .参数 dwFlags, 整数型
+    .参数 lpWideCharStr, 字节集
+    .参数 cchWideChar, 整数型
+    .参数 lpMultiByteStr, 整数型
+    .参数 cchMultiByte, 整数型
+    .参数 lpDefaultChar, 整数型
+    .参数 lpUsedDefaultChar, 逻辑型
+
+.DLL命令 WideCharToMultiByte_Text, 整数型, "kernel32.dll", "WideCharToMultiByte", , kernel32.dll将通配符映像为多字节
+    .参数 CodePage, 整数型
+    .参数 dwFlags, 整数型
+    .参数 lpWideCharStr, 字节集
+    .参数 cchWideChar, 整数型
+    .参数 lpMultiByteStr, 字节集
+    .参数 cchMultiByte, 整数型
+    .参数 lpDefaultChar, 整数型
+    .参数 lpUsedDefaultChar, 逻辑型
+
+.DLL命令 MultiByteToWideChar, 整数型, "kernel32.dll", "MultiByteToWideChar"
+    .参数 CodePage, 整数型
+    .参数 dwFlags, 整数型
+    .参数 lpMultiByteStr, 字节集
+    .参数 cchMultiByte, 整数型
+    .参数 lpWideCharStr, 字节集
+    .参数 cchWideChar, 整数型
+
+.DLL命令 VirtualAlloc, 整数型, "kernel32.dll", "VirtualAlloc"
+    .参数 lpAddress, 整数型
+    .参数 dwSize, 整数型
+    .参数 flAllocationType, 整数型
+    .参数 flProtect, 整数型
+
+.DLL命令 RtlMoveMemory, , "kernel32.dll", "RtlMoveMemory", 公开, 复制内存
+    .参数 目标, 整数型, 传址, any
+    .参数 缓冲区, 整数型, , any
+    .参数 尺寸, 整数型
+
+.DLL命令 RtlMoveMemory_d, , "kernel32.dll", "RtlMoveMemory", 公开, 复制内存
+    .参数 目标, 字节集, 传址, any
+    .参数 缓冲区, 整数型, , any
+    .参数 尺寸, 整数型
+
+.DLL命令 uncompress, 短整数型, "zlib.dll", "uncompress", , '成功返回 0
+    .参数 dest, 字节集, 传址, '缓冲区
+    .参数 destLen, 整数型, 传址, '缓冲区长度, 如果函数成功这里会被设为解压后的数据长度.destLen表示 dest 缓冲区的大小 destLen > (sourceLen - 12)/100.1% destLen 表示压缩后缓冲区的实际大小
+    .参数 source, 字节集, 传址, '源数据
+    .参数 sourceLen, 整数型, , '源数据长度

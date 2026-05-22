@@ -1,0 +1,1843 @@
+﻿{
+  "constants": [
+    {
+      "id": 402721872,
+      "key": "",
+      "name": "JV类型_未定义",
+      "pageType": 1,
+      "textDigest": "2713D7FC02F5344A"
+    },
+    {
+      "id": 402721863,
+      "key": "",
+      "name": "JV类型_空",
+      "pageType": 1,
+      "textDigest": "4D20EF10C2B36D8E"
+    },
+    {
+      "id": 402721864,
+      "key": "",
+      "name": "JV类型_双精度型",
+      "pageType": 1,
+      "textDigest": "B538EA311B49F25D"
+    },
+    {
+      "id": 402739880,
+      "key": "",
+      "name": "JV类型_长整数型",
+      "pageType": 1,
+      "textDigest": "E678B9458A8D0044"
+    },
+    {
+      "id": 402721869,
+      "key": "",
+      "name": "JV类型_逻辑型",
+      "pageType": 1,
+      "textDigest": "89C719DF7B0C50B1"
+    },
+    {
+      "id": 402721870,
+      "key": "",
+      "name": "JV类型_文本型",
+      "pageType": 1,
+      "textDigest": "7CE8FB2B82AF4602"
+    },
+    {
+      "id": 402721871,
+      "key": "",
+      "name": "JV类型_数组",
+      "pageType": 1,
+      "textDigest": "A216B6C62DAB3C9F"
+    },
+    {
+      "id": 402721865,
+      "key": "",
+      "name": "JV类型_对象",
+      "pageType": 1,
+      "textDigest": "F14A13BA4D93A976"
+    },
+    {
+      "id": 402753224,
+      "key": "",
+      "name": "JV解析_USC2解码",
+      "pageType": 1,
+      "textDigest": "4B650F80FF6DAE9C"
+    },
+    {
+      "id": 402752100,
+      "key": "",
+      "name": "JV解析_忽略前后文本",
+      "pageType": 1,
+      "textDigest": "EF0A53ECB4613C78"
+    },
+    {
+      "id": 402753221,
+      "key": "",
+      "name": "匿名常量_1",
+      "pageType": 1,
+      "textDigest": "0505166A0B8FA94A"
+    },
+    {
+      "id": 402753222,
+      "key": "",
+      "name": "匿名常量_2",
+      "pageType": 1,
+      "textDigest": "4934641E3F71E06E"
+    },
+    {
+      "id": 402753223,
+      "key": "",
+      "name": "匿名常量_3",
+      "pageType": 1,
+      "textDigest": "8A84211A27F01616"
+    },
+    {
+      "id": 402750227,
+      "key": "",
+      "name": "匿名常量_4",
+      "pageType": 1,
+      "textDigest": "87240B157BA238E6"
+    },
+    {
+      "id": 402750243,
+      "key": "",
+      "name": "匿名常量_5",
+      "pageType": 1,
+      "textDigest": "BA83EDFA556063E3"
+    },
+    {
+      "id": 402750237,
+      "key": "",
+      "name": "匿名常量_6",
+      "pageType": 1,
+      "textDigest": "DA12A0236089EBE0"
+    },
+    {
+      "id": 402750239,
+      "key": "",
+      "name": "匿名常量_7",
+      "pageType": 1,
+      "textDigest": "E0F7C77ACDB09F91"
+    },
+    {
+      "id": 402750240,
+      "key": "",
+      "name": "匿名常量_8",
+      "pageType": 1,
+      "textDigest": "C01A4E9001BF21CA"
+    },
+    {
+      "id": 402750279,
+      "key": "",
+      "name": "匿名常量_9",
+      "pageType": 1,
+      "textDigest": "902A4BB0440262FB"
+    },
+    {
+      "id": 402746425,
+      "key": "",
+      "name": "匿名常量_10",
+      "pageType": 1,
+      "textDigest": "0DB54A3670B8BB5A"
+    },
+    {
+      "id": 402746426,
+      "key": "",
+      "name": "匿名常量_11",
+      "pageType": 1,
+      "textDigest": "423150282091DC97"
+    },
+    {
+      "id": 402746427,
+      "key": "",
+      "name": "匿名常量_12",
+      "pageType": 1,
+      "textDigest": "274C1939842D95F4"
+    },
+    {
+      "id": 402746463,
+      "key": "",
+      "name": "匿名常量_13",
+      "pageType": 1,
+      "textDigest": "BBA9C6200A4AE459"
+    },
+    {
+      "id": 402746464,
+      "key": "",
+      "name": "匿名常量_14",
+      "pageType": 1,
+      "textDigest": "56BAE3C219D6FF6A"
+    },
+    {
+      "id": 402746465,
+      "key": "",
+      "name": "匿名常量_15",
+      "pageType": 1,
+      "textDigest": "C4D05CC7B0D9487B"
+    },
+    {
+      "id": 402746466,
+      "key": "",
+      "name": "匿名常量_16",
+      "pageType": 1,
+      "textDigest": "F7BAD43E9FF380EE"
+    },
+    {
+      "id": 402746467,
+      "key": "",
+      "name": "匿名常量_17",
+      "pageType": 1,
+      "textDigest": "683D8CA4650D5351"
+    },
+    {
+      "id": 402746468,
+      "key": "",
+      "name": "匿名常量_18",
+      "pageType": 1,
+      "textDigest": "6713C69E0EDC0A77"
+    },
+    {
+      "id": 402754168,
+      "key": "",
+      "name": "匿名常量_19",
+      "pageType": 1,
+      "textDigest": "FC405006D3187A98"
+    },
+    {
+      "id": 402746474,
+      "key": "",
+      "name": "匿名常量_20",
+      "pageType": 1,
+      "textDigest": "A4654F47106204B8"
+    },
+    {
+      "id": 402746484,
+      "key": "",
+      "name": "匿名常量_21",
+      "pageType": 1,
+      "textDigest": "3B04CA1E389A93B6"
+    },
+    {
+      "id": 402746485,
+      "key": "",
+      "name": "匿名常量_22",
+      "pageType": 1,
+      "textDigest": "59E4164E59138609"
+    },
+    {
+      "id": 402746486,
+      "key": "",
+      "name": "匿名常量_23",
+      "pageType": 1,
+      "textDigest": "D34F4DAC31A59E50"
+    },
+    {
+      "id": 402746487,
+      "key": "",
+      "name": "匿名常量_24",
+      "pageType": 1,
+      "textDigest": "29C2576E27FC8E0F"
+    },
+    {
+      "id": 402746488,
+      "key": "",
+      "name": "匿名常量_25",
+      "pageType": 1,
+      "textDigest": "0136B6B8C21B884C"
+    },
+    {
+      "id": 402746489,
+      "key": "",
+      "name": "匿名常量_26",
+      "pageType": 1,
+      "textDigest": "13AACF4824CA3EFE"
+    },
+    {
+      "id": 402754170,
+      "key": "",
+      "name": "匿名常量_27",
+      "pageType": 1,
+      "textDigest": "4EFE1DD9447C1AA5"
+    },
+    {
+      "id": 402746492,
+      "key": "",
+      "name": "匿名常量_28",
+      "pageType": 1,
+      "textDigest": "6391747101BD7C7B"
+    },
+    {
+      "id": 402746493,
+      "key": "",
+      "name": "匿名常量_29",
+      "pageType": 1,
+      "textDigest": "418F4B279C75E5A2"
+    },
+    {
+      "id": 402754173,
+      "key": "",
+      "name": "匿名常量_30",
+      "pageType": 1,
+      "textDigest": "2919BED40C79AD20"
+    },
+    {
+      "id": 402746496,
+      "key": "",
+      "name": "匿名常量_31",
+      "pageType": 1,
+      "textDigest": "572681DF240AB83D"
+    },
+    {
+      "id": 402746497,
+      "key": "",
+      "name": "匿名常量_32",
+      "pageType": 1,
+      "textDigest": "D075C3C9C4809FCA"
+    },
+    {
+      "id": 402746499,
+      "key": "",
+      "name": "匿名常量_33",
+      "pageType": 1,
+      "textDigest": "0846EAA393EDE45B"
+    },
+    {
+      "id": 402746500,
+      "key": "",
+      "name": "匿名常量_34",
+      "pageType": 1,
+      "textDigest": "2DAED4DD19FB33D6"
+    },
+    {
+      "id": 402754175,
+      "key": "",
+      "name": "匿名常量_35",
+      "pageType": 1,
+      "textDigest": "CD23E6B4379372F9"
+    },
+    {
+      "id": 402746504,
+      "key": "",
+      "name": "匿名常量_36",
+      "pageType": 1,
+      "textDigest": "9006F84B595D2E2E"
+    },
+    {
+      "id": 402746505,
+      "key": "",
+      "name": "匿名常量_37",
+      "pageType": 1,
+      "textDigest": "8E1694175A465C27"
+    },
+    {
+      "id": 402746506,
+      "key": "",
+      "name": "匿名常量_38",
+      "pageType": 1,
+      "textDigest": "0A4998EAB3B06112"
+    },
+    {
+      "id": 402754176,
+      "key": "",
+      "name": "匿名常量_39",
+      "pageType": 1,
+      "textDigest": "BCFF282A4C5B0E2D"
+    },
+    {
+      "id": 402746574,
+      "key": "",
+      "name": "匿名常量_40",
+      "pageType": 1,
+      "textDigest": "F08FA940D94C7D9E"
+    },
+    {
+      "id": 402746575,
+      "key": "",
+      "name": "匿名常量_41",
+      "pageType": 1,
+      "textDigest": "D806CDD561D4BA74"
+    },
+    {
+      "id": 402746576,
+      "key": "",
+      "name": "匿名常量_42",
+      "pageType": 1,
+      "textDigest": "E8A9DB2168B76952"
+    },
+    {
+      "id": 402746577,
+      "key": "",
+      "name": "匿名常量_43",
+      "pageType": 1,
+      "textDigest": "20307BAB21ED7430"
+    },
+    {
+      "id": 402746578,
+      "key": "",
+      "name": "匿名常量_44",
+      "pageType": 1,
+      "textDigest": "BDAEBC8DC0818502"
+    },
+    {
+      "id": 402746579,
+      "key": "",
+      "name": "匿名常量_45",
+      "pageType": 1,
+      "textDigest": "A92057CB0BE635E4"
+    },
+    {
+      "id": 402746580,
+      "key": "",
+      "name": "匿名常量_46",
+      "pageType": 1,
+      "textDigest": "DFC91F3ECF01D3DA"
+    },
+    {
+      "id": 402746581,
+      "key": "",
+      "name": "匿名常量_47",
+      "pageType": 1,
+      "textDigest": "F0D7F06D08AB8B88"
+    },
+    {
+      "id": 402746583,
+      "key": "",
+      "name": "JSON_OK",
+      "pageType": 1,
+      "textDigest": "741EAA80163540B3"
+    },
+    {
+      "id": 402746584,
+      "key": "",
+      "name": "JSON_ERROR",
+      "pageType": 1,
+      "textDigest": "71D1651723A0591C"
+    },
+    {
+      "id": 402746585,
+      "key": "",
+      "name": "JSON_INVALIDARG",
+      "pageType": 1,
+      "textDigest": "297AABFE160D2822"
+    },
+    {
+      "id": 402746586,
+      "key": "",
+      "name": "JSON_MEMORY",
+      "pageType": 1,
+      "textDigest": "13466A5EC861164C"
+    },
+    {
+      "id": 402746587,
+      "key": "",
+      "name": "JSON_INVALIDNAME",
+      "pageType": 1,
+      "textDigest": "B58FE5F99F10B93B"
+    },
+    {
+      "id": 402746588,
+      "key": "",
+      "name": "JSON_OBJECTPARENT",
+      "pageType": 1,
+      "textDigest": "2BB1B10228DCB3A5"
+    },
+    {
+      "id": 402746590,
+      "key": "",
+      "name": "JSON_INVALIDVALUE",
+      "pageType": 1,
+      "textDigest": "5E188D2585AF282C"
+    },
+    {
+      "id": 402751560,
+      "key": "",
+      "name": "JSON_NONEXTQUOTE",
+      "pageType": 1,
+      "textDigest": "849727000192D636"
+    },
+    {
+      "id": 402754166,
+      "key": "",
+      "name": "匿名常量_48",
+      "pageType": 1,
+      "textDigest": "7A07C83A49FB1A01"
+    },
+    {
+      "id": 402747842,
+      "key": "",
+      "name": "匿名常量_49",
+      "pageType": 1,
+      "textDigest": "290EADC3598152C0"
+    },
+    {
+      "id": 402747843,
+      "key": "",
+      "name": "匿名常量_50",
+      "pageType": 1,
+      "textDigest": "6EA92D40017D988E"
+    },
+    {
+      "id": 402747844,
+      "key": "",
+      "name": "匿名常量_51",
+      "pageType": 1,
+      "textDigest": "78DB610AE1D3E6CB"
+    },
+    {
+      "id": 402747845,
+      "key": "",
+      "name": "匿名常量_52",
+      "pageType": 1,
+      "textDigest": "4E5F4F350109B24D"
+    },
+    {
+      "id": 402746594,
+      "key": "",
+      "name": "匿名常量_53",
+      "pageType": 1,
+      "textDigest": "0C1C01675711B536"
+    },
+    {
+      "id": 402746595,
+      "key": "",
+      "name": "匿名常量_54",
+      "pageType": 1,
+      "textDigest": "D12EBA5C069A7FCF"
+    },
+    {
+      "id": 402747222,
+      "key": "",
+      "name": "匿名常量_55",
+      "pageType": 1,
+      "textDigest": "172038D2ACE126E5"
+    },
+    {
+      "id": 402754167,
+      "key": "",
+      "name": "匿名常量_56",
+      "pageType": 1,
+      "textDigest": "72637AE6D84C1D98"
+    },
+    {
+      "id": 402746597,
+      "key": "",
+      "name": "匿名常量_57",
+      "pageType": 1,
+      "textDigest": "741D3F1F6C59508C"
+    },
+    {
+      "id": 402746598,
+      "key": "",
+      "name": "匿名常量_58",
+      "pageType": 1,
+      "textDigest": "85B8CFAD0A713BBC"
+    },
+    {
+      "id": 402746649,
+      "key": "",
+      "name": "匿名常量_59",
+      "pageType": 1,
+      "textDigest": "829842976B13BE73"
+    },
+    {
+      "id": 402746638,
+      "key": "",
+      "name": "匿名常量_60",
+      "pageType": 1,
+      "textDigest": "96F82E2B68E72047"
+    },
+    {
+      "id": 402746640,
+      "key": "",
+      "name": "匿名常量_61",
+      "pageType": 1,
+      "textDigest": "ACE2729A29BA67F6"
+    },
+    {
+      "id": 402746641,
+      "key": "",
+      "name": "匿名常量_62",
+      "pageType": 1,
+      "textDigest": "7D2E22E01829D859"
+    },
+    {
+      "id": 402746600,
+      "key": "",
+      "name": "匿名常量_63",
+      "pageType": 1,
+      "textDigest": "C041A3C7E05CDDC4"
+    },
+    {
+      "id": 402746601,
+      "key": "",
+      "name": "匿名常量_64",
+      "pageType": 1,
+      "textDigest": "13778614AC52A03F"
+    },
+    {
+      "id": 402746602,
+      "key": "",
+      "name": "匿名常量_65",
+      "pageType": 1,
+      "textDigest": "B622F227058E120C"
+    },
+    {
+      "id": 402746603,
+      "key": "",
+      "name": "匿名常量_66",
+      "pageType": 1,
+      "textDigest": "AAC56AA662D4F1EA"
+    },
+    {
+      "id": 402746604,
+      "key": "",
+      "name": "匿名常量_67",
+      "pageType": 1,
+      "textDigest": "512F8D4A5FD1604C"
+    },
+    {
+      "id": 402746605,
+      "key": "",
+      "name": "匿名常量_68",
+      "pageType": 1,
+      "textDigest": "29041DF82690BADA"
+    },
+    {
+      "id": 402746606,
+      "key": "",
+      "name": "匿名常量_69",
+      "pageType": 1,
+      "textDigest": "BDC3D4203605CC0F"
+    },
+    {
+      "id": 402746607,
+      "key": "",
+      "name": "匿名常量_70",
+      "pageType": 1,
+      "textDigest": "2965F7502C039453"
+    },
+    {
+      "id": 402746608,
+      "key": "",
+      "name": "匿名常量_71",
+      "pageType": 1,
+      "textDigest": "EBCEB56862EB0AF1"
+    },
+    {
+      "id": 402746609,
+      "key": "",
+      "name": "匿名常量_72",
+      "pageType": 1,
+      "textDigest": "7FBDEC3CE8CDB0B7"
+    },
+    {
+      "id": 402746610,
+      "key": "",
+      "name": "匿名常量_73",
+      "pageType": 1,
+      "textDigest": "08A9E4D79CCE8125"
+    },
+    {
+      "id": 402746611,
+      "key": "",
+      "name": "匿名常量_74",
+      "pageType": 1,
+      "textDigest": "C7A3492A03531071"
+    }
+  ],
+  "dlls": [
+    {
+      "id": 167865203,
+      "memoryAddress": 38610192,
+      "name": "匿名API_1",
+      "paramIds": [
+        1157721000,
+        1157721001,
+        1157721002
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "D4632C84C4241D73"
+    },
+    {
+      "id": 167865204,
+      "memoryAddress": 38610112,
+      "name": "匿名API_2",
+      "paramIds": [
+        1157721003
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "014AA362E0CF7937"
+    },
+    {
+      "id": 167865205,
+      "memoryAddress": 38610032,
+      "name": "匿名API_3",
+      "paramIds": [
+        1157721004,
+        1157721005,
+        1157721006
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "373D1F904C8A14A5"
+    },
+    {
+      "id": 167865206,
+      "memoryAddress": 38609952,
+      "name": "匿名API_4",
+      "paramIds": [
+        1157721007,
+        1157721008,
+        1157721009
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "0623D63812026B16"
+    },
+    {
+      "id": 167865207,
+      "memoryAddress": 38609872,
+      "name": "匿名API_5",
+      "paramIds": [],
+      "paramTypes": [],
+      "returnType": -2147482879,
+      "textDigest": "D86442DDDB12B914"
+    },
+    {
+      "id": 167865208,
+      "memoryAddress": 38609792,
+      "name": "匿名API_6",
+      "paramIds": [
+        1157721010,
+        1157721011,
+        1157721012
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": 0,
+      "textDigest": "F6DD4E8F6F70D475"
+    },
+    {
+      "id": 167865209,
+      "memoryAddress": 38609712,
+      "name": "匿名API_7",
+      "paramIds": [
+        1157721013,
+        1157721014,
+        1157721015
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": 0,
+      "textDigest": "583361A52F734924"
+    },
+    {
+      "id": 167871609,
+      "memoryAddress": 38609632,
+      "name": "匿名API_8",
+      "paramIds": [
+        1157727354,
+        1157727355,
+        1157727356
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": 0,
+      "textDigest": "7C0E7DA7A53CB8BE"
+    },
+    {
+      "id": 167871711,
+      "memoryAddress": 38609552,
+      "name": "匿名API_9",
+      "paramIds": [
+        1157727456,
+        1157727457,
+        1157727458
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147483643,
+        -2147482879
+      ],
+      "returnType": 0,
+      "textDigest": "41B45DAE6BC31AA1"
+    },
+    {
+      "id": 167865210,
+      "memoryAddress": 38609472,
+      "name": "匿名API_10",
+      "paramIds": [
+        1157721016,
+        1157721017,
+        1157721018,
+        1157721019,
+        1157721020,
+        1157721021
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147483644,
+        -2147482879,
+        -2147483643,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "DC58358F296BF0EA"
+    },
+    {
+      "id": 167865211,
+      "memoryAddress": 38609392,
+      "name": "匿名API_11",
+      "paramIds": [
+        1157721022,
+        1157721023,
+        1157721024,
+        1157721025,
+        1157721026,
+        1157721027,
+        1157721028,
+        1157721029
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147483643,
+        -2147482879,
+        -2147483644,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "EF0B2896307E12B3"
+    },
+    {
+      "id": 167865212,
+      "memoryAddress": 38609312,
+      "name": "匿名API_12",
+      "paramIds": [
+        1157721030,
+        1157721031,
+        1157721032,
+        1157721033,
+        1157721034,
+        1157721035,
+        1157721036,
+        1157721037
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147483644,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "9FD596A476CF8055"
+    },
+    {
+      "id": 167865213,
+      "memoryAddress": 38609232,
+      "name": "匿名API_13",
+      "paramIds": [
+        1157721038,
+        1157721039,
+        1157721040,
+        1157721041,
+        1157721042,
+        1157721043
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147483643,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "49BB924B28F288A4"
+    },
+    {
+      "id": 167870892,
+      "memoryAddress": 38609152,
+      "name": "匿名API_14",
+      "paramIds": [
+        1157726637,
+        1157726638,
+        1157726639,
+        1157726640,
+        1157726641,
+        1157726642
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147483644,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "F72815FB797E6728"
+    },
+    {
+      "id": 167865214,
+      "memoryAddress": 38609072,
+      "name": "匿名API_15",
+      "paramIds": [
+        1157721044
+      ],
+      "paramTypes": [
+        -2147483643
+      ],
+      "returnType": -2147482879,
+      "textDigest": "133197195334D886"
+    },
+    {
+      "id": 167865215,
+      "memoryAddress": 38608992,
+      "name": "匿名API_16",
+      "paramIds": [
+        1157721045
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "5BB1D56331D5C7A5"
+    },
+    {
+      "id": 167865216,
+      "memoryAddress": 38608912,
+      "name": "匿名API_17",
+      "paramIds": [
+        1157721046
+      ],
+      "paramTypes": [
+        -2147483648
+      ],
+      "returnType": -2147482879,
+      "textDigest": "984DE50630558E5B"
+    },
+    {
+      "id": 167865217,
+      "memoryAddress": 38617008,
+      "name": "匿名API_18",
+      "paramIds": [
+        1157721047
+      ],
+      "paramTypes": [
+        -2147483648
+      ],
+      "returnType": -2147482879,
+      "textDigest": "1F2C453980CE84DA"
+    },
+    {
+      "id": 167865218,
+      "memoryAddress": 38616928,
+      "name": "匿名API_19",
+      "paramIds": [
+        1157721048,
+        1157721049
+      ],
+      "paramTypes": [
+        -2147483648,
+        -2147483648
+      ],
+      "returnType": -2147482879,
+      "textDigest": "26CEBABDF8483D9E"
+    },
+    {
+      "id": 167865219,
+      "memoryAddress": 38616848,
+      "name": "匿名API_20",
+      "paramIds": [
+        1157721050,
+        1157721051
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "26F60A8E8DF52E9D"
+    },
+    {
+      "id": 167865220,
+      "memoryAddress": 38616768,
+      "name": "匿名API_21",
+      "paramIds": [
+        1157721052,
+        1157721053
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "53151B3749B967E2"
+    },
+    {
+      "id": 167865221,
+      "memoryAddress": 38616688,
+      "name": "匿名API_22",
+      "paramIds": [
+        1157721054,
+        1157721055
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "2CD490349D8246E9"
+    },
+    {
+      "id": 167865222,
+      "memoryAddress": 38616608,
+      "name": "匿名API_23",
+      "paramIds": [
+        1157721056,
+        1157721057
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": 0,
+      "textDigest": "D0561FBA26F15270"
+    },
+    {
+      "id": 167865223,
+      "memoryAddress": 38616528,
+      "name": "匿名API_24",
+      "paramIds": [
+        1157721058
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "B335ABF571616B6E"
+    },
+    {
+      "id": 167865224,
+      "memoryAddress": 38616448,
+      "name": "匿名API_25",
+      "paramIds": [
+        1157721059
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "30BA877D90563EE5"
+    },
+    {
+      "id": 167865225,
+      "memoryAddress": 38616368,
+      "name": "匿名API_26",
+      "paramIds": [
+        1157721060,
+        1157721061
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "A703A4AC551299AD"
+    },
+    {
+      "id": 167865226,
+      "memoryAddress": 38616288,
+      "name": "匿名API_27",
+      "paramIds": [
+        1157721062,
+        1157721063
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "9C8A05B303A0FD38"
+    },
+    {
+      "id": 167865227,
+      "memoryAddress": 38616208,
+      "name": "匿名API_28",
+      "paramIds": [
+        1157721064,
+        1157721065
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147483644
+      ],
+      "returnType": -2147482879,
+      "textDigest": "BECA4B35D34177E4"
+    },
+    {
+      "id": 167865228,
+      "memoryAddress": 38616128,
+      "name": "匿名API_29",
+      "paramIds": [
+        1157721066,
+        1157721067
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147483643
+      ],
+      "returnType": -2147482879,
+      "textDigest": "13A655C6BE17B45F"
+    },
+    {
+      "id": 167870886,
+      "memoryAddress": 38616048,
+      "name": "匿名API_30",
+      "paramIds": [
+        1157726631,
+        1157726632
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "9452809B7C01A036"
+    },
+    {
+      "id": 167865229,
+      "memoryAddress": 38615968,
+      "name": "匿名API_31",
+      "paramIds": [
+        1157721068,
+        1157721069
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147483643
+      ],
+      "returnType": -2147482879,
+      "textDigest": "9DDF32C8812DB699"
+    },
+    {
+      "id": 167865230,
+      "memoryAddress": 38615888,
+      "name": "匿名API_32",
+      "paramIds": [
+        1157721070,
+        1157721071,
+        1157721072,
+        1157721073,
+        1157721074,
+        1157721075,
+        1157721076
+      ],
+      "paramTypes": [
+        -2147483643,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "874AB50C72A787C9"
+    },
+    {
+      "id": 167865231,
+      "memoryAddress": 38615808,
+      "name": "匿名API_33",
+      "paramIds": [
+        1157721077,
+        1157721078,
+        1157721079,
+        1157721080,
+        1157721081
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "F8FD3BFC35841BFF"
+    },
+    {
+      "id": 167865232,
+      "memoryAddress": 38615728,
+      "name": "匿名API_34",
+      "paramIds": [
+        1157721082,
+        1157721083
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "0D0AEE6D1AB1606A"
+    },
+    {
+      "id": 167865233,
+      "memoryAddress": 38615648,
+      "name": "匿名API_35",
+      "paramIds": [
+        1157721084
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "DD7F2DBD6A1DE112"
+    },
+    {
+      "id": 167865234,
+      "memoryAddress": 38615568,
+      "name": "匿名API_36",
+      "paramIds": [
+        1157721085,
+        1157721086
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "82735B94A4E5FC38"
+    },
+    {
+      "id": 167865235,
+      "memoryAddress": 38615488,
+      "name": "匿名API_37",
+      "paramIds": [
+        1157721087
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "B493F670C60E64E0"
+    },
+    {
+      "id": 167865236,
+      "memoryAddress": 38615408,
+      "name": "匿名API_38",
+      "paramIds": [
+        1157721088
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "AB2741AC4FA2DDB0"
+    },
+    {
+      "id": 167865237,
+      "memoryAddress": 38615328,
+      "name": "匿名API_39",
+      "paramIds": [
+        1157721089,
+        1157721090,
+        1157721091,
+        1157721092,
+        1157721093,
+        1157721094,
+        1157721095,
+        1157721096,
+        1157721097
+      ],
+      "paramTypes": [
+        -2147483643,
+        -2147482879,
+        -2147483643,
+        -2147482879,
+        -2147483643,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "D56EB85E36D5CA59"
+    },
+    {
+      "id": 167865238,
+      "memoryAddress": 38615248,
+      "name": "匿名API_40",
+      "paramIds": [
+        1157721098,
+        1157721099,
+        1157721100,
+        1157721101,
+        1157721102,
+        1157721103,
+        1157721104,
+        1157721105,
+        1157721106
+      ],
+      "paramTypes": [
+        -2147483643,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "F8D4B24410856F6A"
+    },
+    {
+      "id": 167865239,
+      "memoryAddress": 38615168,
+      "name": "匿名API_41",
+      "paramIds": [
+        1157721107,
+        1157721108,
+        1157721109
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "92B4D29DD1A6FABB"
+    },
+    {
+      "id": 167865240,
+      "memoryAddress": 38615088,
+      "name": "匿名API_42",
+      "paramIds": [
+        1157721110,
+        1157721111,
+        1157721112
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "ABD001F23A367188"
+    },
+    {
+      "id": 167865241,
+      "memoryAddress": 38615008,
+      "name": "匿名API_43",
+      "paramIds": [
+        1157721113,
+        1157721114
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "9E35868F94660715"
+    },
+    {
+      "id": 167870873,
+      "memoryAddress": 38614928,
+      "name": "匿名API_44",
+      "paramIds": [
+        1157726618,
+        1157726619,
+        1157726620
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "C68A508DC6EA4F48"
+    },
+    {
+      "id": 167865243,
+      "memoryAddress": 38614848,
+      "name": "匿名API_45",
+      "paramIds": [
+        1157721119,
+        1157721120,
+        1157721121
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "FFEC30FB60F35819"
+    },
+    {
+      "id": 167865244,
+      "memoryAddress": 38614768,
+      "name": "匿名API_46",
+      "paramIds": [
+        1157721122,
+        1157721123,
+        1157721124
+      ],
+      "paramTypes": [
+        -2147483643,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "D1E1499B550D436A"
+    },
+    {
+      "id": 167865245,
+      "memoryAddress": 38614688,
+      "name": "匿名API_47",
+      "paramIds": [
+        1157721125,
+        1157721126,
+        1157721127,
+        1157721128,
+        1157721129
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "01B07C006D24443A"
+    },
+    {
+      "id": 167865246,
+      "memoryAddress": 38614608,
+      "name": "匿名API_48",
+      "paramIds": [
+        1157721130
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "1EE03FED626BC3B9"
+    },
+    {
+      "id": 167865247,
+      "memoryAddress": 38614528,
+      "name": "匿名API_49",
+      "paramIds": [
+        1157721131,
+        1157721132,
+        1157721133
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "5B04FEE63AFF6884"
+    },
+    {
+      "id": 167865248,
+      "memoryAddress": 38614448,
+      "name": "匿名API_50",
+      "paramIds": [
+        1157721134,
+        1157721135
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "2B0D9C8A2B240CEC"
+    },
+    {
+      "id": 167865249,
+      "memoryAddress": 38614368,
+      "name": "匿名API_51",
+      "paramIds": [
+        1157721136
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "6DA9664801BB5441"
+    },
+    {
+      "id": 167865250,
+      "memoryAddress": 38614288,
+      "name": "匿名API_52",
+      "paramIds": [
+        1157721137
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": 0,
+      "textDigest": "7CE1B1F2AD16843B"
+    },
+    {
+      "id": 167865251,
+      "memoryAddress": 38614208,
+      "name": "匿名API_53",
+      "paramIds": [
+        1157721138
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": 0,
+      "textDigest": "B5C6B0D660751C57"
+    },
+    {
+      "id": 167865252,
+      "memoryAddress": 38614128,
+      "name": "匿名API_54",
+      "paramIds": [
+        1157721139
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": 0,
+      "textDigest": "B6C814FCB12281DE"
+    },
+    {
+      "id": 167865253,
+      "memoryAddress": 38614048,
+      "name": "匿名API_55",
+      "paramIds": [
+        1157721140
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": 0,
+      "textDigest": "DA17B7D0870F7F68"
+    },
+    {
+      "id": 167865254,
+      "memoryAddress": 38613968,
+      "name": "匿名API_56",
+      "paramIds": [
+        1157721141,
+        1157721142
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "F6F4CEAA717F71C1"
+    },
+    {
+      "id": 167865255,
+      "memoryAddress": 38613888,
+      "name": "匿名API_57",
+      "paramIds": [
+        1157721143
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "9F3087ECF0895108"
+    },
+    {
+      "id": 167870072,
+      "memoryAddress": 38613808,
+      "name": "匿名API_58",
+      "paramIds": [
+        1157725817,
+        1157725818,
+        1157725819,
+        1157725831
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147483644,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "5A854865145424BB"
+    },
+    {
+      "id": 167870790,
+      "memoryAddress": 38613728,
+      "name": "匿名API_59",
+      "paramIds": [
+        1157726535,
+        1157726536,
+        1157726537,
+        1157726538
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147483643,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "4DF12982AAD13218"
+    },
+    {
+      "id": 167870288,
+      "memoryAddress": 38613648,
+      "name": "匿名API_60",
+      "paramIds": [
+        1157726033
+      ],
+      "paramTypes": [
+        -2147483643
+      ],
+      "returnType": -2147482623,
+      "textDigest": "6E5BF76BBEFE3E2B"
+    },
+    {
+      "id": 167870198,
+      "memoryAddress": 38613568,
+      "name": "匿名API_61",
+      "paramIds": [
+        1157725944
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482623,
+      "textDigest": "470ADBD956E212F0"
+    },
+    {
+      "id": 167870278,
+      "memoryAddress": 38613488,
+      "name": "匿名API_62",
+      "paramIds": [
+        1157726023
+      ],
+      "paramTypes": [
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "76B0D5FB688F42B4"
+    },
+    {
+      "id": 167873373,
+      "memoryAddress": 38613408,
+      "name": "匿名API_63",
+      "paramIds": [
+        1157729118,
+        1157729119,
+        1157729120
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "295DF7B5722DD587"
+    },
+    {
+      "id": 167873380,
+      "memoryAddress": 38613328,
+      "name": "匿名API_64",
+      "paramIds": [
+        1157729125,
+        1157729126,
+        1157729127
+      ],
+      "paramTypes": [
+        -2147482879,
+        -2147483643,
+        -2147482879
+      ],
+      "returnType": -2147482879,
+      "textDigest": "022E598FA9BF7E0B"
+    }
+  ],
+  "globals": [
+    {
+      "dataType": -2147483643,
+      "id": 83977526,
+      "name": "匿名全局变量_1",
+      "textDigest": "6BCCA8FC58291135"
+    },
+    {
+      "dataType": -2147483643,
+      "id": 83977525,
+      "name": "匿名全局变量_2",
+      "textDigest": "C7537D823F09D6EE"
+    },
+    {
+      "dataType": -2147483643,
+      "id": 83977524,
+      "name": "匿名全局变量_3",
+      "textDigest": "6A6B3A7FBB2A06C3"
+    },
+    {
+      "dataType": -2147483643,
+      "id": 83984742,
+      "name": "匿名全局变量_4",
+      "textDigest": "54C5F60402376D2C"
+    },
+    {
+      "dataType": -2147483643,
+      "id": 83984741,
+      "name": "匿名全局变量_5",
+      "textDigest": "BFF98F56F9D5FDA9"
+    },
+    {
+      "dataType": -2147483643,
+      "id": 83984736,
+      "name": "匿名全局变量_6",
+      "textDigest": "2E11A0F82CC21552"
+    },
+    {
+      "dataType": -2147483643,
+      "id": 83984732,
+      "name": "匿名全局变量_7",
+      "textDigest": "27E2760DB72475B7"
+    },
+    {
+      "dataType": -2147482879,
+      "id": 83986968,
+      "name": "匿名全局变量_8",
+      "textDigest": "038A444E20FD72C3"
+    }
+  ],
+  "programHeader": {
+    "debugCommandLine": "",
+    "flag1": 0,
+    "flag2": 67174401,
+    "icon": "",
+    "supportLibraryInfo": [
+      "krnln\rd09f2340818511d396f6aaf844c7e325\r5\r7\r系统核心支持库"
+    ],
+    "unk1": 51113791,
+    "unk2_1": "kQIAAA==",
+    "unk2_2": "MAA=",
+    "unk2_3": "AAA=",
+    "unk3Op": "",
+    "versionFlag1": 101353
+  },
+  "structs": [
+    {
+      "id": 1090611805,
+      "memberIds": [
+        889285214,
+        889285215,
+        889285216
+      ],
+      "memberTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "memoryAddress": 38610464,
+      "name": "匿名数据类型_1",
+      "textDigest": "CA7D1C9A49E51F2E"
+    },
+    {
+      "id": 1090611809,
+      "memberIds": [
+        889285218,
+        889285219,
+        889285220,
+        889285221,
+        889285222,
+        889285223
+      ],
+      "memberTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "memoryAddress": 38610400,
+      "name": "匿名数据类型_2",
+      "textDigest": "16425E115ACA38A6"
+    },
+    {
+      "id": 1090611816,
+      "memberIds": [
+        889285225,
+        889285226
+      ],
+      "memberTypes": [
+        -2147482879,
+        -2147482879
+      ],
+      "memoryAddress": 38610336,
+      "name": "匿名数据类型_3",
+      "textDigest": "3879AACA9F8103D0"
+    },
+    {
+      "id": 1090612479,
+      "memberIds": [
+        889285888,
+        889285889,
+        889285890,
+        889285891,
+        889285892,
+        889285893,
+        889285894
+      ],
+      "memberTypes": [
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879,
+        -2147482879
+      ],
+      "memoryAddress": 38610272,
+      "name": "匿名数据类型_4",
+      "textDigest": "115925E6ACFDFCA0"
+    }
+  ]
+}

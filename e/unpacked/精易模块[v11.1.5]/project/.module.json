@@ -1,0 +1,17 @@
+﻿{
+  "dependencies": [
+    {
+      "fileName": "krnln",
+      "guid": "d09f2340818511d396f6aaf844c7e325",
+      "kind": "elib",
+      "name": "系统核心支持库",
+      "path": "",
+      "reExport": false,
+      "resolvedPath": "D:\\eyuyan\\eyy\\lib\\krnln",
+      "versionText": "5.0"
+    }
+  ],
+  "projectName": "精易模块",
+  "sourcePath": "D:\\programming\\SMTCLyrics\\e\\精易模块[v11.1.5].ec",
+  "versionText": "11.1"
+}

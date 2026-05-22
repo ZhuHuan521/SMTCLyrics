@@ -1,0 +1,63 @@
+﻿.版本 2
+
+.程序集 类_屏蔽菜单, <对象>, 公开
+
+.程序集变量 OldhWnd, 整数型
+.程序集变量 OldProc, 整数型
+.程序集变量 address, 整数型
+.程序集变量 Callback, 整数型
+
+.子程序 _初始化
+
+
+
+
+.子程序 _销毁
+
+销毁 ()
+Callback = 0
+
+
+.子程序 初始化, , 公开
+.参数 窗口句柄, 整数型
+.参数 回调子程序, 整数型, 可空, 到整数 (&xxx)
+
+OldhWnd = 窗口句柄
+Callback = 回调子程序
+address = 类_取内部方法地址 (5)
+OldProc = SetWindowLongA (OldhWnd, #GWL_WNDPROC, address)
+
+
+.子程序 销毁, , 公开
+
+.如果真 (OldProc != 0)
+    SetWindowLongA (OldhWnd, #GWL_WNDPROC, OldProc)
+    类_释放内部方法地址 (address)
+.如果真结束
+
+
+
+.子程序 NewProc, 整数型
+.参数 匿名参数_1, 整数型
+.参数 匿名参数_2, 整数型
+.参数 匿名参数_3, 整数型
+.参数 匿名参数_4, 整数型
+
+.判断开始 (匿名参数_2 == #WM_CONTEXTMENU)
+    .如果真 (Callback != 0)
+        调用子程序_ (Callback, , , , , , , , , , , , , , , )
+    .如果真结束
+    返回 (0)
+.判断 (匿名参数_2 == #匿名常量_117)
+    .如果真 (匿名参数_3 == 3)
+        .如果真 (Callback != 0)
+            调用子程序_ (Callback, , , , , , , , , , , , , , , )
+        .如果真结束
+        返回 (0)
+    .如果真结束
+    
+.默认
+    
+.判断结束
+返回 (CallWindowProcA (OldProc, 匿名参数_1, 匿名参数_2, 匿名参数_3, 匿名参数_4))
+

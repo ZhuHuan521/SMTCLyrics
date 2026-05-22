@@ -1,0 +1,558 @@
+﻿.版本 2
+
+.程序集 彗星歌词窗口, <对象>, 公开, 开发:邓学彬(网名:泪闯天涯)
+
+.程序集变量 m_hWnd, 整数型
+.程序集变量 m_hCacheDC, 整数型
+.程序集变量 m_hCacheBitmap, 整数型
+.程序集变量 m_hCacheOldBitmap, 整数型
+.程序集变量 m_nWidth, 整数型
+.程序集变量 m_nHeight, 整数型
+.程序集变量
+.程序集变量 m_bInit, 逻辑型, , , 本窗口类是否初始化
+.程序集变量 m_wLyrics, 字节集, , , Unicode格式的歌词
+.程序集变量 m_nHighlight, 整数型, , , 高亮歌词的百分比 0--100
+.程序集变量
+.程序集变量 m_TextColor, 整数型, , "2", 普通歌词颜色,ARGB颜色
+.程序集变量 m_TextLineMode, 整数型, , , 普通歌词渐变模式
+.程序集变量 m_pTextPen, 整数型, , , 普通歌词边框画笔
+.程序集变量 m_HighlightColor, 整数型, , "2", 高亮歌词颜色,ARGB颜色
+.程序集变量 m_HighlightLineMode, 整数型, , , 高亮歌词渐变模式
+.程序集变量 m_pHighlightPen, 整数型, , , 高亮歌词边框画笔
+.程序集变量
+.程序集变量 m_pShadowBrush, 整数型, , , 阴影画刷,GDIPlus画刷
+.程序集变量 m_nShadowOffset, 整数型, , , 阴影偏移
+.程序集变量
+.程序集变量 m_pFont, 整数型, , , GDIPlus字体
+.程序集变量 m_FontStyle, 整数型
+.程序集变量 m_FontSize, 小数型
+.程序集变量 m_pFontFamily, 整数型
+.程序集变量
+.程序集变量 m_pBkBrush, 整数型, , , GDIPlus画刷
+.程序集变量 m_pTextFormat, 整数型
+
+.子程序 _初始化, , , 当基于本类的对象被创建后，此方法会被自动调用
+
+
+
+
+.子程序 _销毁, , , 当基于本类的对象被销毁前，此方法会被自动调用
+
+
+
+
+.子程序 创建, 逻辑型, 公开, 创建歌词窗口，创建后必须调用“更新歌词”或“重画”才会显示
+.参数 宽度, 整数型, 可空, 留空默认为屏幕宽度
+.参数 高度, 整数型, 可空, 留空默认为150
+.局部变量 hWnd, 整数型
+.局部变量 rc, RECT
+.局部变量 x, 整数型
+.局部变量 y, 整数型
+.局部变量 dwStyle, 整数型
+.局部变量 dwExStyle, 整数型
+
+.如果真 (是否已创建 ())
+    输出调试文本 (“[彗星歌词窗口.创建] 执行失败,无法重复创建”)
+    返回 (假)
+.如果真结束
+' //-------------------------------------------
+SystemParametersInfo (#SPI_GETWORKAREA, 0, rc, 0)
+m_nWidth = 选择 (是否为空 (宽度), rc.Right - rc.Left, 宽度)
+m_nHeight = 选择 (是否为空 (高度), 150, 高度)
+x = (rc.Right - rc.Left - m_nWidth) / 2
+y = rc.Bottom - m_nHeight
+dwStyle = 位或 (#WS_POPUP, #WS_SYSMENU, #WS_VISIBLE)
+dwExStyle = 位或 (#WS_EX_TOPMOST, #WS_EX_TOOLWINDOW, #WS_EX_LAYERED)
+hWnd = CreateWindowEx (dwExStyle, #COMET_DEFAULT_CLASSNAME, #COMET_DEFAULT_CLASSNAME, dwStyle, x, y, m_nWidth, m_nHeight, 0, 0, GetModuleHandle (字符 (0)), 0)
+' //-------------------------------------------
+.如果真 (hWnd == 0)
+    输出调试文本 (“[彗星歌词窗口.创建] CreateWindowEx 执行失败”)
+    返回 (假)
+.如果真结束
+' //-------------------------------------------
+.如果真 (创建自句柄 (hWnd))
+    随意移动 (真)
+    返回 (真)
+.如果真结束
+返回 (假)
+
+
+.子程序 创建自句柄, 逻辑型, 公开
+.参数 窗口句柄, 整数型
+.局部变量 hProc, 整数型
+
+.如果真 (IsWindow (窗口句柄) == 0)
+    输出调试文本 (“[彗星歌词窗口.创建自句柄] 执行失败,无效的窗口句柄”)
+    返回 (假)
+.如果真结束
+.如果真 (是否已创建 ())
+    输出调试文本 (“[彗星歌词窗口.创建自句柄 执行失败,无法重复创建”)
+    返回 (假)
+.如果真结束
+' //-------------------------------------------
+m_hWnd = 窗口句柄
+hProc = GetProp (m_hWnd, #COMET_PREVWNDPROC)
+.如果真 (hProc == 0)
+    hProc = SetWindowLong (m_hWnd, #GWL_WNDPROC, 到整数 (&歌词窗口_消息处理))
+    SetProp (m_hWnd, #COMET_PREVWNDPROC, hProc)
+.如果真结束
+' //-------------------------------------------
+初始化 ()
+返回 (真)
+
+
+.子程序 销毁, , 公开, 销毁窗口
+
+DestroyWindow (m_hWnd)
+m_hWnd = 0
+
+
+.子程序 初始化
+.局部变量 hDC, 整数型
+
+.如果真 (m_hCacheDC == 0)
+    hDC = GetDC (0)
+    m_hCacheDC = CreateCompatibleDC (hDC)
+    ReleaseDC (0, hDC)
+.如果真结束
+.如果真 (m_bInit == 假)
+    m_bInit = 真
+    m_pFont = GDIPlus_创建字体 (#COMET_DEFAULT_DEFFONT, 20)
+    GdipCreateStringFormat (0, 0, m_pTextFormat)
+    GdipSetStringFormatFlags (m_pTextFormat, #StringFormatFlagsNoWrap)
+    GdipSetStringFormatAlign (m_pTextFormat, #StringAlignmentCenter)  ' 置水平对齐方式
+    GdipSetStringFormatLineAlign (m_pTextFormat, #StringAlignmentNear)  ' 置垂直对齐方式
+    置字体 (“”, 50, 真)
+    置背景 (#黑色, 0)
+    置文字阴影 (#黑色, 150, 2)
+    置文字颜色 (65251, 45363, 0, #歌词渐变_两色渐变)
+    置高亮文字颜色 (1344510, #黄色, 0, #歌词渐变_两色渐变)
+.如果真结束
+
+
+
+.子程序 置字体, , 公开
+.参数 字体名称, 文本型
+.参数 字体大小, 整数型
+.参数 字体加粗, 逻辑型, 可空
+.参数 字体倾斜, 逻辑型, 可空
+.参数 字体下划线, 逻辑型, 可空
+.参数 重画窗口, 逻辑型, 可空, 设置后是否重画窗口，默认为假
+.局部变量 字体风格, 整数型
+
+' 字体风格_普通, "0", 公开
+' 字体风格_加粗, "1", 公开
+' 字体风格_倾斜, "2", 公开
+' 字体风格_加粗倾斜, "3", 公开
+' 字体风格_带下划线, "4", 公开
+' 字体风格_带中间线, "8", 公开
+.如果真 (字体加粗)
+    字体风格 = 位或 (字体风格, #字体风格_加粗)
+.如果真结束
+.如果真 (字体倾斜)
+    字体风格 = 位或 (字体风格, #字体风格_倾斜)
+.如果真结束
+.如果真 (字体下划线)
+    字体风格 = 位或 (字体风格, #字体风格_带下划线)
+.如果真结束
+.如果真 (m_pFont != 0)
+    GdipDeleteFont (m_pFont)
+    m_pFont = 0
+.如果真结束
+m_pFont = GDIPlus_创建字体 (字体名称 + #COMET_DEFAULT_DEFFONT, 字体大小, 字体风格)
+' //----------------
+' //保存一些字体属性,加入路径时要用到
+GdipGetFamily (m_pFont, m_pFontFamily)
+GdipGetFontSize (m_pFont, m_FontSize)
+GdipGetFontStyle (m_pFont, m_FontStyle)
+
+
+.子程序 置背景
+.参数 背景颜色, 整数型, , RGB颜色
+.参数 背景透明度, 整数型, , 0--255，0为完全透明,看不见
+.参数 重画窗口, 逻辑型, 可空, 设置后是否重画窗口，默认为假
+
+.如果真 (m_pBkBrush != 0)
+    GdipDeleteBrush (m_pBkBrush)
+    m_pBkBrush = 0
+.如果真结束
+.如果真 (背景透明度 > 0)
+    GdipCreateSolidFill (RGB到ARGB (背景颜色, 背景透明度), m_pBkBrush)
+.如果真结束
+.如果真 (重画窗口)
+    .如果真 (是否已创建 ())
+        重画 ()
+    .如果真结束
+    
+.如果真结束
+
+
+
+.子程序 置文字阴影, , 公开
+.参数 阴影颜色, 整数型, , RGB颜色
+.参数 阴影透明度, 整数型, , 0--255，0为完全透明,看不见
+.参数 阴影偏移, 整数型, , 一般为2
+.参数 重画窗口, 逻辑型, 可空, 设置后是否重画窗口，默认为假
+
+.如果真 (m_pBkBrush != 0)
+    GdipDeleteBrush (m_pBkBrush)
+    m_pBkBrush = 0
+.如果真结束
+' //-------------------------
+m_nShadowOffset = 阴影偏移
+.如果真 (m_nShadowOffset < 0)
+    m_nShadowOffset = 0
+.如果真结束
+' //-------------------------
+.如果真 (阴影透明度 > 0 && m_nShadowOffset > 0)
+    GdipCreateSolidFill (RGB到ARGB (阴影颜色, 阴影透明度), m_pShadowBrush)
+.如果真结束
+' //-------------------------
+.如果真 (重画窗口)
+    .如果真 (是否已创建 ())
+        重画 ()
+    .如果真结束
+    
+.如果真结束
+
+
+
+.子程序 置文字颜色, , 公开
+.参数 文字颜色1, 整数型, , RGB颜色值
+.参数 文字颜色2, 整数型, , RGB颜色值
+.参数 文字边框颜色, 整数型, , RGB颜色值 -1表示无边框
+.参数 渐变模式, 整数型, , #歌词渐变_无渐变;#歌词渐变_两色渐变;#歌词渐变_三色渐变
+
+.如果真 (m_pTextPen != 0)
+    GdipDeletePen (m_pTextPen)
+    m_pTextPen = 0
+.如果真结束
+.如果真 (文字边框颜色 != -1)
+    GdipCreatePen1 (RGB到ARGB (文字边框颜色), 1, #单位_像素, m_pTextPen)
+.如果真结束
+' //------------------
+m_TextColor[1] = RGB到ARGB (文字颜色1)
+m_TextColor[2] = RGB到ARGB (文字颜色2)
+m_TextLineMode = 渐变模式
+
+
+.子程序 置高亮文字颜色, , 公开
+.参数 文字颜色1, 整数型, , RGB颜色值
+.参数 文字颜色2, 整数型, , RGB颜色值
+.参数 文字边框颜色, 整数型, , RGB颜色值 -1表示无边框
+.参数 渐变模式, 整数型, , #歌词渐变_无渐变;#歌词渐变_两色渐变;#歌词渐变_三色渐变
+
+.如果真 (m_pHighlightPen != 0)
+    GdipDeletePen (m_pHighlightPen)
+    m_pHighlightPen = 0
+.如果真结束
+.如果真 (文字边框颜色 != -1)
+    GdipCreatePen1 (RGB到ARGB (文字边框颜色), 1, #单位_像素, m_pHighlightPen)
+.如果真结束
+' //------------------
+m_HighlightColor[1] = RGB到ARGB (文字颜色1)
+m_HighlightColor[2] = RGB到ARGB (文字颜色2)
+m_HighlightLineMode = 渐变模式
+
+
+.子程序 显示, , 公开
+
+ShowWindow (m_hWnd, #SW_SHOW)
+
+
+.子程序 隐藏, , 公开
+
+ShowWindow (m_hWnd, #SW_HIDE)
+
+
+.子程序 移动, , 公开, 英文名称：move,改变窗口或窗口组件的位置或尺寸。
+.参数 左边, 整数型, 可空, 单位为像素点。如被省略则不改变左边原位置。
+.参数 顶边, 整数型, 可空, 单位为像素点。如被省略则不改变顶边原位置。
+.参数 宽度, 整数型, 可空, 单位为像素点。如被省略则不改变宽度原位置。
+.参数 高度, 整数型, 可空, 单位为像素点。如被省略则不改变高度原位置。
+.参数 禁止重绘, 逻辑型, 可空
+.局部变量 Rect, RECT
+.局部变量 pt, POINT
+.局部变量 fag, 整数型
+.局部变量 hParent, 整数型
+
+GetWindowRect (m_hWnd, Rect)
+fag = #SWP_NOZORDER
+.如果真 (禁止重绘)
+    fag = 位或 (fag, #SWP_NOREDRAW)
+.如果真结束
+.如果真 (是否为空 (左边) && 是否为空 (顶边))
+    fag = 位或 (fag, #SWP_NOMOVE)
+.如果真结束
+.如果真 (是否为空 (宽度) && 是否为空 (高度))
+    fag = 位或 (fag, #SWP_NOSIZE)
+.如果真结束
+pt.x = Rect.Left
+pt.y = Rect.Top
+hParent = GetParent (m_hWnd)
+.如果真 (hParent != 0)
+    ScreenToClient (hParent, pt)
+.如果真结束
+.如果真 (是否为空 (左边))
+    左边 = pt.x
+.如果真结束
+.如果真 (是否为空 (顶边))
+    左边 = pt.y
+.如果真结束
+.如果真 (是否为空 (宽度))
+    宽度 = Rect.Right - Rect.Left
+.如果真结束
+.如果真 (是否为空 (高度))
+    高度 = Rect.Bottom - Rect.Top
+.如果真结束
+SetWindowPos (m_hWnd, 0, 左边, 顶边, 宽度, 高度, fag)
+
+
+.子程序 取宽度, 整数型, 公开
+.局部变量 rect, RECT
+
+GetWindowRect (m_hWnd, rect)
+返回 (rect.Right - rect.Left)
+
+
+.子程序 取高度, 整数型, 公开
+.局部变量 rect, RECT
+
+GetWindowRect (m_hWnd, rect)
+返回 (rect.Bottom - rect.Top)
+
+
+.子程序 取顶边, 整数型, 公开
+.局部变量 rect, RECT
+.局部变量 hParent, 整数型
+.局部变量 pt, POINT
+
+GetWindowRect (m_hWnd, rect)
+hParent = GetParent (m_hWnd)
+.如果真 (hParent != 0)
+    pt.x = rect.Left
+    pt.y = rect.Top
+    ScreenToClient (hParent, pt)
+    返回 (pt.y)
+.如果真结束
+返回 (rect.Top)
+
+
+.子程序 取左边, 整数型, 公开
+.局部变量 rect, RECT
+.局部变量 hParent, 整数型
+.局部变量 pt, POINT
+
+GetWindowRect (m_hWnd, rect)
+hParent = GetParent (m_hWnd)
+.如果真 (hParent != 0)
+    pt.x = rect.Left
+    pt.y = rect.Top
+    ScreenToClient (hParent, pt)
+    返回 (pt.x)
+.如果真结束
+返回 (rect.Left)
+
+
+.子程序 取窗口句柄, 整数型, 公开
+
+.如果真 (是否已创建 ())
+    返回 (m_hWnd)
+.如果真结束
+返回 (0)
+
+
+.子程序 是否已创建, 逻辑型, 公开
+
+返回 (IsWindow (m_hWnd) != 0)
+
+
+.子程序 总在最前, , 公开, 设置窗口是否总在最前
+.参数 是否总在最前, 逻辑型
+
+.如果 (是否总在最前)
+    SetWindowPos (m_hWnd, #HWND_TOPMOST, 0, 0, 0, 0, 位或 (#SWP_NOSIZE, #SWP_NOMOVE, #SWP_NOACTIVATE))
+.否则
+    SetWindowPos (m_hWnd, #HWND_NOTOPMOST, 0, 0, 0, 0, 位或 (#SWP_NOSIZE, #SWP_NOMOVE, #SWP_NOACTIVATE))
+.如果结束
+
+
+
+.子程序 随意移动, , 公开, 设置窗口是否可以随意移动
+.参数 是否随意移动, 逻辑型
+
+SetProp (m_hWnd, “Comet_HitMove”, 到整数 (是否随意移动))
+
+
+.子程序 禁止关闭, , 公开, 设置窗口是否禁止关闭
+.参数 是否禁止关闭, 逻辑型, , 本参数为真时，ALT+F4等方式将无法关闭窗口
+
+SetProp (m_hWnd, “Comet_NoClose”, 到整数 (是否禁止关闭))
+
+
+.子程序 更新歌词, , 公开
+.参数 歌词内容, 文本型
+.参数 高亮歌词百分比, 整数型, 可空, 高亮歌词的百分比 0--100
+
+m_wLyrics = A2W (歌词内容)
+m_nHighlight = 高亮歌词百分比
+.如果真 (m_nHighlight < 0)
+    m_nHighlight = 0
+.如果真结束
+.如果真 (m_nHighlight > 100)
+    m_nHighlight = 100
+.如果真结束
+重画 ()
+
+
+.子程序 更新歌词W, , 公开
+.参数 歌词内容, 字节集, , 可传unicode
+.参数 高亮歌词百分比, 整数型, 参考 可空, 高亮歌词的百分比 0--100
+
+m_wLyrics = 歌词内容
+m_nHighlight = 高亮歌词百分比
+.如果真 (m_nHighlight < 0)
+    m_nHighlight = 0
+.如果真结束
+.如果真 (m_nHighlight > 100)
+    m_nHighlight = 100
+.如果真结束
+重画 ()
+
+
+.子程序 重画, , 公开
+.局部变量 nWidth, 整数型
+.局部变量 nHeight, 整数型
+.局部变量 Graphics, 整数型
+
+nWidth = m_nWidth
+nHeight = m_nHeight
+.如果真 (m_hCacheBitmap != 0)
+    SelectObject (m_hCacheDC, m_hCacheOldBitmap)
+    DeleteObject (m_hCacheBitmap)
+.如果真结束
+m_hCacheBitmap = Create32Bitmap (m_hCacheDC, nWidth, nHeight)
+m_hCacheOldBitmap = SelectObject (m_hCacheDC, m_hCacheBitmap)
+' -------------------------------
+GdipCreateFromHDC (m_hCacheDC, Graphics)  ' 创建GDIPlus对象
+GdipSetSmoothingMode (Graphics, #呈现模式_消除锯齿)
+GdipSetTextRenderingHint (Graphics, #文本呈现模式_AntiAlias)
+
+绘制背景 (Graphics)
+绘制歌词 (Graphics)
+GdipDeleteGraphics (Graphics)
+' -------------------------------
+UpdateLayered (m_hWnd, m_hCacheDC, nWidth, nHeight)
+
+
+.子程序 绘制背景
+.参数 Graphics, 整数型
+
+.如果真 (m_pBkBrush != 0)
+    GdipFillRectangle (Graphics, m_pBkBrush, 0, 0, m_nWidth, m_nHeight)
+.如果真结束
+
+
+
+.子程序 绘制歌词
+.参数 Graphics, 整数型
+.局部变量 RectF, RectF
+.局部变量 layoutRect, RectF
+.局部变量 boundingBox, RectF
+.局部变量 StringPath, 整数型
+.局部变量 TextBrush, 整数型
+.局部变量 Region, 整数型
+
+' //先取出文字宽度和高度
+GdipMeasureString (Graphics, m_wLyrics, -1, m_pFont, layoutRect, m_pTextFormat, boundingBox, 0, 0)
+RectF.Width = boundingBox.Width
+RectF.Height = boundingBox.Height
+RectF.X = (m_nWidth - RectF.Width) / 2
+RectF.Y = (m_nHeight - RectF.Height) / 2
+' //-----------------------------------------------------------
+' //画出阴影
+.如果真 (m_pShadowBrush != 0)
+    layoutRect = RectF
+    layoutRect.X = layoutRect.X + m_nShadowOffset
+    layoutRect.Y = layoutRect.Y + m_nShadowOffset
+    GdipCreatePath (#填充模式_交替, StringPath)  ' //创建路径
+    GdipAddPathString (StringPath, m_wLyrics, -1, m_pFontFamily, m_FontStyle, m_FontSize, layoutRect, m_pTextFormat)  ' //把文字加入路径
+    GdipFillPath (Graphics, m_pShadowBrush, StringPath)  ' //填充路径
+    GdipDeletePath (StringPath)  ' //销毁路径
+.如果真结束
+' //-----------------------------------------------------------
+' //画出歌词
+GdipCreatePath (#填充模式_交替, StringPath)  ' //创建路径
+GdipAddPathString (StringPath, m_wLyrics, -1, m_pFontFamily, m_FontStyle, m_FontSize, RectF, m_pTextFormat)  ' //把文字加入路径
+.如果真 (m_pTextPen != 0)
+    GdipDrawPath (Graphics, m_pTextPen, StringPath)  ' //画路径,文字边框
+.如果真结束
+TextBrush = 创建渐变画刷 (m_TextLineMode, m_TextColor, RectF)
+GdipFillPath (Graphics, TextBrush, StringPath)  ' //填充路径
+GdipDeleteBrush (TextBrush)  ' //销毁画刷
+.如果真 (m_nHighlight > 0)  ' //有高亮部分
+    .如果真 (m_nHighlight < 100)
+        layoutRect = RectF
+        layoutRect.Width = layoutRect.Width * m_nHighlight / 100
+        GdipCreateRegionRect (layoutRect, Region)
+        GdipSetClipRegion (Graphics, Region, #合并模式_替代)
+    .如果真结束
+    .如果真 (m_pHighlightPen != 0)
+        GdipDrawPath (Graphics, m_pHighlightPen, StringPath)  ' //画路径,文字边框
+    .如果真结束
+    TextBrush = 创建渐变画刷 (m_HighlightLineMode, m_HighlightColor, RectF)
+    GdipFillPath (Graphics, TextBrush, StringPath)  ' //填充路径
+    GdipDeleteBrush (TextBrush)  ' //销毁画刷
+    .如果真 (Region != 0)
+        GdipSetClipRegion (Graphics, 0, #合并模式_替代)
+        GdipDeleteRegion (Region)
+    .如果真结束
+    
+.如果真结束
+GdipDeletePath (StringPath)  ' //销毁路径
+
+' //GdipDrawString (Graphics, m_wLyrics, -1, m_pFont, RectF, m_pTextFormat, m_pTextBrush)
+
+
+.子程序 创建渐变画刷, 整数型
+.参数 渐变模式, 整数型
+.参数 画刷颜色, 整数型, 参考 数组, ARGB
+.参数 RectF, RectF, 参考
+.局部变量 TextBrush, 整数型
+.局部变量 pt, PointF
+.局部变量 point1, PointF
+.局部变量 point2, PointF
+
+.判断开始 (渐变模式 == #歌词渐变_无渐变)
+    GdipCreateSolidFill (画刷颜色[1], TextBrush)
+.判断 (渐变模式 == #歌词渐变_两色渐变)
+    point1.x = RectF.X
+    point1.y = RectF.Y
+    point2.x = RectF.X
+    point2.y = RectF.Y + RectF.Height
+    GdipCreateLineBrush (point1, point2, 画刷颜色[1], 画刷颜色[2], #环绕模式_水平垂直反转后平铺, TextBrush)
+.判断 (渐变模式 == #歌词渐变_三色渐变)
+    point1.x = RectF.X
+    point1.y = RectF.Y
+    point2.x = RectF.X
+    point2.y = RectF.Y + RectF.Height / 2
+    GdipCreateLineBrush (point1, point2, 画刷颜色[1], 画刷颜色[2], #环绕模式_水平垂直反转后平铺, TextBrush)
+.默认
+    GdipCreateSolidFill (画刷颜色[1], TextBrush)
+.判断结束
+返回 (TextBrush)
+
+
+.子程序 事件_右键按下, , , 在窗口上右键按下后调用。
+.参数 事件子程序指针, 子程序指针, , 参数1为鼠标横向坐标，参数2为鼠标纵向坐标
+
+
+' //g_DUIArray [DUIIndex].Event_RBtuuonDown ＝ 到整数 (事件子程序指针)
+
+
+
+.子程序 事件_右键放开, , , 在窗口上右键松开后调用。
+.参数 事件子程序指针, 子程序指针, , 参数1为鼠标横向坐标，参数2为鼠标纵向坐标
+
+' //g_DUIArray [DUIIndex].Event_RBtuuonUp ＝ 到整数 (事件子程序指针)
+

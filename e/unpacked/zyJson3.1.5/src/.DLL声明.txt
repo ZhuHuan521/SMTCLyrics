@@ -1,0 +1,303 @@
+﻿.版本 2
+
+.DLL命令 匿名API_1, 整数型, "kernel32.dll", "HeapCreate"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 整数型
+
+.DLL命令 匿名API_2, 整数型, "kernel32.dll", "HeapDestroy"
+    .参数 匿名参数_1, 整数型
+
+.DLL命令 匿名API_3, 整数型, "kernel32.dll", "HeapFree"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 整数型
+
+.DLL命令 匿名API_4, 整数型, "kernel32.dll", "HeapAlloc"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 整数型
+
+.DLL命令 匿名API_5, 整数型, "kernel32.dll", "GetProcessHeap"
+
+.DLL命令 匿名API_6, , "kernel32.dll", "RtlMoveMemory"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 整数型
+
+.DLL命令 匿名API_7, , "kernel32.dll", "RtlMoveMemory"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 整数型
+
+.DLL命令 匿名API_8, , "kernel32.dll", "RtlMoveMemory"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型, 传址
+    .参数 匿名参数_3, 整数型
+
+.DLL命令 匿名API_9, , "kernel32.dll", "RtlMoveMemory"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 字节集
+    .参数 匿名参数_3, 整数型
+
+.DLL命令 匿名API_10, 整数型, "kernel32.dll", "MultiByteToWideChar"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 文本型
+    .参数 匿名参数_4, 整数型
+    .参数 匿名参数_5, 字节集
+    .参数 匿名参数_6, 整数型
+
+.DLL命令 匿名API_11, 整数型, "kernel32.dll", "WideCharToMultiByte"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 字节集
+    .参数 匿名参数_4, 整数型
+    .参数 匿名参数_5, 文本型
+    .参数 匿名参数_6, 整数型
+    .参数 匿名参数_7, 整数型
+    .参数 匿名参数_8, 整数型
+
+.DLL命令 匿名API_12, 整数型, "kernel32.dll", "WideCharToMultiByte"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 整数型
+    .参数 匿名参数_4, 整数型
+    .参数 匿名参数_5, 文本型
+    .参数 匿名参数_6, 整数型
+    .参数 匿名参数_7, 整数型
+    .参数 匿名参数_8, 整数型
+
+.DLL命令 匿名API_13, 整数型, "kernel32.dll", "MultiByteToWideChar"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 整数型
+    .参数 匿名参数_4, 整数型
+    .参数 匿名参数_5, 字节集
+    .参数 匿名参数_6, 整数型
+
+.DLL命令 匿名API_14, 整数型, "kernel32.dll", "MultiByteToWideChar"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 文本型
+    .参数 匿名参数_4, 整数型
+    .参数 匿名参数_5, 整数型
+    .参数 匿名参数_6, 整数型
+
+.DLL命令 匿名API_15, 整数型, "kernel32.dll", "lstrlenW"
+    .参数 匿名参数_1, 字节集
+
+.DLL命令 匿名API_16, 整数型, "kernel32.dll", "lstrlenW"
+    .参数 匿名参数_1, 整数型
+
+.DLL命令 匿名API_17, 整数型, "kernel32.dll", "LocalSize"
+    .参数 匿名参数_1, 通用型
+
+.DLL命令 匿名API_18, 整数型, "kernel32.dll", "lstrlenA"
+    .参数 匿名参数_1, 通用型
+
+.DLL命令 匿名API_19, 整数型, "kernel32.dll", "lstrcmpA"
+    .参数 匿名参数_1, 通用型
+    .参数 匿名参数_2, 通用型
+
+.DLL命令 匿名API_20, 整数型, "kernel32.dll", "lstrcmpiA"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+
+.DLL命令 匿名API_21, 整数型, "kernel32.dll", "lstrcmpW"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+
+.DLL命令 匿名API_22, 整数型, "kernel32.dll", "lstrcmpiW"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+
+.DLL命令 匿名API_23, , "kernel32.dll", "RtlZeroMemory"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+
+.DLL命令 匿名API_24, 整数型, "kernel32.dll", "InterlockedIncrement"
+    .参数 匿名参数_1, 整数型
+
+.DLL命令 匿名API_25, 整数型, "kernel32.dll", "InterlockedDecrement"
+    .参数 匿名参数_1, 整数型
+
+.DLL命令 匿名API_26, 整数型, "shell32.dll", "StrStrIW"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+
+.DLL命令 匿名API_27, 整数型, "shell32.dll", "StrStrW"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+
+.DLL命令 匿名API_28, 整数型, "shell32.dll", "StrStrA"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 文本型
+
+.DLL命令 匿名API_29, 整数型, "shell32.dll", "StrStrW"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 字节集
+
+.DLL命令 匿名API_30, 整数型, "shell32.dll", "StrStrA"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+
+.DLL命令 匿名API_31, 整数型, "shlwapi.dll", "StrTrimW"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 字节集
+
+.DLL命令 匿名API_32, 整数型, "kernel32.dll", "CreateFileW"
+    .参数 匿名参数_1, 字节集
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 整数型
+    .参数 匿名参数_4, 整数型
+    .参数 匿名参数_5, 整数型
+    .参数 匿名参数_6, 整数型
+    .参数 匿名参数_7, 整数型
+
+.DLL命令 匿名API_33, 整数型, "kernel32.dll", "ReadFile"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 整数型
+    .参数 匿名参数_4, 整数型, 传址
+    .参数 匿名参数_5, 整数型
+
+.DLL命令 匿名API_34, 整数型, "kernel32.dll", "GetFileSize"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+
+.DLL命令 匿名API_35, 整数型, "kernel32.dll", "CloseHandle"
+    .参数 匿名参数_1, 整数型
+
+.DLL命令 匿名API_36, 整数型, "kernel32.dll", "lstrcmpiW"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+
+.DLL命令 匿名API_37, 整数型, "user32.dll", "CharUpperW"
+    .参数 匿名参数_1, 整数型
+
+.DLL命令 匿名API_38, 整数型, "user32.dll", "CharLowerW"
+    .参数 匿名参数_1, 整数型
+
+.DLL命令 匿名API_39, 整数型, "Kernel32.dll", "LCMapStringEx"
+    .参数 匿名参数_1, 字节集
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 字节集
+    .参数 匿名参数_4, 整数型
+    .参数 匿名参数_5, 字节集
+    .参数 匿名参数_6, 整数型
+    .参数 匿名参数_7, 整数型
+    .参数 匿名参数_8, 整数型
+    .参数 匿名参数_9, 整数型
+
+.DLL命令 匿名API_40, 整数型, "Kernel32.dll", "LCMapStringEx"
+    .参数 匿名参数_1, 字节集
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 整数型
+    .参数 匿名参数_4, 整数型
+    .参数 匿名参数_5, 整数型
+    .参数 匿名参数_6, 整数型
+    .参数 匿名参数_7, 整数型
+    .参数 匿名参数_8, 整数型
+    .参数 匿名参数_9, 整数型
+
+.DLL命令 匿名API_41, 整数型, "shell32.dll", "StrRStrIW"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 整数型
+
+.DLL命令 匿名API_42, 整数型, "shell32.dll", "StrRStrW"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 整数型
+
+.DLL命令 匿名API_43, 整数型, "shlwapi.dll", "StrTrimW"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+
+.DLL命令 匿名API_44, 整数型, "shlwapi.dll", "StrToIntExA"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 整数型, 传址
+
+.DLL命令 匿名API_45, 整数型, "shlwapi.dll", "StrToIntExW"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 整数型, 传址
+
+.DLL命令 匿名API_46, 整数型, "shlwapi.dll", "StrToIntExW"
+    .参数 匿名参数_1, 字节集
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 整数型, 传址
+
+.DLL命令 匿名API_47, 整数型, "kernel32.dll", "WriteFile"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 整数型
+    .参数 匿名参数_4, 整数型, 传址
+    .参数 匿名参数_5, 整数型
+
+.DLL命令 匿名API_48, 整数型, "shlwapi.dll", "StrToIntW"
+    .参数 匿名参数_1, 整数型
+
+.DLL命令 匿名API_49, 整数型, "kernel32.dll", "CreateMutexW"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 整数型
+
+.DLL命令 匿名API_50, 整数型, "kernel32.dll", "WaitForSingleObject"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+
+.DLL命令 匿名API_51, 整数型, "kernel32.dll", "ReleaseMutex"
+    .参数 匿名参数_1, 整数型
+
+.DLL命令 匿名API_52, , "kernel32", "InitializeCriticalSection"
+    .参数 匿名参数_1, 整数型
+
+.DLL命令 匿名API_53, , "kernel32", "DeleteCriticalSection"
+    .参数 匿名参数_1, 整数型
+
+.DLL命令 匿名API_54, , "kernel32", "EnterCriticalSection"
+    .参数 匿名参数_1, 整数型
+
+.DLL命令 匿名API_55, , "kernel32", "LeaveCriticalSection"
+    .参数 匿名参数_1, 整数型
+
+.DLL命令 匿名API_56, 整数型, "NETAPI32.DLL", "NetApiBufferAllocate"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型, 传址
+
+.DLL命令 匿名API_57, 整数型, "NETAPI32.DLL", "NetApiBufferFree"
+    .参数 匿名参数_1, 整数型
+
+.DLL命令 匿名API_58, 整数型, "user32.dll", "@wsprintfA"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 文本型
+    .参数 匿名参数_3, 整数型
+    .参数 匿名参数_4, 整数型
+
+.DLL命令 匿名API_59, 整数型, "user32.dll", "@wsprintfW"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 字节集
+    .参数 匿名参数_3, 整数型
+    .参数 匿名参数_4, 整数型
+
+.DLL命令 匿名API_60, 长整数型, "ntdll.dll", "@_wtoi64"
+    .参数 匿名参数_1, 字节集
+
+.DLL命令 匿名API_61, 长整数型, "ntdll.dll", "@_wtoi64"
+    .参数 匿名参数_1, 整数型
+
+.DLL命令 匿名API_62, 整数型, "ntdll.dll", "@_wtoi"
+    .参数 匿名参数_1, 整数型
+
+.DLL命令 匿名API_63, 整数型, "kernel32.dll", "lstrcpynW"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 整数型
+    .参数 匿名参数_3, 整数型
+
+.DLL命令 匿名API_64, 整数型, "kernel32.dll", "lstrcpynW"
+    .参数 匿名参数_1, 整数型
+    .参数 匿名参数_2, 字节集
+    .参数 匿名参数_3, 整数型

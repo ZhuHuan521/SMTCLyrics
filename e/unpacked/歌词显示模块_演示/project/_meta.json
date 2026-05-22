@@ -1,0 +1,59 @@
+﻿{
+  "folderAllocatedKey": 0,
+  "folders": [],
+  "formFiles": [
+    {
+      "key": "form:_启动窗口",
+      "logicalName": "_启动窗口",
+      "relativePath": "src/_启动窗口.xml"
+    }
+  ],
+  "formatVersion": 3,
+  "nativeBundleDigest": "51F6CFD91D1435A7",
+  "projectNameStored": true,
+  "rootChildKeys": [
+    "class:窗口程序集1",
+    "class:KRC解密",
+    "class:功能型程序",
+    "form:_启动窗口",
+    "dll:WideCharToMultiByte",
+    "dll:WideCharToMultiByte_Text",
+    "dll:MultiByteToWideChar",
+    "dll:VirtualAlloc",
+    "dll:RtlMoveMemory",
+    "dll:RtlMoveMemory_d",
+    "dll:uncompress",
+    "image:图片2",
+    "image:图片3",
+    "image:zlib",
+    "constant:后文本1",
+    "constant:前文本1",
+    "constant:后文本2",
+    "constant:常量_Js",
+    "constant:cache"
+  ],
+  "sourceFileKind": "e",
+  "sourceFiles": [
+    {
+      "key": "class:窗口程序集1",
+      "logicalName": "窗口程序集1",
+      "relativePath": "src/窗口程序集1.txt"
+    },
+    {
+      "key": "class:KRC解密",
+      "logicalName": "KRC解密",
+      "relativePath": "src/KRC解密.txt"
+    },
+    {
+      "key": "class:功能型程序",
+      "logicalName": "功能型程序",
+      "relativePath": "src/功能型程序.txt"
+    }
+  ],
+  "windowBindings": [
+    {
+      "className": "窗口程序集1",
+      "formName": "_启动窗口"
+    }
+  ]
+}

@@ -1,0 +1,952 @@
+﻿.版本 2
+
+.DLL命令 CallWindowProc, 整数型, "user32", "CallWindowProcA", , 将消息传答窗口函数
+    .参数 lpPrevWndFunc, 整数型
+    .参数 hwnd, 整数型
+    .参数 msg, 整数型
+    .参数 wParam, 整数型
+    .参数 lParam, 整数型
+
+.DLL命令 DeleteDC, 整数型, "gdi32", "DeleteDC", , 删除专用设备场景或信息场景，释放所有相关窗口资源。不要将它用于GetDC函数取回的设备场景  执行成功则为非零，失败则为零
+    .参数 hdc, 整数型, , 将要删除的设备场景  在vb里使用不要将它用于由vb hdc属性获取的设备场景句柄;
+
+.DLL命令 DeleteObject, 整数型, "gdi32", "DeleteObject", , 用这个函数删除GDI对象，比如画笔、刷子、字体、位图、区域以及调色板等等。对象使用的所有系统资源都会被释放  非零表示成功，零表示失败
+    .参数 hObject, 整数型, , 一个GDI对象的句柄;
+
+.DLL命令 GetClientRect, 整数型, "user32", "GetClientRect", , 返回指定窗口客户区矩形的大小  非零表示成功，零表示失败。会设置GetLastError
+    .参数 hwnd, 整数型, , 欲计算大小的目标窗口
+    .参数 lpRect, RECT, , RECT，指定一个矩形，用客户区域的大小载入（以像素为单位）;
+
+.DLL命令 GetDC, 整数型, "user32", "GetDC", , 获取指定窗口的设备场景  指定窗口的设备场景句柄，出错则为0
+    .参数 hwnd, 整数型, , 将获取其设备场景的窗口的句柄。若为0，则要获取整个屏幕的DC;
+
+.DLL命令 GetProp, 整数型, "user32", "GetPropA", , 从窗口属性表列中返回数据句柄
+    .参数 hwnd, 整数型
+    .参数 lpString, 文本型
+
+.DLL命令 GetWindowDC, 整数型, "user32", "GetWindowDC", , 获取整个窗口（包括边框、滚动条、标题栏、菜单等）的设备场景  执行成功为窗口设备场景，失败则为0
+    .参数 hwnd, 整数型, , 将获取其设备场景的窗口;
+
+.DLL命令 GetWindowLong, 整数型, "user32", "GetWindowLongA", , 从指定窗口的结构中取得信息  由nIndex决定。零表示出错。会设置GetLastError
+    .参数 hwnd, 整数型, , 欲为其获取信息的窗口的句柄
+    .参数 nIndex, 整数型, , 欲取回的信息，可以是下述任何一个常数：;GWL_EXSTYLE：扩展窗口样式;GWL_STYLE：窗口样式;GWL_WNDPROC：该窗口的窗口函数的地址;GWL_HINSTANCE：拥有窗口的实例的句柄;GWL_HWNDPARENT：该窗口之父的句柄。不要用SetWindowWord来改变这个值;GWL_ID：对话框中一个子窗口的标识符;GWL_USERDATA：含义由应用程序规定;DWL_DLGPROC：这个窗口的对话框函数地址;DWL_MSGRESULT：在对话框函数中处理的一条消息返回的值;DWL_USER：含义由应用程序规定;
+
+.DLL命令 GetWindowRect, 整数型, "user32", "GetWindowRect", , 获得整个窗口的范围矩形，窗口的边框、标题栏、滚动条及菜单等都在这个矩形内  非零表示成功，零表示失败。会设置GetLastError
+    .参数 hwnd, 整数型, , 想获得范围矩形的那个窗口的句柄
+    .参数 lpRect, RECT, , RECT，屏幕坐标中随同窗口装载的矩形;
+
+.DLL命令 GetWindowText, 整数型, "user32", "GetWindowTextA", , 取得一个窗体的标题（caption）文字，或者一个控件的内容（在vb里使用：使用vb窗体或控件的caption或text属性）  复制到lpString的字串长度；不包括空中止字符。会设置GetLastError
+    .参数 hwnd, 整数型, , 欲获取文字的那个窗口的句柄
+    .参数 lpString, 文本型, , 预定义的一个缓冲区，至少有cch+1个字符大小；随同窗口文字载入
+    .参数 cch, 整数型, , lp缓冲区的长度;
+
+.DLL命令 GetWindowTextLength, 整数型, "user32", "GetWindowTextLengthA", , 调查窗口标题文字或控件内容的长短（在vb里使用：直接使用vb窗体或控件的caption或text属性）  字串长度，不包括空中止字符
+    .参数 hwnd, 整数型, , 想调查文字长度的窗口的句柄;
+
+.DLL命令 ReleaseDC, 整数型, "user32", "ReleaseDC", , 释放由调用GetDC或GetWindowDC函数获取的指定设备场景。它对类或私有设备场景无效（但这样的调用不会造成损害）  执行成功为1，否则为0
+    .参数 hwnd, 整数型, , 要释放的设备场景相关的窗口句柄
+    .参数 hdc, 整数型, , 要释放的设备场景句柄;
+
+.DLL命令 SetProp, 整数型, "user32", "SetPropA", , 增加或修改属性列项
+    .参数 hwnd, 整数型
+    .参数 lpString, 文本型
+    .参数 hData, 整数型
+
+.DLL命令 SetWindowLong, 整数型, "user32", "SetWindowLongA", , 在窗口结构中为指定的窗口设置信息  指定数据的前一个值
+    .参数 hwnd, 整数型, , 欲为其取得信息的窗口的句柄
+    .参数 nIndex, 整数型, , 请参考GetWindowLong函数的nIndex参数的说明
+    .参数 dwNewLong, 整数型, , 由nIndex指定的窗口信息的新值;
+
+.DLL命令 SendMessage, 整数型, "user32", "SendMessageA", , 调用一个窗口的窗口函数，将一条消息发给那个窗口。除非消息处理完毕，否则该函数不会返回。SendMessageBynum， ;    SendMessageByString是该函数的“类型安全”声明形式  由具体的消息决定
+    .参数 hwnd, 整数型, , 要接收消息的那个窗口的句柄
+    .参数 wMsg, 整数型, , 消息的标识符
+    .参数 wParam, 整数型, , 具体取决于消息
+    .参数 lParam, 整数型, , 具体取决于消息;
+
+.DLL命令 IsWindow, 整数型, "user32", "IsWindow", , 判断一个窗口句柄是否有效  非零表示成功，零表示失败
+    .参数 hwnd, 整数型, , 待检查窗口的句柄;
+
+.DLL命令 ValidateRect, 整数型, "user32", "ValidateRect", , 校验窗口的全部或部分客户区。这样便可告之windows指定的区域不需要重画  非零表示成功，零表示失败
+    .参数 hwnd, 整数型, , 欲检验的窗口句柄
+    .参数 lpRect, RECT, , RECT，指定一个矩形结构，用于描叙欲校验的矩形部分。可使用ValidateRectBynum，同时将lpRect设为零（Long数据类型），从而对整个窗口进行校验;
+
+.DLL命令 InvalidateRect, 整数型, "user32", "InvalidateRect", , 这个函数屏蔽一个窗口客户区的全部或部分区域。这会导致窗口在事件期间部分重画  非零表示成功，零表示失败
+    .参数 hwnd, 整数型, , 待屏蔽窗口的句柄
+    .参数 lpRect, 整数型, , RECT，用于描述待屏蔽矩形部分的一个矩形结构。可用InvalidateRectBynum函数，同时将lpRect设为零（Long数据类型），从而屏蔽（或禁用）整个窗口
+    .参数 bErase, 整数型, , TRUE（非零）导致指定的区域在重画前先删除;
+
+.DLL命令 InvalidateRect2, 整数型, "user32", "InvalidateRect", , 这个函数屏蔽一个窗口客户区的全部或部分区域。这会导致窗口在事件期间部分重画  非零表示成功，零表示失败
+    .参数 hwnd, 整数型, , 待屏蔽窗口的句柄
+    .参数 lpRect, RECT, , RECT，用于描述待屏蔽矩形部分的一个矩形结构。可用InvalidateRectBynum函数，同时将lpRect设为零（Long数据类型），从而屏蔽（或禁用）整个窗口
+    .参数 bErase, 整数型, , TRUE（非零）导致指定的区域在重画前先删除;
+
+.DLL命令 BeginPaint, 整数型, "user32", "BeginPaint", , 准备一个画图窗
+    .参数 hwnd, 整数型
+    .参数 lpPaint, PAINTSTRUCT
+
+.DLL命令 EndPaint, 整数型, "user32", "EndPaint", , 在指定窗口中标记图画结尾标志
+    .参数 hwnd, 整数型
+    .参数 lpPaint, PAINTSTRUCT
+
+.DLL命令 SetWindowPos, 整数型, "user32", "SetWindowPos", , 这个函数能为窗口指定一个新位置和状态。它也可改变窗口在内部窗口列表中的位置。该函数与DeferWindowPos函数相似，只是它的作用是立即表现出来的（在vb里使用：针对vb窗体，如它们在win32下屏蔽或最小化，则需重设最顶部状态。如有必要，请用一个子类处理模块来重设最顶部状态  非零表示成功，零表示失败。会设置GetLastError
+    .参数 hwnd, 整数型, , 欲定位的窗口
+    .参数 hWndInsertAfter, 整数型, , 窗口句柄。在窗口列表中，窗口hwnd会置于这个窗口句柄的后面。也可能选用下述值之一：;HWND_BOTTOM：将窗口置于窗口列表底部;HWND_TOP：将窗口置于Z序列的顶部；Z序列代表在分级结构中，窗口针对一个给定级别的窗口显示的顺序;HWND_TOPMOST：将窗口置于列表顶部，并位于任何最顶部窗口的前面;HWND_NOTOPMOST：将窗口置于列表顶部，并位于任何最顶部窗口的后面
+    .参数 x, 整数型, , 窗口新的x坐标。如hwnd是一个子窗口，则x用父窗口的客户区坐标表示
+    .参数 y, 整数型, , 窗口新的y坐标。如hwnd是一个子窗口，则y用父窗口的客户区坐标表示
+    .参数 cx, 整数型, , 指定新的窗口宽度
+    .参数 cy, 整数型
+    .参数 wFlags, 整数型, , 包含了旗标的一个整数;SWP_DRAWFRAME：围绕窗口画一个框;SWP_HIDEWINDOW：隐藏窗口;SWP_NOACTIVATE：不激活窗口;SWP_NOMOVE：保持当前位置（x和y设定将被忽略）;SWP_NOREDRAW：窗口不自动重画;SWP_NOSIZE：保持当前大小（cx和cy会被忽略）;SWP_NOZORDER：保持窗口在列表的当前位置（hWndInsertAfter将被忽略）;SWP_SHOWWINDOW：显示窗口;SWP_FRAMECHANGED：强迫一条WM_NCCALCSIZE消息进入窗口，即使窗口的大小没有改变;
+
+.DLL命令 GetParent, 整数型, "user32", "GetParent", , 判断指定窗口的父窗口  父窗口的句柄。如窗口没有父，或遇到错误，则返回零。会设置GetLastError
+    .参数 hwnd, 整数型, , 欲测试的窗口的句柄;
+
+.DLL命令 ClientToScreen, 整数型, "user32", "ClientToScreen", , 判断窗口内以客户区坐标表示的一个点的屏幕坐标  非零表示成功，零表示失败
+    .参数 hwnd, 整数型, , 判断客户区坐标时那个窗口的句柄
+    .参数 lpPoint, POINT, , POINTAPI，用hwnd窗口的客户区坐标表示的点，这个参数会包含屏幕坐标系统中相同的点;
+
+.DLL命令 ScreenToClient, 整数型, "user32", "ScreenToClient", , 判断屏幕上一个指定点的客户区坐标  非零表示成功，零表示失败
+    .参数 hwnd, 整数型, , 一个窗口的句柄，该窗口定义了要使用的客户区坐标系统
+    .参数 lpPoint, POINT, , POINTAPI，屏幕坐标系统中包含了屏幕点的结构。这个函数会随同相应的客户区坐标（由hwnd决定）载入结构;
+
+.DLL命令 GetWindow, 整数型, "user32", "GetWindow", , 获得一个窗口的句柄，该窗口与某源窗口有特定的关系  由wCmd决定的一个窗口的句柄。如没有找到相符窗口，或者遇到错误，则返回零值。会设置GetLastError
+    .参数 hwnd, 整数型, , 源窗口
+    .参数 wCmd, 整数型, , 指定结果窗口与源窗口的关系，它们建立在下述常数基础上：;GW_CHILD：寻找源窗口的第一个子窗口;GW_HWNDFIRST：为一个源子窗口寻找第一个兄弟（同级）窗口，或寻找第一个顶级窗口;GW_HWNDLAST：为一个源子窗口寻找最后一个兄弟（同级）窗口，或寻找最后一个顶级窗口;GW_HWNDNEXT：为源窗口寻找下一个兄弟窗口;GW_HWNDPREV：为源窗口寻找前一个兄弟窗口;GW_OWNER：寻找窗口的所有者;
+
+.DLL命令 SetWindowText, 整数型, "user32", "SetWindowTextA", , 设置窗口的标题文字或控件的内容（在vb里使用：针对vb窗体，应使用caption或text属性）  非零表示成功，零表示失败。会设置GetLastError
+    .参数 hwnd, 整数型, , 要设置文字的窗口的句柄
+    .参数 lpString, 文本型, , 要设到hwnd窗口中的文字;
+
+.DLL命令 TrackMouseEvent, 整数型, "user32.dll", "TrackMouseEvent"
+    .参数 lpEventTrack, TRACKMOUSEEVENT
+
+.DLL命令 GetStockObject, 整数型, "gdi32", "GetStockObject", , 取得一个固有对象（Stock）。这是可由任何应用程序使用的windows标准对象之一  指向指定对象的一个句柄。零表示出错
+    .参数 nIndex, 整数型, , 下述表格中定义的任何常数之一BLACK_BRUSH黑色刷子DKGRAY_BRUSH黑灰色刷子GRAY_BRUSH灰色刷子HOLLOW_BRUSH凹刷子LTGRAY_BRUSH浅灰色刷子NULL_BRUSH空刷子WHITE_BRUSH白色刷子BLACK_PEN黑色画笔NULL_PEN空画笔WHITE_PEN白色画笔ANSI_FIXED_FONT采用windows（ANSI）字符集的等宽字体ANSI_VAR_FONT采用windows（ANSI）字符集的不等宽字体DEVICE_DEFAULT_FONT设备使用的默认字体（NT）DEFAULT_GUI_FONT用户界面的默认字体，包括菜单和对话框字体（Windows 95）OEM_FIXED_FONTOEM字符集的固有字体SYSTEM_FONT屏幕系统字体。这是用于菜单、对话框等等的默认不等宽字体SYSTEM_FIXED_FONT屏幕系统字体。这是用于菜单、对话框等等的默认等宽字体（在windows 3.0之前使用）DEFAULT_PALETTE默认调色板;
+
+.DLL命令 CreateWindowEx, 整数型, "user32.dll", "CreateWindowExA"
+    .参数 dwExStyle, 整数型
+    .参数 lpClassName, 文本型, , 窗口实例的类的名字
+    .参数 lpWindowName, 文本型, , 窗口标题名
+    .参数 dwStyle, 整数型, , 新创建的窗口的样式
+    .参数 X, 整数型, , 窗口左上角的横坐标
+    .参数 Y, 整数型, , 窗口左上角的纵坐标
+    .参数 nWidth, 整数型, , 窗口的宽度
+    .参数 nHeight, 整数型, , 窗口的高度
+    .参数 hWndParent, 整数型, , 该窗口的父窗口的句柄
+    .参数 hMenu, 整数型, , 窗口主菜单句柄
+    .参数 hInstance, 整数型, , 创建窗口的应用程序当前句柄
+    .参数 lpParam, 整数型, , 指向一个传递给窗口的参数值的指针
+
+.DLL命令 SendMessageA_TOOLINFO, 整数型, "user32.dll", "SendMessageA"
+    .参数 hWnd, 整数型
+    .参数 Msg, 整数型
+    .参数 wParam, 整数型
+    .参数 lParam, TOOLINFO
+
+.DLL命令 CreateCompatibleDC, 整数型, , "CreateCompatibleDC"
+    .参数 hdc, 整数型
+
+.DLL命令 CreateCompatibleBitmap, 整数型, , "CreateCompatibleBitmap"
+    .参数 hdc, 整数型
+    .参数 nWidth, 整数型
+    .参数 nHeight, 整数型
+
+.DLL命令 BitBlt, 整数型, , "BitBlt"
+    .参数 hdcDest
+    .参数 nXDest
+    .参数 nYDest
+    .参数 nWidth
+    .参数 nHeight
+    .参数 hdcSrc
+    .参数 nXSrc
+    .参数 nYSrc
+    .参数 dwRop
+
+.DLL命令 SelectObject, 整数型, , "SelectObject"
+    .参数 hdc, 整数型, , 一个设备场景的句柄
+    .参数 hObject, 整数型, , 一个画笔、位图、刷子、字体或区域的句柄
+
+.DLL命令 GetDCEx, 整数型, "user32", "GetDCEx", , 为指定窗口获取设备场景。相比GetDC，本函数提供了更多的选项  执行成功为指定窗口设备场景句柄。出错则为0
+    .参数 hwnd, 整数型, , 窗口句柄
+    .参数 hrgnclip, 整数型, , 窗口剪裁区
+    .参数 fdwOptions, 整数型, , 标志字。根据下列常数设置各位：;DCX_CACHE：不管窗口类的样式，从windows缓存获取设备场景;DCX_CLIPCHILREN：所有可见的子窗口区都要从DC的剪裁区中排除;DCX_CLIPSIBLINGS：窗口hWnd上的所有可见兄弟窗口都要从DC的剪裁区中排除;DCX_EXCLUDERGN：从DC剪裁区中排除由hrgnclip指定的区域;DCX_EXCLUDEUPDATE：从设备场景剪裁区中排除刷新区域;DCX_INTERSECTRGN：由hrgnclip指定的区域与设备场景剪裁区相交;DCX_INTERSECTUPDATE：指定区域与设备场景刷新区域相交;DCX_LOCKWINDOWUPDATE：该标志为允许向窗口绘图，即使它由于LockWindowUpdate的调用被锁住;DCX_NORESETATTRS：设备场景释放后不被重置为默认状态;DCX_PARENTCLIP：放弃CS_PARENTDC类样式设置。DC的起点设为hWnd窗口的左上角;DCX_WINDOW：A device context is returned for the entire window rectangle rather than just the client area of the window;DCX_VALIDATE：Combine with DCX_INTERSECTUPDATE, validates the clipping region;
+
+.DLL命令 DefWindowProc, 整数型, "user32", "DefWindowProcA", , 调用缺省窗口过程
+    .参数 hwnd, 整数型
+    .参数 wMsg, 整数型
+    .参数 wParam, 整数型
+    .参数 lParam, 整数型
+
+.DLL命令 RtlMoveMemory_NMHDR, , , "RtlMoveMemory"
+    .参数 lpDest, NMHDR
+    .参数 lpSource, 整数型
+    .参数 cBytes, 整数型
+
+.DLL命令 写到内存_整数, , "kernel32.dll", "RtlMoveMemory"
+    .参数 Destination, 整数型, 传址
+    .参数 Source, 整数型
+    .参数 Length, 整数型
+
+.DLL命令 lstrcpyn_int, 整数型, "kernel32", "lstrcpynA"
+    .参数 lpString1, 整数型, 传址
+    .参数 lpString2, 整数型, 传址
+    .参数 iMaxLength, 整数型
+
+.DLL命令 CreateDIBSection, 整数型, "gdi32", "CreateDIBSection", , 创建一个DIBSection。这是一个GDI对象，可象一幅与设备有关位图那样使用。但是，它在内部作为一幅与设备无关位图保存  执行成功返回DIBSection位图的句柄，零表示失败。会设置GetLastError
+    .参数 hDC, 整数型, , 一个设备场景的句柄。如dw设为DIB_PAL_COLORS，那么DIB颜色表就会用来自逻辑调色板的颜色进行初始化
+    .参数 pBitmapInfo, BITMAPINFO, , BITMAPINFO，这个结构初始化成欲创建的那幅位图的配置数据
+    .参数 un, 整数型, , 下述常数之一：;DIB_PAL_COLORS：BITMAPINFO包含了一个16位调色板索引的数组;DIB_RGB_COLORS：BITMAPINFO包含了一个颜色表，其中保存有32位颜色（RGBQUAD）
+    .参数 lplpVoid, 整数型, , 用于载入DIBSection数据区的内存地址
+    .参数 handle, 整数型, , 指向一个文件映射对象的可选句柄，位图将在其中创建。如设为零，Windows会自动分配内存
+    .参数 dw, 整数型, , 如指定了句柄，就用这个参数指定位图数据在文件映射对象中的偏移量;
+
+.DLL命令 UpdateLayeredWindow, 整数型, "user32.dll", "UpdateLayeredWindow"
+    .参数 hWnd, 整数型
+    .参数 hdcDst, 整数型
+    .参数 pptDst, 整数型
+    .参数 psize, Size
+    .参数 hdcSrc, 整数型
+    .参数 pptSrc, POINT
+    .参数 crKey, 整数型
+    .参数 pblend, BLENDFUNCTION
+    .参数 dwFlags, 整数型
+
+.DLL命令 RemoveProp, 整数型, "user32", "RemovePropA", , 删除属性列入口
+    .参数 hwnd, 整数型
+    .参数 lpString, 文本型
+
+.DLL命令 RedrawWindow, 整数型, "user32", "RedrawWindow", , 根据fuRedraw旗标的设置，重画全部或部分窗口  非零表示成功，零表示失败。会设置GetLastError
+    .参数 hwnd, 整数型, , 要重画的窗口的句柄。零表示更新桌面窗口
+    .参数 lprcUpdate, 整数型, , RECT，窗口中需要重画的一个矩形区域
+    .参数 hrgnUpdate, 整数型, , 一个“区”的句柄，这个区描述了要重画的窗口区域。“区”：Region
+    .参数 fuRedraw, 整数型, , 规定具体重画操作的旗标。下列常数可组合使用，从而进行复杂的重画行动;RDW_ERASE：重画前，先清除重画区域的背景。也必须指定RDW_INVALIDATE;RDW_FRAME：如非客户区包含在重画区域中，则对非客户区进行更新。也必须指定RDW_INVALIDATE;RDW_INTERNALPAINT：即使窗口并非无效，也向其投递一条WM_PAINT消息;RDW_INVALIDATE：禁用（屏蔽）重画区域;RDW_NOERASE：禁止删除重画区域的背景;RDW_NOFRAME：禁止非客户区域重画（如果它是重画区域的一部分）。也必须指定RDW_VALIDATE;RDW_NOINTERNALPAINT：禁止内部生成或由这个函数生成的任何待决WM_PAINT消息。针对无效区域，仍会生成WM_PAINT消息;RDW_VALIDATE：检验重画区域;RDW_ERASENOW：立即删除指定的重画区域;RDW_UPDATENOW：立即更新指定的重画区域;RDW_ALLCHILDREN：重画操作包括子窗口（前提是它们存在于重画区域）;RDW_NOCHILDREN：重画操作排除子窗口（前提是它们存在于重画区域）;
+
+.DLL命令 GetClassName, 整数型, "user32", "GetClassNameA", , 为指定的窗口取得类名  以字节数表示的类名长度；排除最后的空中止字符。零表示出错。会设置GetLastError
+    .参数 hwnd, 整数型, , 欲获得类名的那个窗口的句柄
+    .参数 lpClassName, 文本型, , 随同类名载入的缓冲区。预先至少必须分配nMaxCount+1个字符
+    .参数 nMaxCount, 整数型, , 由lpClassName提供的缓冲区长度;
+
+.DLL命令 SetBkMode, 整数型, "gdi32", "SetBkMode", , 指定阴影刷子、虚线画笔以及字符中的空隙的填充方式  前一个背景模式的值
+    .参数 hdc, 整数型, , 设备场景的句柄
+    .参数 nBkMode, 整数型, , 下述常数之一：;OPAQUE：用当前的背景色填充虚线画笔、阴影刷子以及字符的空隙;TRANSPARENT：透明处理，即不作上述填充;
+
+.DLL命令 CreatePen, 整数型, "gdi32", "CreatePen", , 用指定的样式、宽度和颜色创建一个画笔  如函数执行成功，就返回指向新画笔的一个句柄；否则返回零
+    .参数 nPenStyle, 整数型, , 指定画笔样式，可以是下述常数之一;PS_SOLID：画笔画出的是实线;PS_DASH：画笔画出的是虚线（nWidth必须是1）;PS_DOT：画笔画出的是点线（nWidth必须是1）;PS_DASHDOT：画笔画出的是点划线（nWidth必须是1）;PS_DASHDOTDOT：画笔画出的是点-点-划线（nWidth必须是1）;PS_NULL：画笔不能画图;PS_INSIDEFRAME：画笔在由椭圆、矩形、圆角矩形、饼图以及弦等生成的封闭对象框中画图。如指定的准确RGB颜色不存在，就进行抖动处理
+    .参数 nWidth, 整数型, , 以逻辑单位表示的画笔的宽度
+    .参数 crColor, 整数型, , 画笔的RGB颜色;
+
+.DLL命令 FillRect, 整数型, "user32", "FillRect", , 用指定的刷子填充一个矩形  非零表示成功，零表示失败。会设置GetLastError
+    .参数 hdc, 整数型, , 设备场景的句柄
+    .参数 lpRect, RECT, , RECT，对填充区域进行描述的一个矩形，采用逻辑坐标
+    .参数 hBrush, 整数型, , 欲使用的刷子的句柄;
+
+.DLL命令 FrameRect, 整数型, "user32", "FrameRect", , 用指定的刷子围绕一个矩形画一个边框（组成一个帧），边框的宽度是一个逻辑单位  非零表示成功，零表示失败。会设置GetLastError
+    .参数 hdc, 整数型, , 设备场景的句柄
+    .参数 lpRect, RECT, , RECT，对要描绘的边框进行描述的一个矩形。这等效于将画笔设成一个单位的宽度，然后用矩形函数画出一个矩形
+    .参数 hBrush, 整数型, , 欲使用的刷子的句柄;
+
+.DLL命令 CreateBrushIndirect, 整数型, "gdi32", "CreateBrushIndirect", , 在一个LOGBRUSH数据结构的基础上创建一个刷子  如执行成功，返回指向新刷子的一个句柄。零表示失败
+    .参数 lpLogBrush, LOGBRUSH, , LOGBRUSH;
+
+.DLL命令 CreateSolidBrush, 整数型, "gdi32", "CreateSolidBrush", , 用纯色创建一个刷子  如执行成功，返回新刷子的一个句柄；否则返回零
+    .参数 crColor, 整数型, , 数字的RGB彩色;
+
+.DLL命令 RtlMoveMemory_NCCALCSIZE_PARAMS, , "kernel32.dll", "RtlMoveMemory"
+    .参数 Destination, NCCALCSIZE_PARAMS
+    .参数 Source, 整数型
+    .参数 Length, 整数型, 传址
+
+.DLL命令 SetTextColor, 整数型
+    .参数 hdc, 整数型
+    .参数 crColor, 整数型
+
+.DLL命令 OffsetRgn, 整数型, "gdi32", "OffsetRgn", , 按指定偏移量平移指定区域  下列常数之一，以描述当前剪裁区：;    COMPLEXREGION：该区域有互相交叠的边界;    SIMPLEREGION：该区域边界没有互相交叠;    NULLREGION：区域为空;    ERRORAPI：发生了错误
+    .参数 hRgn, 整数型, , 区域句柄
+    .参数 x, 整数型, , 以逻辑坐标表示的水平偏移量
+    .参数 y, 整数型, , 以逻辑坐标表示的垂直偏移量;
+
+.DLL命令 OffsetRect, 整数型, "user32", "OffsetRect", , 该函数通过应用一个指定的偏移，从而让矩形移动起来。x会添加到右侧和左侧区域。y添加到顶部和底部区域。偏移方向则取决于参数是正数还是负数，以及采用的是什么坐标系统  非零表示成功，零表示失败。会设置GetLastError
+    .参数 lpRect, RECT, , RECT，欲移动的矩形
+    .参数 x, 整数型, , 水平偏移量
+    .参数 y, 整数型, , 垂直偏移量;
+
+.DLL命令 ExcludeClipRect, 整数型, "gdi32", "ExcludeClipRect", , 从专用设备场景的剪裁区中去掉一个由点X1，Y1和X2，Y2确定的矩形区。矩形内不能进行绘图  返回以下常数之一以描述所得剪裁区：;    COMPLEXREGION：区域边界互相交叠;    SIMPLEREGION：区域边界没有互相交叠;    NULLREGION：区域为空;    ERRORAPI：发生了错误
+    .参数 hdc, 整数型, , 要修改的设备场景
+    .参数 X1, 整数型, , 矩形（逻辑坐标）左上角的X，Y坐标
+    .参数 Y1, 整数型, , 同上
+    .参数 X2, 整数型, , 矩形（逻辑坐标）右下角的X，Y坐标，矩形的右边和下边不会从剪裁区中移走
+    .参数 Y2, 整数型, , 同上;
+
+.DLL命令 SelectClipRgn, 整数型, "gdi32", "SelectClipRgn", , 为指定设备场景选择新的剪裁区  下列常数之一，以描述当前剪裁区：;    COMPLEXREGION：该区域有互相交叠的边界;    SIMPLEREGION：该区域边界没有互相交叠;    NULLREGION：区域为空;    ERRORAPI：发生了错误（保留原有剪裁区）
+    .参数 hdc, 整数型, , 将设置新剪裁区的设备场景
+    .参数 hRgn, 整数型, , 将为设备场景设置剪裁区的句柄，该区域使用设备坐标;
+
+.DLL命令 GdipDrawImageRectRect_空, 整数型, "GdiPlus.dll", "GdipDrawImageRectRect", , 省略最后3个参数
+    .参数 graphics, 整数型
+    .参数 image, 整数型
+    .参数 dstx, 小数型
+    .参数 dsty, 小数型
+    .参数 dstwidth, 小数型
+    .参数 dstheight, 小数型
+    .参数 srcx, 小数型
+    .参数 srcy, 小数型
+    .参数 srcwidth, 小数型
+    .参数 srcheight, 小数型
+    .参数 srcUnit, 整数型
+    .参数 imageAttributes, 整数型
+    .参数 callback, 整数型
+    .参数 callbackData, 整数型, , 需传地址
+
+.DLL命令 ShowCaret, 整数型, "user32", "ShowCaret", , 在指定的窗口里显示插入符（光标）  非零表示成功，零表示失败。会设置GetLastError
+    .参数 hwnd, 整数型, , 包含了插入符的窗口的句柄。可以为零；此时，只有在插入符包含于由活动任务拥有的一个窗口时，它才会显示出来;
+
+.DLL命令 CreateCaret, 整数型, "user32", "CreateCaret", , 根据指定的信息创建一个插入符（光标），并将它选定为指定窗口的默认插入符。插入符可以是一根短线、一个方块或者一幅位图。通常用插入符指示文字在文字框中的插入位置  非零表示成功，零表示失败。会设置GetLastError
+    .参数 hwnd, 整数型, , 拥有插入符的那个窗口的句柄
+    .参数 hBitmap, 整数型, , 用作插入符的一幅位图的句柄。可以是0或1；在这种情况下，插入符可通过nWidth和nHeight参数创建。如设为1，则新插入符以灰色显示；而不是传统的黑色
+    .参数 nWidth, 整数型, , 采用逻辑单位的插入符的宽度
+    .参数 nHeight, 整数型, , 采用逻辑单位的插入符的高度  在vb里使用可以使用。但在应用程序切换时，标准的vb文本控件不能处理GotFocus 和 LostFocus事件。因此，很难知道何时为一个控件设置插入符。此外，vb假设插入符为一根短竖线，并据此定义它的位置，所以其他形式的插入符可能无法正确定位;
+
+.DLL命令 GetCaretPos, 整数型, "user32", "GetCaretPos", , 判断插入符的当前位置  非零表示成功，零表示失败。会设置GetLastError
+    .参数 lpPoint, POINT, , POINTAPI，这个结构会随同插入符在窗口客户坐标系统中的位置载入；那个窗口是插入符的父窗口;
+
+.DLL命令 KillTimer, 整数型, "user32", "KillTimer", , 中止定时器
+    .参数 hwnd, 整数型
+    .参数 nIDEvent, 整数型
+
+.DLL命令 SetTimer, 整数型, "user32", "SetTimer", , 安装系统定时器
+    .参数 hWnd, 整数型
+    .参数 nIDEvent, 整数型
+    .参数 uElapse, 整数型
+    .参数 lpTimerFunc, 整数型
+
+.DLL命令 GdipSetImageAttributesColorMatrix2, 整数型, "GdiPlus.dll", "GdipSetImageAttributesColorMatrix"
+    .参数 imageattr, 整数型
+    .参数 type, 整数型
+    .参数 enableFlag, 逻辑型
+    .参数 colorMatrix, ColorMatrix
+    .参数 grayMatrix, 整数型
+    .参数 flags, 整数型
+
+.DLL命令 PeekMessage, 整数型, "user32", "PeekMessageA", , 检查消息队列
+    .参数 lpMsg, MSG
+    .参数 hwnd, 整数型
+    .参数 wMsgFilterMin, 整数型
+    .参数 wMsgFilterMax, 整数型
+    .参数 wRemoveMsg, 整数型
+
+.DLL命令 DispatchMessage, 整数型, "user32", "DispatchMessageA", , 向窗口发送消息
+    .参数 lpMsg, MSG
+
+.DLL命令 TranslateMessage, 整数型, "user32", "TranslateMessage", , 转换虚拟关键字消息
+    .参数 lpMsg, MSG
+
+.DLL命令 RegisterClassEx, 整数型, "user32", "RegisterClassExA"
+    .参数 pcWndClassEx, WNDCLASSEX
+
+.DLL命令 LocalSize_WNDCLASSEX, 整数型, "kernel32.dll", "LocalSize"
+    .参数 参数一, WNDCLASSEX, 传址
+
+.DLL命令 GetModuleHandle, 整数型, "kernel32", "GetModuleHandleA", , 获取一个应用程序或动态链接库的模块句柄  如执行成功成功，则返回模块句柄。零表示失败。会设置GetLastError
+    .参数 lpModuleName, 文本型, , 指定模块名，这通常是与模块的文件名相同的一个名字。例如，NOTEPAD.EXE程序的模块文件名就叫作NOTEPAD;
+
+.DLL命令 LoadCursor, 整数型, "user32", "LoadCursorA", , 从指定的模块或应用程序实例中载入一个鼠标指针。LoadCursorBynum是LoadCursor函数的类型安全声明  执行成功则返回已载入的指针的句柄；零表示失败。在Windows ;    95 和Win16环境中，这个函数只能载入标准尺寸的图标
+    .参数 实例句柄, 整数型, , 一个DLL的模块句柄；或者一个实例句柄，指定包含了鼠标指针的可执行程序
+    .参数 鼠标指针标识, 整数型, , 作为一个字串，指定欲载入的指针资源。作为一个长整数值，指定欲载入的资源ID；或者设置一个常数，代表某幅固有系统指针。如装载的是一个固有系统指针，注意hInstance参数应设为零。在api32.txt文件中以前缀IDC_ 作为标志;
+
+.DLL命令 TerminateThread, 整数型, , "TerminateThread", , TerminateThread
+    .参数 hThread, 整数型
+    .参数 dwExitCode, 整数型
+
+.DLL命令 CloseHandle, 整数型, , "CloseHandle"
+    .参数 hObject, 整数型
+
+.DLL命令 CreateThread, 整数型, , "CreateThread", , CreateThread
+    .参数 lpThreadAttributes, 整数型
+    .参数 dwStackSize, 整数型
+    .参数 lpStartAddress, 子程序指针
+    .参数 lpParameter, 整数型
+    .参数 dwCreationFlags, 整数型
+    .参数 lpThreadId, 整数型, 传址
+
+.DLL命令 GetSystemMetrics, 整数型, "user32", "GetSystemMetrics", , 返回与windows环境有关的信息  取决于具体的常数索引
+    .参数 nIndex, 整数型
+
+.DLL命令 SystemParametersInfo, 整数型, "user32", "SystemParametersInfoA", , 允许获取和设置数量众多的windows系统参数  非零表示成功，零表示失败。会设置GetLastError
+    .参数 uAction, 整数型, , 指定要设置的参数。参考uAction常数表
+    .参数 uParam, 整数型, , 参考uAction常数表
+    .参数 lpvParam, RECT, , 按引用调用的Integer、Long和数据结构。对于数据，请用SystemParametersInfoByval函数。具体用法参考uAction常数表
+    .参数 fuWinIni, 整数型, , 取决于不同的参数及操作系统，随同这个函数设置的用户配置参数保存在win.ini或注册表里，或同时保存在这两个地方。这个参数规定了在设置系统参数的时候，是否应更新用户设置参数。可以是零（禁止更新），或下述任何一个常数：;SPIF_UPDATEINIFILE：更新win.ini和（或）注册表中的用户配置文件;SPIF_SENDWININICHANGE：倘若也设置了SPIF_UPDATEINIFILE，将一条WM_WININICHANGE消息发给所有应用程序。否则没有作用。这调消息告诉应用程序已经改变了用户配置设置;
+
+.DLL命令 ReleaseCapture, 整数型, "user32", "ReleaseCapture", , 为当前的应用程序释放鼠标捕获  TRUE（非零）表示成功，零表示失败
+
+.DLL命令 PostMessage, 整数型, "user32", "PostMessageA", , 将一条消息投递到指定窗口的消息队列。投递的消息会在Windows事件处理过程中得到处理。在那个时候，会随同投递的消息调用指定窗口的窗口函数。特别适合那些不需要立即处理的窗口消息的发送  如消息投递成功，则返回TRUE（非零）。会设置GetLastError
+    .参数 hwnd, 整数型, , 接收消息的那个窗口的句柄。如设为HWND_BROADCAST，表示投递给系统中的所有顶级窗口。如设为零，表示投递一条线程消息（参考PostThreadMessage）
+    .参数 wMsg, 整数型, , 消息标识符
+    .参数 wParam, 整数型, , 具体由消息决定
+    .参数 lParam, 整数型, , 具体由消息决定;
+
+.DLL命令 CreateRoundRectRgn, 整数型, "gdi32", "CreateRoundRectRgn", , 创建一个圆角矩形，该矩形由X1，Y1-X2，Y2确定，并由X3，Y3确定的椭圆描述圆角弧度  执行成功则为区域句柄，失败则为0
+    .参数 X1, 整数型, , 矩形左上角的X，Y坐标
+    .参数 Y1, 整数型, , 同上
+    .参数 X2, 整数型, , 矩形右下角的X，Y坐标
+    .参数 Y2, 整数型, , 同上
+    .参数 X3, 整数型, , 圆角椭圆的宽。其范围从0（没有圆角）到矩形宽（全圆）
+    .参数 Y3, 整数型, , 圆角椭圆的高。其范围从0（没有圆角）到矩形高（全圆）;
+
+.DLL命令 SetWindowRgn, 整数型, "user32", "SetWindowRgn", , 这是那些很难有人注意到的对编程者来说是个巨大的宝藏的隐含的API函数中的一个。本函数允许您改变窗口的区域。<br>;    通常所有窗口都是矩形的——窗口一旦存在就含有一个矩形区域。本函数允许您放弃该区域。这意味着您可以创建圆的、星形的窗口，也可以将它分为两个或许多部分——实际上可以是任何形状  执行成功为非零值，失败为0
+    .参数 hWnd, 整数型, , 将设置其区域的窗口
+    .参数 hRgn, 整数型, , 将设置的区域的句柄，一旦设置了该区域，就不能使用或修改该区域句柄，也不要删除它
+    .参数 bRedraw, 整数型, , Boolean，若为TRUE，则立即重画窗口;
+
+.DLL命令 SetStretchBltMode, 整数型, "gdi32", "SetStretchBltMode", , 指定StretchBlt 和 StretchDIBits函数的伸缩模式。这种伸缩模式定义了Windows如何对伸缩过程中剔除的扫描线进行控制。对于VB窗体和控件，倘若在API绘图过程中使用这个函数，建议恢复原来的StretchBlt模式  上一次伸缩模式的值，零表示失败
+    .参数 hdc, 整数型, , 设备场景的句柄
+    .参数 nStretchMode, 整数型, , 新伸缩模式建立在下述任何一个常数的基础上，它们均在API32.TXT文件中得到了定义：;STRETCH_ANDSCANS：默认设置。剔除的线段与剩下的线段进行AND运算。这个模式通常应用于采用了白色背景的单色位图;STRETCH_DELETESCANS：剔除的线段被简单的清除。这个模式通常用于彩色位图;STRETCH_ORSCANS：剔除的线段与剩下的线段进行OR运算。这个模式通常应用于采用了白色背景的单色位图;STRETCH_HALFTONE：目标位图上的像素块被设为源位图上大致近似的块。这个模式要明显慢于其他模式;
+
+.DLL命令 SetBrushOrgEx, 整数型, "gdi32", "SetBrushOrgEx", , 为指定的设备场景设置当前选定刷子的起点  非零表示成功，零表示失败。会设置GetLastError
+    .参数 hdc, 整数型, , 设备场景的句柄
+    .参数 nXOrg, 整数型, , 刷子的新起点，采用设备坐标表示。取值范围在0-7之间（不需要更大的值，因为windows95下最大的刷子的尺寸是8×8；而这个函数在NT下是不必要的）
+    .参数 nYOrg, 整数型, , 同上
+    .参数 lppt, 整数型, , POINTAPI，用于装载前一个刷子的起点  在vb里使用注意完成以后一定要将设备场景的刷子起点设为0，0。既可明确指定坐标，也可用RestoreDC函数恢复恢复原始的DC;
+
+.DLL命令 LoadIcon, 整数型, "user32", "LoadIconA", , 从指定的模块或应用程序实例中载入一个图标。其中，LoadIconBynum是LoadIcon函数的类型安全声明  执行成功则返回已载入的图标的句柄；零表示失败。会设置GetLastError
+    .参数 实例句柄, 整数型
+    .参数 图标标识, 整数型
+
+.DLL命令 LoadIconByStr, 整数型, "user32", "LoadIconA", , 从指定的模块或应用程序实例中载入一个图标。其中，LoadIconBynum是LoadIcon函数的类型安全声明  执行成功则返回已载入的图标的句柄；零表示失败。会设置GetLastError
+    .参数 实例句柄, 整数型
+    .参数 图标标识, 文本型
+
+.DLL命令 DrawIconEx, 整数型, "user32", "DrawIconEx", , 描绘一个图标或鼠标指针。与DrawIcon相比，这个函数提供了更多的功能  非零表示成功，零表示失败。会设置GetLastError
+    .参数 hdc, 整数型, , 要在其中画图的一个设备场景的句柄
+    .参数 xLeft, 整数型, , 图标左上角的位置，用逻辑坐标表示
+    .参数 yTop, 整数型, , 同上
+    .参数 hIcon, 整数型, , 要描绘的图标的句柄
+    .参数 cxWidth, 整数型, , 希望的图标宽度和高度。图标会自动缩放，与指定的值相符
+    .参数 cyWidth, 整数型, , 同上
+    .参数 istepIfAniCur, 整数型, , 如果hIcon是个动画指针，那么该参数指定描绘动画中的哪幅图象。注意Win32不能区分图标和指针
+    .参数 hbrFlickerFreeDraw, 整数型, , 如设为一个刷子句柄，那么函数会将图标画入一幅内存位图，并用背景色填充。随后，将图象直接复制到指定的位置。这样做可绘图时减少闪烁（因为画图过程中重现）
+    .参数 diFlags, 整数型, , 下述常数之一：;DI_COMPAT：描绘标准的系统指针，而不是指定的图象;DI_DEFAULTSIZE：忽略cxWidth和cyWidth设置，并采用原始的图标大小;DI_IMAGE：绘图时使用图标的XOR部分（即图标没有透明区域）;DI_MASK：绘图时使用图标的MASK部分（如单独使用，可获得图标的掩模）;DI_NORMAL：用常规方式绘图（合并 DI_IMAGE 和 DI_MASK）;
+
+.DLL命令 IsZoomed, 整数型, "user32", "IsZoomed", , 判断窗口是否最大化  非零表示成功，零表示失败
+    .参数 hwnd, 整数型, , 欲测试的窗口的句柄;
+
+.DLL命令 PtInRect, 整数型, "user32", "PtInRect", , 这个函数判断指定的点是否位于矩形lpRect内部  非零表示成功，零表示失败。会设置GetLastError
+    .参数 lpRect, RECT
+    .参数 x, 整数型
+    .参数 y, 整数型
+
+.DLL命令 CopyMemory_IconDirEntry, , , "RtlMoveMemory"
+    .参数 Destination, IconDirEntry
+    .参数 Source, 字节集
+    .参数 cbCopy, 整数型
+
+.DLL命令 CreateIconFromResource, 整数型, , "CreateIconFromResource"
+    .参数 presbits, 字节集
+    .参数 dwResSize
+    .参数 fIcon, 逻辑型
+    .参数 dwVer
+
+.DLL命令 GetPixel, 整数型, "gdi32", "GetPixel", , 在指定的设备场景中取得一个像素的RGB值  指定点的RGB颜色。如指定的点位于设备场景的剪切区之外，则返回CLR_INVALID
+    .参数 hdc, 整数型, , 一个设备场景的句柄
+    .参数 x, 整数型, , 逻辑坐标中要检查的点;
+    .参数 y, 整数型, , 同上;
+
+.DLL命令 CopyMemory_MINMAXINFO, , "kernel32", "RtlMoveMemory"
+    .参数 pDest, MINMAXINFO
+    .参数 pSrc, 整数型
+    .参数 ByteLen, 整数型
+
+.DLL命令 CopyMemory_MINMAXINFO2, , "kernel32", "RtlMoveMemory"
+    .参数 pDest, 整数型
+    .参数 pSrc, MINMAXINFO
+    .参数 ByteLen, 整数型
+
+.DLL命令 MoveWindow, 整数型, "user32", "MoveWindow", , 改变指定窗口的位置和大小。顶级窗口可能受最大或最小尺寸的限制，那些尺寸优先于这里设置的参数  非零表示成功，零表示失败
+    .参数 hwnd, 整数型, , 欲移动窗口的句柄
+    .参数 x, 整数型, , 窗口新的左侧位置
+    .参数 y, 整数型, , 窗口新的顶部位置
+    .参数 nWidth, 整数型, , 窗口的新宽度
+    .参数 nHeight, 整数型, , 窗口的高宽度
+    .参数 bRepaint, 整数型, , 如窗口此时应重画，则设为TRUE（非零）。FALSE（零）则表明应用程序会自己决定是否重画窗口;
+
+.DLL命令 ShowWindow, 整数型, "user32", "ShowWindow", , 控制窗口的可见性（在vb里使用：针对vb窗体及控件，请使用对应的vb属性）  如窗口之前是可见的，则返回TRUE（非零），否则返回FALSE（零）
+    .参数 hwnd, 整数型, , 窗口句柄，要向这个窗口应用由nCmdShow指定的命令
+    .参数 nCmdShow, 整数型, , 为窗口指定可视性方面的一个命令。请用下述任何一个常数;SW_HIDE：隐藏窗口，活动状态给令一个窗口;SW_MINIMIZE：最小化窗口，活动状态给令一个窗口;SW_RESTORE：用原来的大小和位置显示一个窗口，同时令其进入活动状态;SW_SHOW：用当前的大小和位置显示一个窗口，同时令其进入活动状态;SW_SHOWMAXIMIZED：最大化窗口，并将其激活;SW_SHOWMINIMIZED：最小化窗口，并将其激活;SW_SHOWMINNOACTIVE：最小化一个窗口，同时不改变活动窗口;SW_SHOWNA：用当前的大小和位置显示一个窗口，不改变活动窗口;SW_SHOWNOACTIVATE：用最近的大小和位置显示一个窗口，同时不改变活动窗口;SW_SHOWNORMAL：与SW_RESTORE相同;
+
+.DLL命令 SetParent, 整数型, "user32", "SetParent", , 指定一个窗口的新父（在vb里使用：利用这个函数，vb可以多种形式支持子窗口。例如，可将控件从一个容器移至窗体中的另一个。用这个函数在窗体间移动控件是相当冒险的，但却不失为一个有效的办法。如真的这样做，请在关闭任何一个窗体之前，注意用SetParent将控件的父设回原来的那个）  前一个父窗口的句柄
+    .参数 hWndChild, 整数型, , 子窗口的句柄
+    .参数 hWndNewParent, 整数型, , hWndChild的新父;
+
+.DLL命令 CallWindowProc_Bin, 整数型, "user32.dll", "CallWindowProcA"
+    .参数 机器码, 字节集
+    .参数 程序指针, 整数型
+    .参数 参数1, 整数型
+    .参数 参数2, 整数型
+    .参数 参数3, 整数型
+
+.DLL命令 GetSystemMenu, 整数型, "user32", "GetSystemMenu", , 取得指定窗口的系统菜单的句柄。在vb环境，“系统菜单”的正式名称为“控制菜单”，即单击窗口左上角的控制框时出现的菜单  如执行成功，返回系统菜单的句柄；零意味着出错。如bRevert设为TRUE，也会返回零（简单的恢复原始的系统菜单）
+    .参数 hwnd, 整数型, , 窗口的句柄
+    .参数 bRevert, 整数型, , 如设为TRUE，表示接收原始的系统菜单;
+
+.DLL命令 GetMenuState, 整数型, "user32", "GetMenuState", , 取得与指定菜单条目状态有关的信息  在api32.txt文件的常数定义的一系列标志的组合，请看下表。如条目是个弹出式菜单，那么结构的最低字节就包含了状态标志，而第二个字节包含条目在弹出式菜单中的数量
+    .参数 hMenu, 整数型, , 菜单句柄
+    .参数 wID, 整数型, , 欲检查的菜单条目的标识符。如果在wFlags参数中设置了MF_BYCOMMAND标志，这个参数就用于指定要改变的菜单条目的命令ID。如果设置的是MF_BYPOSITION标志，这个参数就用于指定条目在菜单中的位置（第一个条目的位置为0）
+    .参数 wFlags, 整数型, , 常数MF_BYCOMMAND或MF_BYPOSITION，取决于wID参数的设置;
+
+.DLL命令 CopyMemory_Rect, , "kernel32", "RtlMoveMemory"
+    .参数 pDest, RECT
+    .参数 pSrc, 整数型
+    .参数 ByteLen, 整数型
+
+.DLL命令 CopyMemory_Rect2, , "kernel32", "RtlMoveMemory"
+    .参数 pDest, 整数型
+    .参数 pSrc, RECT
+    .参数 ByteLen, 整数型
+
+.DLL命令 SHGetFileInfo, 整数型, , "SHGetFileInfo"
+    .参数 pszPath, 文本型
+    .参数 dwFileAttributes, 整数型
+    .参数 psfi, SHFILEINFO
+    .参数 cbFileInfo, 整数型
+    .参数 uFlags, 整数型
+
+.DLL命令 CreateStreamOnHGlobal, 整数型, "Ole32.dll", "CreateStreamOnHGlobal"
+    .参数 hGlobal, 整数型
+    .参数 fDeleteOnRelease, 整数型
+    .参数 ppstm, 整数型, 传址
+
+.DLL命令 GdipLoadImageFromStream, 整数型, "GdiPlus.dll", "GdipLoadImageFromStream"
+    .参数 stream, 整数型
+    .参数 image, 整数型, 传址
+
+.DLL命令 GdipLoadImageFromFile, 整数型, "GdiPlus.dll", "GdipLoadImageFromFile"
+    .参数 filename, 字节集
+    .参数 image, 整数型, 传址
+
+.DLL命令 GlobalFree, 整数型, , "GlobalFree"
+    .参数 hMem, 整数型
+
+.DLL命令 CLSIDFromString, 整数型, "ole32.dll", "CLSIDFromString"
+    .参数 lpsz, 字节集
+    .参数 pclsid, 字节集
+
+.DLL命令 GdiplusStartup, 整数型, "GdiPlus.dll", "GdiplusStartup"
+    .参数 token, 整数型, 传址
+    .参数 inputbuf, GdiplusStartupInput
+    .参数 outputbuf, 整数型
+
+.DLL命令 GdipCreatePen1, 整数型, "GdiPlus.dll", "GdipCreatePen1"
+    .参数 color, 整数型
+    .参数 width, 小数型
+    .参数 unit, 整数型
+    .参数 pen, 整数型, 传址
+
+.DLL命令 GdipCreateStringFormat, 整数型, "GdiPlus.dll", "GdipCreateStringFormat"
+    .参数 formatAttributes, 整数型
+    .参数 language, 整数型
+    .参数 format, 整数型, 传址
+
+.DLL命令 GdipStringFormatGetGenericDefault, 整数型, "GdiPlus.dll", "GdipStringFormatGetGenericDefault"
+    .参数 format, 整数型
+
+.DLL命令 GdipStringFormatGetGenericTypographic, 整数型, "GdiPlus.dll", "GdipStringFormatGetGenericTypographic"
+    .参数 format, 整数型
+
+.DLL命令 GdipDeleteStringFormat, 整数型, "GdiPlus.dll", "GdipDeleteStringFormat"
+    .参数 format, 整数型
+
+.DLL命令 GdipCloneStringFormat, 整数型, "GdiPlus.dll", "GdipCloneStringFormat"
+    .参数 format, 整数型
+    .参数 newFormat, 整数型, 传址
+
+.DLL命令 GdipSetStringFormatFlags, 整数型, "GdiPlus.dll", "GdipSetStringFormatFlags"
+    .参数 format, 整数型
+    .参数 flags, 整数型
+
+.DLL命令 GdipGetStringFormatFlags, 整数型, "GdiPlus.dll", "GdipGetStringFormatFlags"
+    .参数 format, 整数型
+    .参数 flags, 整数型, 传址
+
+.DLL命令 GdipSetStringFormatAlign, 整数型, "GdiPlus.dll", "GdipSetStringFormatAlign"
+    .参数 format, 整数型
+    .参数 align, 整数型
+
+.DLL命令 GdipGetStringFormatAlign, 整数型, "GdiPlus.dll", "GdipGetStringFormatAlign"
+    .参数 format, 整数型
+    .参数 align, 整数型, 传址
+
+.DLL命令 GdipSetStringFormatLineAlign, 整数型, "GdiPlus.dll", "GdipSetStringFormatLineAlign"
+    .参数 format, 整数型
+    .参数 align, 整数型
+
+.DLL命令 GdipGetStringFormatLineAlign, 整数型, "GdiPlus.dll", "GdipGetStringFormatLineAlign"
+    .参数 format, 整数型
+    .参数 align, 整数型, 传址
+
+.DLL命令 GdipSetStringFormatTrimming, 整数型, "GdiPlus.dll", "GdipSetStringFormatTrimming"
+    .参数 format, 整数型
+    .参数 trimming, 整数型
+
+.DLL命令 GdipGetStringFormatTrimming, 整数型, "GdiPlus.dll", "GdipGetStringFormatTrimming"
+    .参数 format, 整数型
+    .参数 trimming, 整数型, 传址
+
+.DLL命令 GdipSetStringFormatHotkeyPrefix, 整数型, "GdiPlus.dll", "GdipSetStringFormatHotkeyPrefix"
+    .参数 format, 整数型
+    .参数 hotkeyPrefix, 整数型
+
+.DLL命令 GdipGetStringFormatHotkeyPrefix, 整数型, "GdiPlus.dll", "GdipGetStringFormatHotkeyPrefix"
+    .参数 format, 整数型
+    .参数 hotkeyPrefix, 整数型, 传址
+
+.DLL命令 GdipSetStringFormatTabStops, 整数型, "GdiPlus.dll", "GdipSetStringFormatTabStops"
+    .参数 format, 整数型
+    .参数 firstTabOffset, 小数型
+    .参数 count, 整数型
+    .参数 tabStops, 小数型, 传址
+
+.DLL命令 GdipGetStringFormatTabStops, 整数型, "GdiPlus.dll", "GdipGetStringFormatTabStops"
+    .参数 format, 整数型
+    .参数 count, 整数型
+    .参数 firstTabOffset, 小数型, 传址
+    .参数 tabStops, 小数型, 传址
+
+.DLL命令 GdipGetStringFormatTabStopCount, 整数型, "GdiPlus.dll", "GdipGetStringFormatTabStopCount"
+    .参数 format, 整数型
+    .参数 count, 整数型, 传址
+
+.DLL命令 GdipSetStringFormatDigitSubstitution, 整数型, "GdiPlus.dll", "GdipSetStringFormatDigitSubstitution"
+    .参数 format, 整数型
+    .参数 language, 整数型
+    .参数 substitute, 整数型
+
+.DLL命令 GdipGetStringFormatDigitSubstitution, 整数型, "GdiPlus.dll", "GdipGetStringFormatDigitSubstitution"
+    .参数 format, 整数型
+    .参数 language, 整数型, 传址
+    .参数 substitute, 整数型, 传址
+
+.DLL命令 GdipGetStringFormatMeasurableCharacterRangeCount, 整数型, "GdiPlus.dll", "GdipGetStringFormatMeasurableCharacterRangeCount"
+    .参数 format, 整数型
+    .参数 count, 整数型, 传址
+
+.DLL命令 GdipSetStringFormatMeasurableCharacterRanges, 整数型, "GdiPlus.dll", "GdipSetStringFormatMeasurableCharacterRanges"
+    .参数 format, 整数型
+    .参数 rangeCount, 整数型
+    .参数 ranges, 整数型
+
+.DLL命令 GdipImageGetFrameDimensionsCount, 整数型, "GdiPlus.dll", "GdipImageGetFrameDimensionsCount"
+    .参数 image, 整数型
+    .参数 count, 整数型, 传址
+
+.DLL命令 GdipImageGetFrameDimensionsList, 整数型, "GdiPlus.dll", "GdipImageGetFrameDimensionsList"
+    .参数 image, 整数型
+    .参数 dimensionIDs, 全局唯一标识符, 数组
+    .参数 count, 整数型
+
+.DLL命令 GdipImageGetFrameCount, 整数型, "GdiPlus.dll", "GdipImageGetFrameCount"
+    .参数 image, 整数型
+    .参数 dimensionID, 全局唯一标识符
+    .参数 count, 整数型, 传址
+
+.DLL命令 GdipImageSelectActiveFrame, 整数型, "GdiPlus.dll", "GdipImageSelectActiveFrame"
+    .参数 image, 整数型
+    .参数 dimensionID, 字节集
+    .参数 frameIndex, 整数型
+
+.DLL命令 GdipGetPropertyItemSize, 整数型, "GdiPlus.dll", "GdipGetPropertyItemSize"
+    .参数 image, 整数型
+    .参数 propId, 整数型
+    .参数 size, 整数型, 传址
+
+.DLL命令 GdipGetPropertyItem, 整数型, "GdiPlus.dll", "GdipGetPropertyItem"
+    .参数 image, 整数型
+    .参数 propId, 整数型
+    .参数 propSize, 整数型
+    .参数 buffer, 字节集
+
+.DLL命令 GdipGetPropertySize, 整数型, "GdiPlus.dll", "GdipGetPropertySize"
+    .参数 image, 整数型
+    .参数 totalBufferSize, 整数型, 传址
+    .参数 numProperties, 整数型, 传址
+
+.DLL命令 GlobalAlloc, 整数型, , "GlobalAlloc"
+    .参数 wFlags, 整数型
+    .参数 dwBytes, 整数型
+
+.DLL命令 GlobalLock, 整数型, , "GlobalLock"
+    .参数 hMem, 整数型
+
+.DLL命令 GlobalUnlock, 整数型, , "GlobalUnlock"
+    .参数 hMem, 整数型
+
+.DLL命令 GdipGetImageWidth, 整数型, "GdiPlus.dll", "GdipGetImageWidth"
+    .参数 image, 整数型
+    .参数 width, 整数型, 传址
+
+.DLL命令 GdipGetImageHeight, 整数型, "GdiPlus.dll", "GdipGetImageHeight"
+    .参数 image, 整数型
+    .参数 height, 整数型, 传址
+
+.DLL命令 GdipDisposeImage, 整数型, "GdiPlus.dll", "GdipDisposeImage"
+    .参数 image, 整数型
+
+.DLL命令 GdipDeleteBrush, 整数型, "GdiPlus.dll", "GdipDeleteBrush"
+    .参数 brush, 整数型
+
+.DLL命令 GdipCreateSolidFill, 整数型, "GdiPlus.dll", "GdipCreateSolidFill"
+    .参数 color, 整数型
+    .参数 brush, 整数型, 传址
+
+.DLL命令 GdipCreateFromHDC, 整数型, "GdiPlus.dll", "GdipCreateFromHDC"
+    .参数 hdc, 整数型
+    .参数 graphics, 整数型, 传址
+
+.DLL命令 GdipFillRectangle, 整数型, "GdiPlus.dll", "GdipFillRectangle"
+    .参数 graphics, 整数型
+    .参数 brush, 整数型
+    .参数 x, 小数型
+    .参数 y, 小数型
+    .参数 width, 小数型
+    .参数 height, 小数型
+
+.DLL命令 GdipCreateLineBrush, 整数型, "GdiPlus.dll", "GdipCreateLineBrush"
+    .参数 point1, PointF
+    .参数 point2, PointF
+    .参数 color1, 整数型
+    .参数 color2, 整数型
+    .参数 wrapMode, 整数型
+    .参数 lineGradient, 整数型, 传址
+
+.DLL命令 GdipDrawRectangle, 整数型, "GdiPlus.dll", "GdipDrawRectangle"
+    .参数 graphics, 整数型
+    .参数 pen, 整数型
+    .参数 x, 小数型
+    .参数 y, 小数型
+    .参数 width, 小数型
+    .参数 height, 小数型
+
+.DLL命令 GdipDeleteGraphics, 整数型, "GdiPlus.dll", "GdipDeleteGraphics"
+    .参数 graphics, 整数型
+
+.DLL命令 GdipDrawString, 整数型, "GdiPlus.dll", "GdipDrawString"
+    .参数 graphics, 整数型
+    .参数 string, 字节集
+    .参数 length, 整数型
+    .参数 font, 整数型
+    .参数 layoutRect, RectF
+    .参数 stringFormat, 整数型
+    .参数 brush, 整数型
+
+.DLL命令 GdipCreateFontFamilyFromName, 整数型, "GdiPlus.dll", "GdipCreateFontFamilyFromName"
+    .参数 name, 字节集
+    .参数 fontCollection, 整数型
+    .参数 FontFamily, 整数型, 传址
+
+.DLL命令 GdipCreateFont, 整数型, "GdiPlus.dll", "GdipCreateFont"
+    .参数 fontFamily, 整数型
+    .参数 emSize, 小数型
+    .参数 style, 整数型
+    .参数 unit, 整数型
+    .参数 font, 整数型, 传址
+
+.DLL命令 GdipCloneFont, 整数型, "GdiPlus.dll", "GdipCloneFont"
+    .参数 font, 整数型
+    .参数 cloneFont, 整数型, 传址
+
+.DLL命令 GdipDeleteFontFamily, 整数型, "GdiPlus.dll", "GdipDeleteFontFamily"
+    .参数 FontFamily, 整数型
+
+.DLL命令 GdipDrawImageRect, 整数型, "GdiPlus.dll", "GdipDrawImageRect"
+    .参数 graphics, 整数型
+    .参数 image, 整数型
+    .参数 x, 小数型
+    .参数 y, 小数型
+    .参数 width, 小数型
+    .参数 height, 小数型
+
+.DLL命令 MultiByteToWideChar, 整数型, , "MultiByteToWideChar", , 返回 WideChar字符数目,包括结尾0
+    .参数 CodePage, 整数型
+    .参数 dwFlags, 整数型
+    .参数 lpMultiByteStr, 文本型
+    .参数 cchMultiByte, 整数型
+    .参数 lpWideCharStr, 字节集
+    .参数 cchWideChar, 整数型
+
+.DLL命令 IsWindowEnabled, 整数型, "user32", "IsWindowEnabled", , 判断窗口是否处于活动状态（在vb里使用：针对vb窗体和控件，请用enabled属性）　非零表示成功，零表示失败
+    .参数 hwnd, 整数型, , 待检测窗口的句柄;
+
+.DLL命令 IsWindowVisible, 整数型, "user32", "IsWindowVisible", , 判断窗口是否可见　如窗口可见则返回TRUE（非零）
+    .参数 hwnd, 整数型, , 要测试的那个窗口的句柄;
+
+.DLL命令 StretchBlt, 整数型, "gdi32", "StretchBlt", , 将一幅位图从一个设备场景复制到另一个。源和目标DC相互间必须兼容。这个函数会在设备场景中定义一个目标矩形，并在位图中定义一个源图象。源矩形会根据需要进行伸缩，以便与目标矩形的大小相符　非零表示成功，零表示失败。会设置GetLastError
+    .参数 hdc, 整数型, , 目标设备场景
+    .参数 x, 整数型, , 目标矩形左上角的x,y坐标，以逻辑坐标表示
+    .参数 y, 整数型, , 同上
+    .参数 nWidth, 整数型, , 目标矩形的宽度和高度，以逻辑坐标表示
+    .参数 nHeight, 整数型, , 同上
+    .参数 hSrcDC, 整数型, , 源设备场景。如光栅运算未指定一个源，则这个参数应为零
+    .参数 xSrc, 整数型, , 用源DC的逻辑坐标表示的源矩形左上角位置
+    .参数 ySrc, 整数型, , 同上
+    .参数 nSrcWidth, 整数型, , 分别指定用逻辑单位（以源DC为基础）传输的一幅图象的宽度和高度。如其中有一个参数的符号（指正负号）与对应的目标参数不符，位图就会在对应的轴上作镜像转换处理
+    .参数 nSrcHeight, 整数型, , 同上
+    .参数 dwRop, 整数型, , 传输过程中进行的光栅运算。如刷子属于光栅运算的一部分，就使用选入目标DC的刷子;
+
+.DLL命令 lstrcpyn, 整数型, , "lstrcpyn"
+    .参数 欲取其指针, 字节集, 传址
+    .参数 欲取其指针, 字节集, 传址
+    .参数 保留, 整数型
+
+.DLL命令 CreateDIBitmap2, 整数型, , "CreateDIBitmap"
+    .参数 hdc, 整数型
+    .参数 lpbmih, 整数型
+    .参数 fdwInit, 整数型
+    .参数 lpbInit, 整数型
+    .参数 lpbmi, 整数型
+    .参数 fuUsage, 整数型
+
+.DLL命令 TransparentBlt, 整数型, "msimg32.dll", "TransparentBlt", , 　
+    .参数 hdcDest, 整数型
+    .参数 nXOriginDest, 整数型
+    .参数 nYOriginDest, 整数型
+    .参数 nWidthDest, 整数型
+    .参数 hHeightDest, 整数型
+    .参数 hdcSrc, 整数型
+    .参数 nXOriginSrc, 整数型
+    .参数 nYOriginSrc, 整数型
+    .参数 nWidthSrc, 整数型
+    .参数 nHeightSrc, 整数型
+    .参数 crTransparent, 整数型
+
+.DLL命令 DrawText, 整数型, "user32", "DrawTextA", , 将文本描绘到指定的矩形中　描绘文字的高度
+    .参数 hdc, 整数型, , 欲在其中显示文字的一个设备场景的句柄
+    .参数 lpStr, 文本型, , 欲描绘的文本字串
+    .参数 nCount, 整数型, , 欲描绘的字符数量。如果要描绘整个字串（直到空中止符），则可将这个参数设为-1
+    .参数 lpRect, RECT, , RECT，指定用于绘图的一个格式化矩形（采用逻辑坐标）
+    .参数 wFormat, 整数型, , 一个标志位数组，决定了以何种形式执行绘图。参考下面总结的常数类型列表标志常数说明DT_BOTTOM必须同时指定DT_SINGLE。指示文本对齐格式化矩形的底边DT_CALCRECT象下面这样计算格式化矩形：多行绘图时矩形的底边根据需要进行延展，以便容下所有文字；单行绘图时，延展矩形的右侧。不描绘文字。由lpRect参数指定的矩形会载入计算出来的值DT_CENTER文本垂直居中DT_EXPANDTABS描绘文字的时候，对制表站进行扩展。默认的制表站间距是8个字符。但是，可用DT_TABSTOP标志改变这项设定DT_EXTERNALLEADING计算文本行高度的时候，使用当前字体的外部间距属性（the external leading attribute）DT_LEFT文本左对齐DT_NOCLIP描绘文字时不剪切到指定的矩形DT_NOPREFIX通常，函数认为 & 字符表示应为下一个字符加上下划线。该标志禁止这种行为DT_RIGHT文本右对齐DT_SINGLELINE只画单行DT_TABSTOP指定新的制表站间距，采用这个整数的高8位DT_TOP必须同时指定DT_SINGLE。指示文本对齐格式化矩形的顶部DT_VCENTER必须同时指定DT_SINGLE。指示文本对齐格式化矩形的中部DT_WORDBREAK进行自动换行。如用SetTextAlign函数设置了TA_UPDATECP标志，这里的设置则无效;
+
+.DLL命令 GetSysColor, 整数型, "user32", "GetSysColor", , 判断指定windows显示对象的颜色　指定对象的RGB颜色
+    .参数 nIndex, 整数型
+
+.DLL命令 SetCursor, 整数型, "user32", "SetCursor", , 将指定的鼠标指针设为当前指针　前一个指针的值
+    .参数 hCursor, 整数型, , 要设为当前指针的一个指针的句柄。如设为零，表示不显示任何指针;
+
+.DLL命令 GetMessage, 整数型, "user32", "GetMessageA", , 从线索消息队列中返回一条消息　
+    .参数 lpMsg, MSG
+    .参数 hwnd, 整数型
+    .参数 wMsgFilterMin, 整数型
+    .参数 wMsgFilterMax, 整数型
+
+.DLL命令 UpdateWindow, 整数型, "user32", "UpdateWindow", , 强制立即更新窗口，窗口中以前屏蔽的所有区域都会重画（在vb里使用：如vb窗体或控件的任何部分需要更新，可考虑直接使用refresh方法　非零表示成功，零表示失败
+    .参数 hwnd, 整数型, , 欲更新窗口的句柄;
+
+.DLL命令 GdipGetImageDimension, 整数型, "GdiPlus.dll", "GdipGetImageDimension"
+    .参数 image, 整数型
+    .参数 width, 小数型, 传址
+    .参数 height, 小数型, 传址
+
+.DLL命令 DestroyWindow, 整数型, "user32", "DestroyWindow", , 破坏（即清除）指定的窗口以及它的所有子窗口（在vb里使用：用处不大。原文：it ;    is unlikely to be of much use.）　非零表示成功，零表示失败。会设置GetLastError
+    .参数 hwnd, 整数型, , 欲清除的窗口的句柄;
+
+.DLL命令 GdipDeleteFont, 整数型, "GdiPlus.dll", "GdipDeleteFont"
+    .参数 font, 整数型
+
+.DLL命令 CreateFont, 整数型, "gdi32", "CreateFontA", , 用指定的属性创建一种逻辑字体　执行成功则返回逻辑字体的句柄，零表示失败。会设置GetLastError
+    .参数 H, 整数型, , IfHeight
+    .参数 W, 整数型, , IfWeight
+    .参数 E, 整数型, , IfEscapement
+    .参数 O, 整数型, , IfOrientation
+    .参数 W, 整数型
+    .参数 I, 整数型, , IfItalic
+    .参数 u, 整数型, , IfUnderline
+    .参数 S, 整数型, , IfStrikeOut
+    .参数 C, 整数型, , IfCharSet
+    .参数 OP, 整数型, , IfOutputPrecision
+    .参数 CP, 整数型, , IfClipPrecision
+    .参数 Q, 整数型, , IfQuality
+    .参数 PAF, 整数型, , IfPitchAndFamily
+    .参数 F, 文本型, , IfFaceName;
+
+.DLL命令 GdipCreatePath, 整数型, "GdiPlus.dll", "GdipCreatePath"
+    .参数 brushMode, 整数型
+    .参数 path, 整数型, 传址
+
+.DLL命令 GdipGetFontStyle, 整数型, "GdiPlus.dll", "GdipGetFontStyle"
+    .参数 font, 整数型
+    .参数 style, 整数型, 传址
+
+.DLL命令 GdipGetFamily, 整数型, "GdiPlus.dll", "GdipGetFamily"
+    .参数 font, 整数型
+    .参数 family, 整数型, 传址
+
+.DLL命令 GdipAddPathString, 整数型, "GdiPlus.dll", "GdipAddPathString"
+    .参数 path, 整数型
+    .参数 string, 字节集
+    .参数 length, 整数型
+    .参数 family, 整数型
+    .参数 style, 整数型
+    .参数 emSize, 小数型
+    .参数 layoutRect, RectF
+    .参数 format, 整数型
+
+.DLL命令 GdipGetPathWorldBounds, 整数型, "GdiPlus.dll", "GdipGetPathWorldBounds"
+    .参数 path, 整数型
+    .参数 bounds, RectF
+    .参数 matrix, 整数型
+    .参数 pen, 整数型
+
+.DLL命令 GdipDeletePath, 整数型, "GdiPlus.dll", "GdipDeletePath"
+    .参数 path, 整数型
+
+.DLL命令 GdipGetFontSize, 整数型, "GdiPlus.dll", "GdipGetFontSize"
+    .参数 font, 整数型
+    .参数 size, 小数型, 传址
+
+.DLL命令 lstrlenW, 整数型, "kernel32.dll", "lstrlenW"
+    .参数 dqcs, 字节集
+
+.DLL命令 GdipMeasureString, 整数型, "GdiPlus.dll", "GdipMeasureString"
+    .参数 graphics, 整数型
+    .参数 string, 字节集
+    .参数 length, 整数型
+    .参数 font, 整数型
+    .参数 layoutRect, RectF
+    .参数 stringFormat, 整数型
+    .参数 boundingBox, RectF
+    .参数 codepointsFitted, 整数型, 传址
+    .参数 linesFilled, 整数型, 传址
+
+.DLL命令 GdipSetSmoothingMode, 整数型, "GdiPlus.dll", "GdipSetSmoothingMode"
+    .参数 graphics, 整数型
+    .参数 smoothingMode, 整数型
+
+.DLL命令 GdipSetTextRenderingHint, 整数型, "GdiPlus.dll", "GdipSetTextRenderingHint"
+    .参数 graphics, 整数型
+    .参数 mode, 整数型
+
+.DLL命令 GdipDeletePen, 整数型, "GdiPlus.dll", "GdipDeletePen"
+    .参数 pen, 整数型
+
+.DLL命令 GdipFillPath, 整数型, "GdiPlus.dll", "GdipFillPath"
+    .参数 graphics, 整数型
+    .参数 brush, 整数型
+    .参数 path, 整数型
+
+.DLL命令 GdipDrawPath, 整数型, "GdiPlus.dll", "GdipDrawPath"
+    .参数 graphics, 整数型
+    .参数 pen, 整数型
+    .参数 path, 整数型
+
+.DLL命令 GdipCreateRegionRect, 整数型, "GdiPlus.dll", "GdipCreateRegionRect"
+    .参数 rect, RectF
+    .参数 region, 整数型, 传址
+
+.DLL命令 GdipDeleteRegion, 整数型, "GdiPlus.dll", "GdipDeleteRegion"
+    .参数 region, 整数型
+
+.DLL命令 GdipSetClipRegion, 整数型, "GdiPlus.dll", "GdipSetClipRegion"
+    .参数 graphics, 整数型
+    .参数 region, 整数型
+    .参数 combineMode, 整数型
+
+.DLL命令 GetProcAddress, 整数型, "kernel32", "GetProcAddress", , 返回函数地址　
+    .参数 hModule, 整数型
+    .参数 lpProcName, 文本型

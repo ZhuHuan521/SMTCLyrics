@@ -1,0 +1,621 @@
+﻿.版本 2
+
+.程序集 辅助功能程序集
+
+.程序集变量 Token, 整数型
+
+.子程序 CallWindowProcEx, 整数型
+.参数 程序指针, 整数型
+.参数 参数1, 整数型
+.参数 参数2, 整数型
+.参数 参数3, 整数型
+
+.如果真 (程序指针 == 0)
+    返回 (0)
+.如果真结束
+返回 (CallWindowProc_Bin ({85, 139, 236, 255, 117, 20, 255, 117, 16, 255, 117, 12, 255, 85, 8, 201, 194, 16, 0}, 程序指针, 参数1, 参数2, 参数3))
+
+
+.子程序 ModifyStyle, 整数型, , 调用这个成员函数以修改窗口的风格。要加入或清除的风格可以用位或操作符.如果成功地修改了风格，则返回非零值；否则返回0。
+.参数 hWnd, 整数型
+.参数 dwRemove, 整数型, 可空, 指定了在修改风格时要清除的窗口风格。
+.参数 dwAdd, 整数型, 可空, 指定了在修改风格时要加入的窗口风格。
+.参数 nFlags, 整数型, 可空, 要传递给SetWindowPos的标志，如果不应调用SetWinowPos，则为0。缺省值为0。预设的标志列表参见说明部分。· SWP_NOSIZE 保持当前大小。· SWP_NOMOVE 保持当前位置。· SWP_NOZORDER 保持当前的Z轴顺序。· SWP_NOACTIVATE 不激活窗口。
+.局部变量 dwStyle, 整数型
+.局部变量 dwNewStyle, 整数型
+
+dwStyle = GetWindowLong (hWnd, #GWL_STYLE)
+dwNewStyle = 位与 (dwStyle, 位取反 (dwRemove))
+dwNewStyle = 位或 (dwNewStyle, dwAdd)
+.如果真 (dwStyle == dwNewStyle)
+    返回 (0)
+.如果真结束
+SetWindowLong (hWnd, #GWL_STYLE, dwNewStyle)
+.如果真 (nFlags != 0)
+    SetWindowPos (hWnd, 0, 0, 0, 0, 0, 位或 (#SWP_NOSIZE, #SWP_NOMOVE, #SWP_NOZORDER, #SWP_NOACTIVATE, nFlags))
+.如果真结束
+返回 (1)
+
+' DWORD dwStyle = ::GetWindowLong(m_hWnd, GWL_STYLE);
+' DWORD dwNewStyle = (dwStyle & ~dwRemove) | dwAdd;
+' if(dwStyle == dwNewStyle)
+' return FALSE;
+
+' ::SetWindowLong(m_hWnd, GWL_STYLE, dwNewStyle);
+' if(nFlags != 0)
+' {
+' ::SetWindowPos(m_hWnd, NULL, 0, 0, 0, 0,
+' SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | nFlags);
+' }
+
+
+
+.子程序 ModifyExStyle, 整数型, , 调用这个成员函数以修改窗口的扩展风格。要加入或清除的风格可以用位或操作符.如果成功地修改了风格，则返回非零值；否则返回0。
+.参数 hWnd, 整数型
+.参数 dwRemove, 整数型, 可空, 指定了在修改风格时要清除的扩展风格。
+.参数 dwAdd, 整数型, 可空, 指定了在修改风格时要加入的扩展风格。
+.参数 nFlags, 整数型, 可空, 要传递给SetWindowPos的标志，如果不应调用SetWinowPos，则为0。缺省值为0。预设的标志列表参见说明部分。· SWP_NOSIZE 保持当前大小。· SWP_NOMOVE 保持当前位置。· SWP_NOZORDER 保持当前的Z轴顺序。· SWP_NOACTIVATE 不激活窗口。
+.局部变量 dwStyle, 整数型
+.局部变量 dwNewStyle, 整数型
+
+dwStyle = GetWindowLong (hWnd, #GWL_EXSTYLE)
+dwNewStyle = 位与 (dwStyle, 位取反 (dwRemove))
+dwNewStyle = 位或 (dwNewStyle, dwAdd)
+.如果真 (dwStyle == dwNewStyle)
+    返回 (0)
+.如果真结束
+SetWindowLong (hWnd, #GWL_EXSTYLE, dwNewStyle)
+.如果真 (nFlags != 0)
+    SetWindowPos (hWnd, 0, 0, 0, 0, 0, 位或 (#SWP_NOSIZE, #SWP_NOMOVE, #SWP_NOZORDER, #SWP_NOACTIVATE, nFlags))
+    
+.如果真结束
+返回 (1)
+
+
+.子程序 GetClassNameEx, 文本型
+.参数 hWnd, 整数型
+.局部变量 ClassName, 文本型
+
+ClassName = 取空白文本 (255)
+GetClassName (hWnd, ClassName, 255)
+返回 (ClassName)
+
+
+.子程序 GetWindowTextEx, 文本型
+.参数 hWnd, 整数型
+.局部变量 lpString, 文本型, , , 返回的文本内容
+.局部变量 nLength, 整数型
+
+nLength = GetWindowTextLength (hWnd)
+lpString = 取空白文本 (nLength)
+GetWindowText (hWnd, lpString, nLength + 1)
+返回 (lpString)
+
+
+.子程序 RGB到ARGB, 整数型
+.参数 RGB颜色, 整数型
+.参数 透明度, 整数型, 可空
+.局部变量 Color, 字节集
+
+.判断开始 (是否为空 (透明度))
+    透明度 = 255
+.判断 (透明度 > 255)
+    透明度 = 255
+.判断 (透明度 < 0)
+    透明度 = 0
+.默认
+    
+.判断结束
+
+Color = 到字节集 (RGB颜色)
+RGB颜色 = 位或 (Color[3] + Color[2] * 256 + Color[1] * 65536, 左移 (透明度, 24))  ' 转换成GDI+的颜色值
+返回 (RGB颜色)
+
+
+
+.子程序 CRect, RECT
+.参数 Left, 整数型
+.参数 Top, 整数型
+.参数 Right, 整数型
+.参数 Bottom, 整数型
+.局部变量 Rect, RECT
+
+Rect.Left = Left
+Rect.Top = Top
+Rect.Right = Right
+Rect.Bottom = Bottom
+返回 (Rect)
+
+
+.子程序 CRectF, RectF
+.参数 x, 小数型
+.参数 y, 小数型
+.参数 nWidth, 小数型, 可空
+.参数 nHeight, 小数型, 可空
+.局部变量 layoutRect, RectF
+
+layoutRect.X = x
+layoutRect.Y = y
+layoutRect.Width = nWidth
+layoutRect.Height = nHeight
+返回 (layoutRect)
+
+
+.子程序 GetClientRectEx, 整数型, , 返回指定窗口客户区矩形的大小  非零表示成功，零表示失败。会设置GetLastError
+.参数 hWnd, 整数型
+.参数 Rect, RECT, 参考 可空
+.参数 nWidth, 整数型, 参考 可空
+.参数 nHeight, 整数型, 参考 可空
+.局部变量 ret, 整数型
+
+ret = GetClientRect (hWnd, Rect)
+.如果真 (是否为空 (nWidth) == 假)
+    nWidth = Rect.Right - Rect.Left
+.如果真结束
+.如果真 (是否为空 (nHeight) == 假)
+    nHeight = Rect.Bottom - Rect.Top
+.如果真结束
+返回 (ret)
+
+
+.子程序 GetWindowRectEx, 整数型, , 返回指定窗口矩形的大小  非零表示成功，零表示失败。会设置GetLastError
+.参数 hWnd, 整数型
+.参数 Rect, RECT, 参考 可空
+.参数 nWidth, 整数型, 参考 可空
+.参数 nHeight, 整数型, 参考 可空
+.局部变量 ret, 整数型
+
+ret = GetWindowRect (hWnd, Rect)
+.如果真 (是否为空 (nWidth) == 假)
+    nWidth = Rect.Right - Rect.Left
+.如果真结束
+.如果真 (是否为空 (nHeight) == 假)
+    nHeight = Rect.Bottom - Rect.Top
+.如果真结束
+返回 (ret)
+
+
+.子程序 InvalidateChild
+.参数 hwnd, 整数型
+.局部变量 rect, RECT
+.局部变量 pt, POINT
+.局部变量 hWndParent, 整数型
+
+GetWindowRect (hwnd, rect)
+hWndParent = GetParent (hwnd)
+pt.x = rect.Left
+pt.y = rect.Top
+ScreenToClient (hWndParent, pt)
+rect.Right = pt.x + (rect.Right - rect.Left)
+rect.Bottom = pt.y + rect.Bottom - rect.Top
+rect.Left = pt.x
+rect.Top = pt.y
+InvalidateRect2 (hWndParent, rect, 0)
+' InvalidateRect (hWndParent, 0, 0)
+InvalidateRect (hwnd, 0, 0)
+
+
+.子程序 InvalidateParent
+.参数 hwnd, 整数型
+.局部变量 rect, RECT
+.局部变量 pt, POINT
+.局部变量 hWndParent, 整数型
+
+GetWindowRect (hwnd, rect)
+hWndParent = GetParent (hwnd)
+pt.x = rect.Left
+pt.y = rect.Top
+ScreenToClient (hWndParent, pt)
+rect.Right = pt.x + (rect.Right - rect.Left)
+rect.Bottom = pt.y + rect.Bottom - rect.Top
+rect.Left = pt.x
+rect.Top = pt.y
+InvalidateRect2 (hWndParent, rect, 0)
+
+
+.子程序 LOWORD, 整数型, , 取低位
+.参数 Param, 整数型
+
+返回 (位与 (Param, 65535))
+
+
+.子程序 HIWORD, 整数型, , 取高位
+.参数 Param, 整数型
+
+返回 (右移 (Param, 16))
+
+
+.子程序 彗星取比例尺寸
+.参数 原宽度, 整数型
+.参数 原高度, 整数型
+.参数 最大宽度, 整数型
+.参数 最大高度, 整数型
+.参数 新宽度, 整数型, 参考
+.参数 新高度, 整数型, 参考
+.局部变量 w
+.局部变量 h
+
+w = 原宽度
+h = 原高度
+.如果 (w > 最大宽度)
+    新宽度 = 最大宽度
+    新高度 = h * 最大宽度 / w
+.否则
+    新宽度 = w
+    新高度 = h
+.如果结束
+w = 新宽度
+h = 新高度
+.如果真 (h > 最大高度)
+    新高度 = 最大高度
+    新宽度 = w * 最大高度 / h
+.如果真结束
+
+
+
+.子程序 取图标句柄, 整数型
+.参数 图标数据, 字节集, , 图标文件信息
+.参数 图标索引, 整数型, 可空, 从0开始
+.参数 图标宽度, 整数型, 参考 可空
+.参数 图标高度, 整数型, 参考 可空
+.局部变量 IconDirEntry, IconDirEntry
+.局部变量 图标句柄, 整数型
+.局部变量 n, 整数型
+.局部变量 nPos, 整数型
+
+n = 取字节集长度 (图标数据)
+nPos = 6 + 图标索引 * 16 + 1
+.如果真 (n < nPos + 16)
+    返回 (0)
+.如果真结束
+CopyMemory_IconDirEntry (IconDirEntry, 取字节集中间 (图标数据, nPos, 16), 16)
+图标宽度 = IconDirEntry.bWidth
+图标高度 = IconDirEntry.bHeight
+图标句柄 = CreateIconFromResource (取字节集中间 (图标数据, IconDirEntry.dwImageOffset + 1, IconDirEntry.dwBytesInRes), IconDirEntry.dwBytesInRes, 真, 196608)
+返回 (图标句柄)
+
+
+.子程序 消息处理
+.局部变量 Msg, MSG
+
+.判断循环首 (PeekMessage (Msg, 0, 0, 0, 0) != 0 && Msg.message != 18)
+    PeekMessage (Msg, 0, 0, 0, 1)
+    TranslateMessage (Msg)
+    DispatchMessage (Msg)
+.判断循环尾 ()
+
+
+
+.子程序 取图像帧数, 整数型
+.参数 nativeImage, 整数型
+.局部变量 count
+.局部变量 帧数, 整数型
+.局部变量 guid, 全局唯一标识符, , "0"
+
+
+GdipImageGetFrameDimensionsCount (nativeImage, count)
+重定义数组 (guid, 假, count)
+GdipImageGetFrameDimensionsList (nativeImage, guid, count)
+GdipImageGetFrameCount (nativeImage, guid[1], 帧数)
+返回 (帧数)
+
+
+.子程序 取图像各帧延时, 整数型
+.参数 nativeImage, 整数型
+.参数 各帧延时数组, 整数型, 数组
+.局部变量 size
+.局部变量 numProperties
+.局部变量 字节集1, 字节集
+.局部变量 tmp
+.局部变量 a
+.局部变量 b
+.局部变量 r
+.局部变量 帧数, 整数型
+
+numProperties = 20736  ' PropertyTagFrameDelay = 0x5100
+GdipGetPropertyItemSize (nativeImage, numProperties, size)
+' 输出调试文本 (size)
+
+字节集1 = 取空白字节集 (size)
+r = GdipGetPropertyItem (nativeImage, numProperties, size, 字节集1)
+a = 1
+tmp = 取字节集数据 (字节集1, #整数型, a)
+tmp = 取字节集数据 (字节集1, #整数型, a)
+tmp = 取字节集数据 (字节集1, #整数型, a)
+tmp = 取字节集数据 (字节集1, #整数型, a)
+
+清除数组 (各帧延时数组)
+帧数 = 取图像帧数 (nativeImage)
+.计次循环首 (帧数, b)
+    tmp = 取字节集数据 (字节集1, #整数型, a)
+    .如果真 (tmp == 0)
+        tmp = 7
+    .如果真结束
+    加入成员 (各帧延时数组, tmp)
+.计次循环尾 ()
+
+' 调试输出 (各帧延时数组)
+' 调试输出 (字节集1)
+返回 (r)
+
+
+.子程序 载入内存图片, 整数型, , 载入指定图片，成功返回图片句柄，失败返回0
+.参数 欲被载入的图片, 字节集, , 图片数据
+.参数 图片宽度, 整数型, 参考 可空
+.参数 图片高度, 整数型, 参考 可空
+.局部变量 Image, 整数型
+.局部变量 hMem, 整数型
+.局部变量 stream, 整数型
+.局部变量 p
+.局部变量 n
+
+n = 取字节集长度 (欲被载入的图片)
+hMem = GlobalAlloc (0, n)  ' GMEM_FIXED=0
+p = GlobalLock (hMem)
+写到内存 (欲被载入的图片, p, n)
+GlobalUnlock (hMem)
+CreateStreamOnHGlobal (hMem, 0, stream)
+.如果真 (stream == 0)
+    ' ErrMsg ＝ “画图片:创建字节流失败”
+    返回 (0)
+.如果真结束
+.如果真 (GdipLoadImageFromStream (stream, Image) != 0)
+    ' ErrMsg ＝ “画图片:载入图片失败”
+    ' 返回 (0)
+    Image = 0
+.如果真结束
+.如果真 (Image != 0)
+    .如果真 (是否为空 (图片宽度) == 假)
+        GdipGetImageWidth (Image, 图片宽度)
+    .如果真结束
+    .如果真 (是否为空 (图片高度) == 假)
+        GdipGetImageHeight (Image, 图片高度)
+    .如果真结束
+    
+.如果真结束
+GlobalFree (hMem)
+返回 (Image)
+
+
+.子程序 创建纯色画刷, 整数型
+.参数 ARGB颜色, 整数型, , 要通过 RGB到ARGB() 转换
+.局部变量 n
+.局部变量 r
+
+r = GdipCreateSolidFill (ARGB颜色, n)
+返回 (n)
+
+
+.子程序 GDIPlus_创建字体, 整数型, , 返回字体句柄,返回0表示失败
+.参数 字体名称, 文本型, , 字体名称
+.参数 字体尺寸, 小数型, , 字体尺寸
+.参数 字体风格, 整数型, 可空, 字体风格
+.参数 字体度量单位, 整数型, 可空, 字体度量单位
+.局部变量 FontFamily, 整数型
+.局部变量 b
+.局部变量 临时数组, 文本型, , "0"
+.局部变量 i, 整数型
+
+.如果真 (是否为空 (字体度量单位))
+    字体度量单位 = 2
+.如果真结束
+' 单位_世界坐标, "0", 公开, // 0 -- World coordinate (non-physical unit)
+' 单位_Display, "1", 公开, // 1 -- Variable -- for PageTransform only
+' 单位_像素, "2", 公开, // 2 -- Each unit is one device pixel.像素
+' 单位_点, "3", 公开, // 3 -- Each unit is a printer's point 点
+' 单位_英寸, "4", 公开, // 4 -- Each unit is 1 inch.英寸
+' 单位_Document, "5", 公开, // 5 -- Each unit is 1/300 inch.
+' 单位_毫米, "6", 公开, // 6 -- Each unit is 1 millimeter.毫米
+
+
+' 字体风格_普通, "0", 公开
+' 字体风格_加粗, "1", 公开
+' 字体风格_倾斜, "2", 公开
+' 字体风格_加粗倾斜, "3", 公开
+' 字体风格_带下划线, "4", 公开
+' 字体风格_带中间线, "8", 公开
+临时数组 = 分割文本 (字体名称, “;”, )
+.计次循环首 (取数组成员数 (临时数组), i)
+    .如果真 (临时数组[i] != “”)
+        GdipCreateFontFamilyFromName (A2W (临时数组[i]), 0, FontFamily)
+        GdipCreateFont (FontFamily, 字体尺寸, 字体风格, 字体度量单位, b)
+        GdipDeleteFontFamily (FontFamily)
+        .如果真 (b != 0)
+            返回 (b)
+        .如果真结束
+        
+    .如果真结束
+    
+.计次循环尾 ()
+返回 (0)
+
+
+.子程序 A2W, 字节集, , 将Ansi转成Unicode
+.参数 欲转换的文本, 文本型
+.局部变量 缓冲区, 字节集
+.局部变量 字符数目, 整数型, , , 包括结尾0
+
+字符数目 = MultiByteToWideChar (0, 0, 欲转换的文本, -1, {}, 0)  ' 返回字符数目
+' 输出调试文本 (字符数目)
+缓冲区 = 取空白字节集 (字符数目 * 2)
+MultiByteToWideChar (0, 0, 欲转换的文本, -1, 缓冲区, 字符数目)
+返回 (缓冲区)
+' BOOL MByteToWChar(LPCSTR lpcszStr, LPWSTR lpwszStr, DWORD dwSize)
+' {
+' // Get the required size of the buffer that receives the Unicode' // string.
+' DWORD dwMinSize;
+' dwMinSize = MultiByteToWideChar (CP_ACP, 0, lpcszStr, -1, NULL, 0);
+
+' if(dwSize < dwMinSize)
+' {' return FALSE;' }
+
+' // Convert headers from ASCII to Unicode.
+' MultiByteToWideChar (CP_ACP, 0, lpcszStr, -1, lpwszStr, dwMinSize);
+' return TRUE;
+' }
+
+
+
+
+.子程序 Gdiplus_初始化
+.局部变量 GpInput, GdiplusStartupInput
+
+.如果真 (Token == 0)
+    GpInput.GdiplusVersion = 1
+    GdiplusStartup (Token, GpInput, 0)  ' 启动 GDI+
+.如果真结束
+
+
+
+.子程序 Create32Bitmap, 整数型
+.参数 hDC, 整数型
+.参数 nWidth, 整数型
+.参数 nHeight, 整数型
+.局部变量 bi, BITMAPINFO
+.局部变量 hBitmap, 整数型
+
+bi.BITMAPINFOHEADER.biSize = 40
+bi.BITMAPINFOHEADER.biBitCount = 32
+bi.BITMAPINFOHEADER.biHeight = nHeight
+bi.BITMAPINFOHEADER.biWidth = nWidth
+bi.BITMAPINFOHEADER.biPlanes = 1
+bi.BITMAPINFOHEADER.biSizeImage = bi.BITMAPINFOHEADER.biWidth * bi.BITMAPINFOHEADER.biHeight * bi.BITMAPINFOHEADER.biBitCount / 8
+hBitmap = CreateDIBSection (hDC, bi, 0, 0, 0, 0)
+返回 (hBitmap)
+
+
+.子程序 Gdiplus_画九宫图
+.参数 Graphics, 整数型, , 目标
+.参数 Image, 整数型, , 原图句柄
+.参数 nDstX, 整数型
+.参数 nDstY, 整数型
+.参数 nDstWidth, 小数型, , 目标宽度
+.参数 nDstHeight, 小数型, , 目标高度
+.参数 ClientRect, RECT, , 九宫矩形
+.局部变量 ImgWidth, 小数型
+.局部变量 ImgHeight, 小数型
+.局部变量 ClientWidth, 整数型
+.局部变量 ClientHeight, 整数型
+.局部变量 dstWidth, 整数型
+.局部变量 dstHeight, 整数型
+.局部变量 y, 整数型
+.局部变量 h, 整数型
+
+GdipGetImageDimension (Image, ImgWidth, ImgHeight)
+ClientWidth = ClientRect.Right - ClientRect.Left
+ClientHeight = ClientRect.Bottom - ClientRect.Top
+dstWidth = nDstWidth - ClientRect.Left - (ImgWidth - ClientRect.Right)
+dstHeight = nDstHeight - ClientRect.Top - (ImgHeight - ClientRect.Bottom)
+
+y = nDstY
+GdipDrawImageRectRect_空 (Graphics, Image, 0 + nDstX, y, ClientRect.Left, ClientRect.Top, 0, 0, ClientRect.Left, ClientRect.Top, 2, 0, 0, 0)
+GdipDrawImageRectRect_空 (Graphics, Image, ClientRect.Left + nDstX, y, dstWidth, ClientRect.Top, ClientRect.Left, 0, ClientWidth, ClientRect.Top, 2, 0, 0, 0)
+GdipDrawImageRectRect_空 (Graphics, Image, nDstWidth - (ImgWidth - ClientRect.Right) + nDstX, y, ImgWidth - ClientRect.Right, ClientRect.Top, ClientRect.Right, 0, ImgWidth - ClientRect.Right, ClientRect.Top, 2, 0, 0, 0)
+
+y = ClientRect.Top + nDstY
+GdipDrawImageRectRect_空 (Graphics, Image, nDstX, y, ClientRect.Left, dstHeight, 0, ClientRect.Top, ClientRect.Left, ClientHeight, 2, 0, 0, 0)
+GdipDrawImageRectRect_空 (Graphics, Image, ClientRect.Left + nDstX, y, dstWidth, dstHeight, ClientRect.Left, ClientRect.Top, ClientWidth, ClientHeight, 2, 0, 0, 0)
+GdipDrawImageRectRect_空 (Graphics, Image, nDstWidth - (ImgWidth - ClientRect.Right) + nDstX, y, ImgWidth - ClientRect.Right, dstHeight, ClientRect.Right, ClientRect.Top, ImgWidth - ClientRect.Right, ClientHeight, 2, 0, 0, 0)
+
+
+y = nDstHeight - (ImgHeight - ClientRect.Bottom)
+h = nDstHeight - ClientRect.Bottom
+GdipDrawImageRectRect_空 (Graphics, Image, 0 + nDstX, y, ClientRect.Left, h, 0, ClientRect.Bottom, ClientRect.Left, h, 2, 0, 0, 0)
+GdipDrawImageRectRect_空 (Graphics, Image, ClientRect.Left + nDstX, y, dstWidth, h, ClientRect.Left, ClientRect.Bottom, ClientWidth, h, 2, 0, 0, 0)
+GdipDrawImageRectRect_空 (Graphics, Image, nDstWidth - (ImgWidth - ClientRect.Right) + nDstX, y, ImgWidth - ClientRect.Right, h, ClientRect.Right, ClientRect.Bottom, ImgWidth - ClientRect.Right, h, 2, 0, 0, 0)
+
+
+.子程序 CreateFontEx, 整数型
+.参数 字体名称, 文本型, 可空, 现有系统TrueType字体名称,如“宋体”,多个字体用分号分隔，如“微软雅黑;宋体;Tahoma”
+.参数 字体高度, 整数型, 可空, 等于0为默认高度
+.参数 字体宽度, 整数型, 可空, 等于0则使用可用的横纵比进行匹配
+.参数 行与水平角度, 整数型, 可空, 以0.1度为单位,如:正时针旋转90度设为-900,逆时针旋转90度设为900
+.参数 基线与水平角度, 整数型, 可空
+.参数 是否加粗, 逻辑型, 可空, 假:正常字体，真:加粗
+.参数 是否是斜体, 逻辑型, 可空, 假:正常字体，真:斜体
+.参数 是否加下划线, 逻辑型, 可空, 假:无下划线，真:有下划线
+.参数 是否加删除线, 逻辑型, 可空, 假:无删除线，真:有删除线
+.局部变量 hFont, 整数型
+.局部变量 nHeight, 整数型, , , 所创建字体的字符高度
+.局部变量 nWidth, 整数型, , , 字体的字符平均宽度
+.局部变量 nEscapement, 整数型, , , 字符输出方向与水平向右的方向所成角度，以0.1度为单位
+.局部变量 nOrientation, 整数型, , , 字符与基线的角度，以0.1度为单位
+.局部变量 nWeight, 整数型, , , 字符颜色的深浅度
+.局部变量 bItalic, 字节型, , , 斜体属性标志(0:正常字体，非0:斜体)
+.局部变量 bUnderline, 字节型, , , 下划线属性标志(0:无下划线，非0:有下划线)
+.局部变量 cStrikeOut, 字节型, , , 删除线属性标志(0:无删除线，非0:有删除线)
+.局部变量 nCharSet, 字节型, , , 字符集标识0:ANSI字符集，1:系统缺省字符集
+.局部变量 nOutPrecision, 字节型, , , 输出精度
+.局部变量 nClipPrecision, 字节型, , , 剪切精度
+.局部变量 nQuality, 字节型, , , 输出品质
+.局部变量 nPitchAndFamily, 字节型, , , 字符间距
+.局部变量 lpszFacename, 文本型, , , 现有系统TrueType字体名称
+.局部变量 临时数组, 文本型, , "0"
+.局部变量 i, 整数型
+
+nHeight = 字体高度  ' , 整数型, , , 所创建字体的字符高度
+nWidth = 字体宽度  ' , 整数型, , , 字体的字符平均宽度
+nEscapement = 行与水平角度  ' , 整数型, , , 字符输出方向与水平向右的方向所成角度，以0.1度为单位
+nOrientation = 基线与水平角度  ' , 整数型, , , 字符与基线的角度，以0.1度为单位
+nWeight = 选择 (是否加粗, 600, 400)  ' FW_NORMAL 字符颜色深浅度 , 整数型, , , 字符颜色的深浅度
+bItalic = 到字节 (是否是斜体)  ' , 字节型, , , 斜体属性标志(0:正常字体，非0:斜体)
+bUnderline = 到字节 (是否加下划线)  ' , 字节型, , , 下划线属性标志(0:无下划线，非0:有下划线)
+cStrikeOut = 到字节 (是否加删除线)  ' , 字节型, , , 删除线属性标志(0:无删除线，非0:有删除线)
+nCharSet = 1  ' 字符集标识 ＝ 1  ' 系统缺省字符集, 字节型, , , 字符集标识0:ANSI字符集，1:系统缺省字符集
+nOutPrecision = 2  ' 输出精度 ＝ 2  ' OUT_CHARACTER_PRECIS, 字节型, , , 输出精度
+nClipPrecision = 1  ' 剪切精度 ＝ 1  ' CLIP_CHARACTER_PRECIS, 字节型, , , 剪切精度
+nQuality = 0  ' 输出品质 ＝ 0  ' DEFAULT_QUALITY, 字节型, , , 输出品质
+nPitchAndFamily = 到字节 (左移 (3, 4))  ' 字符间距 ＝ 到字节 (左移 (3, 4))  ' FF_MODERN, 字节型, , , 字符间距
+lpszFacename = 选择 (是否为空 (字体名称), “宋体”, 字体名称)  ' , 文本型, , , 现有系统TrueType字体名称
+临时数组 = 分割文本 (lpszFacename, “;”, )
+.计次循环首 (取数组成员数 (临时数组), i)
+    lpszFacename = 临时数组[i]
+    .如果真 (lpszFacename != “”)
+        hFont = CreateFont (nHeight, nWidth, nEscapement, nOrientation, nWeight, bItalic, bUnderline, cStrikeOut, nCharSet, nOutPrecision, nClipPrecision, nQuality, nPitchAndFamily, lpszFacename)
+        .如果真 (hFont != 0)
+            返回 (hFont)
+        .如果真结束
+        
+    .如果真结束
+    
+.计次循环尾 ()
+返回 (0)
+
+
+.子程序 UpdateLayered
+.参数 hWnd, 整数型
+.参数 hSrcDC, 整数型
+.参数 nWidth, 整数型
+.参数 nHeight, 整数型
+.局部变量 hDC, 整数型
+.局部变量 srcPoint, POINT
+.局部变量 winSize, Size
+.局部变量 blendFunc32bpp, BLENDFUNCTION
+
+hDC = GetDC (hWnd)
+srcPoint.x = 0
+srcPoint.y = 0
+winSize.Width = nWidth
+winSize.Height = nHeight
+blendFunc32bpp.AlphaFormat = 1  ' AC_SRC_ALPHA
+blendFunc32bpp.BlendFlags = 0
+blendFunc32bpp.BlendOp = 0  ' AC_SRC_OVER
+blendFunc32bpp.SourceConstantAlpha = 255
+UpdateLayeredWindow (hWnd, hDC, 0, winSize, hSrcDC, srcPoint, 0, blendFunc32bpp, #ULW_ALPHA)
+ReleaseDC (hWnd, hDC)
+
+
+.子程序 GetMax, 整数型
+.参数 a, 整数型
+.参数 b, 整数型
+.参数 c, 整数型
+
+.判断开始 (a > b && a > c)
+    返回 (a)
+.判断 (b > c)
+    返回 (b)
+.默认
+    返回 (c)
+.判断结束
+
+

@@ -1,0 +1,153 @@
+﻿.版本 2
+
+.程序集 匿名程序集_15, , , _-@M<集_易语言相关>
+
+.子程序 易语言_取易语言安装目录, 文本型, 公开, 成功返回路径,不需要文件名时,路径以\结尾,失败返回空文本
+.参数 是否需要文件名, 逻辑型, 可空, 默认为假,即为不需要留文件名
+.局部变量 匿名局部变量_1, 文本型
+.局部变量 匿名局部变量_2, 整数型
+.局部变量 匿名局部变量_3, 字节集
+.局部变量 匿名局部变量_4, 整数型
+.局部变量 匿名局部变量_5, 整数型
+
+RegOpenKeyA (#HKEY_CURRENT_USER, “Software\FlySky\E\Install”, 匿名局部变量_2)
+匿名局部变量_4 = #MAX_PATH
+匿名局部变量_3 = 取空白字节集 (匿名局部变量_4)
+匿名局部变量_5 = RegQueryValueExA (匿名局部变量_2, “Path”, #NULL, #NULL, 匿名局部变量_3, 匿名局部变量_4)
+RegCloseKey (匿名局部变量_2)
+.如果真 (匿名局部变量_5 == #ERROR_SUCCESS)
+    匿名局部变量_1 = 到文本 (匿名局部变量_3)
+    匿名局部变量_1 = 取文本左边 (匿名局部变量_1, 取文本长度 (匿名局部变量_1) - 4)
+    .如果真 (是否需要文件名)
+        匿名局部变量_1 = 匿名局部变量_1 + “e.exe”
+    .如果真结束
+    
+.如果真结束
+返回 (匿名局部变量_1)
+
+
+.子程序 易语言_加快捷方式到IE浏览器, 逻辑型, 公开
+.参数 图标所在路径文件名, 文本型, , 用于加载到IE浏览器快捷按钮上所用原始图标的路径文件名,以ICO结束,如:"e.ico"
+.参数 提示文字, 文本型, , 用于在IE浏览器中用于提示的文字,如:“易语言3.6”
+.参数 添加还是清除, 逻辑型
+.局部变量 匿名局部变量_1, 文本型
+
+.如果真 (文件是否存在 (图标所在路径文件名) == 假)
+    返回 (假)
+.如果真结束
+匿名局部变量_1 = 取文本注册项 (#现行用户, “Software\FlySky\E\Install\Path”, “”)
+匿名局部变量_1 = 取文本左边 (匿名局部变量_1, 取文本长度 (匿名局部变量_1) - 4)
+.如果真 (匿名局部变量_1 != “”)
+    写到文件 (匿名局部变量_1 + “e.ico”, 读入文件 (图标所在路径文件名))
+.如果真结束
+
+.如果 (添加还是清除 == 真)
+    写注册项 (#本地机器, “SOFTWARE\Microsoft\Internet Explorer\Extensions\{BF5DC4AE-258C-43d5-9D80-1F7ACD734DD8}\ButtonText”, 提示文字)
+    写注册项 (#本地机器, “SOFTWARE\Microsoft\Internet Explorer\Extensions\{BF5DC4AE-258C-43d5-9D80-1F7ACD734DD8}\CLSID”, “{1FBA04EE-3024-11D2-8F1F-0000F87ABD16}”)
+    写注册项 (#本地机器, “SOFTWARE\Microsoft\Internet Explorer\Extensions\{BF5DC4AE-258C-43d5-9D80-1F7ACD734DD8}\Default visible”, “Yes”)
+    写注册项 (#本地机器, “SOFTWARE\Microsoft\Internet Explorer\Extensions\{BF5DC4AE-258C-43d5-9D80-1F7ACD734DD8}\Exec”, 匿名局部变量_1 + “e.exe”)
+    写注册项 (#本地机器, “SOFTWARE\Microsoft\Internet Explorer\Extensions\{BF5DC4AE-258C-43d5-9D80-1F7ACD734DD8}\HotIcon”, 匿名局部变量_1 + “e.ico”)
+    写注册项 (#本地机器, “SOFTWARE\Microsoft\Internet Explorer\Extensions\{BF5DC4AE-258C-43d5-9D80-1F7ACD734DD8}\Icon”, 匿名局部变量_1 + “e.ico”)
+    写注册项 (#本地机器, “SOFTWARE\Microsoft\Internet Explorer\Extensions\{BF5DC4AE-258C-43d5-9D80-1F7ACD734DD8}\MenuText”, 提示文字)
+    写注册项 (#本地机器, “SOFTWARE\Microsoft\Internet Explorer\Extensions\{BF5DC4AE-258C-43d5-9D80-1F7ACD734DD8}\MenuStatusBar”, 提示文字)
+.否则
+    删除注册项 (#本地机器, “SOFTWARE\Microsoft\Internet Explorer\Extensions\{BF5DC4AE-258C-43d5-9D80-1F7ACD734DD8}\ButtonText”)
+    删除注册项 (#本地机器, “SOFTWARE\Microsoft\Internet Explorer\Extensions\{BF5DC4AE-258C-43d5-9D80-1F7ACD734DD8}\CLSID”)
+    删除注册项 (#本地机器, “SOFTWARE\Microsoft\Internet Explorer\Extensions\{BF5DC4AE-258C-43d5-9D80-1F7ACD734DD8}\Default visible”)
+    删除注册项 (#本地机器, “SOFTWARE\Microsoft\Internet Explorer\Extensions\{BF5DC4AE-258C-43d5-9D80-1F7ACD734DD8}\Exec”)
+    删除注册项 (#本地机器, “SOFTWARE\Microsoft\Internet Explorer\Extensions\{BF5DC4AE-258C-43d5-9D80-1F7ACD734DD8}\HotIcon”)
+    删除注册项 (#本地机器, “SOFTWARE\Microsoft\Internet Explorer\Extensions\{BF5DC4AE-258C-43d5-9D80-1F7ACD734DD8}\Icon”)
+    删除注册项 (#本地机器, “SOFTWARE\Microsoft\Internet Explorer\Extensions\{BF5DC4AE-258C-43d5-9D80-1F7ACD734DD8}\MenuText”)
+    删除注册项 (#本地机器, “SOFTWARE\Microsoft\Internet Explorer\Extensions\{BF5DC4AE-258C-43d5-9D80-1F7ACD734DD8}\MenuStatusBar”)
+    删除注册项 (#本地机器, “SOFTWARE\Microsoft\Internet Explorer\Extensions\{BF5DC4AE-258C-43d5-9D80-1F7ACD734DD8}”)
+.如果结束
+返回 (真)
+
+
+.子程序 易语言_引用易模块, , 公开, 必须编译出来才行,因为在调试状态下,易语言不允许添加模块的
+.参数 模块路径, 文本型, , 如：C:\精易模块.ec
+.局部变量 匿名局部变量_1, 整数型
+.局部变量 匿名局部变量_2, 整数型
+.局部变量 匿名局部变量_3, 整数型
+.局部变量 匿名局部变量_4, 整数型
+.局部变量 匿名局部变量_5, 外部树型框
+.局部变量 匿名局部变量_6, 整数型
+.局部变量 匿名局部变量_7, 整数型
+
+匿名局部变量_1 = 窗口_取句柄_模糊 (“易语言 - ”, “ENewFrame”)
+.如果真 (匿名局部变量_1 <= 0)
+    提示框 (“易语言未打开,无法引用模块”)
+    返回 ()
+.如果真结束
+窗口_置焦点 (匿名局部变量_1)
+匿名局部变量_1 = 功能_取模块引用表句柄 (匿名局部变量_1)
+.如果真 (匿名局部变量_1 <= 0)
+    提示框 (“引用表提取失败”)
+    返回 ()
+.如果真结束
+匿名局部变量_5.初始化 (匿名局部变量_1)
+.计次循环首 (匿名局部变量_5.取项目数 (), 匿名局部变量_6)
+    .如果真 (匿名局部变量_5.取项目文本 (匿名局部变量_6 - 1) == “模块引用表”)
+        匿名局部变量_5.置现行选中项 (匿名局部变量_6 - 1)
+        跳出循环 ()
+    .如果真结束
+    
+.计次循环尾 ()
+程序_延时 (10)
+鼠标_消息 (匿名局部变量_1, 185, 13, 2)
+程序_延时 (10, )
+键盘_消息 (匿名局部变量_1, #I键, 3, 假)
+匿名局部变量_7 = 取启动时间 ()
+.判断循环首 (0 < 1)
+    匿名局部变量_2 = 窗口_取句柄 (, , “#32770”, “请选择欲加入易模块文件:”)
+    .判断开始 (匿名局部变量_2 > 0)
+        匿名局部变量_4 = 窗口_取句柄 (匿名局部变量_2, , “Edit”, )
+        匿名局部变量_3 = 窗口_取句柄 (匿名局部变量_2, , “Button”, “打开(&O)”)
+        窗口_置控件内容 (匿名局部变量_4, 模块路径)
+        程序_延时 (10)
+        .如果真 (窗口_取控件内容 (匿名局部变量_4) != 模块路径)
+            窗口_置控件内容 (匿名局部变量_4, 模块路径)
+        .如果真结束
+        鼠标_消息 (匿名局部变量_3, 5, 5)
+        跳出循环 ()
+    .判断 (取启动时间 () - 匿名局部变量_7 > 5000)
+        提示框 (“超时,引用失败”)
+        跳出循环 ()
+    .默认
+        
+    .判断结束
+    
+.判断循环尾 ()
+
+
+.子程序 功能_取模块引用表句柄, 整数型, , _-@S<功能_取模块引用表句柄>
+.参数 匿名参数_1, 整数型
+.局部变量 匿名局部变量_1, 整数型
+.局部变量 匿名局部变量_2, 整数型
+.局部变量 匿名局部变量_3, 整数型
+.局部变量 匿名局部变量_4, 整数型
+.局部变量 匿名局部变量_5, 整数型
+.局部变量 匿名局部变量_6, 整数型, , "0"
+
+匿名局部变量_1 = 窗口_取句柄 (匿名参数_1, , “AfxControlBar42s”, “工作夹”)
+.如果真 (匿名局部变量_1 <= 0)
+    返回 (0)
+.如果真结束
+匿名局部变量_2 = 窗口_取句柄 (匿名局部变量_1, , “Afx:400000:8:10011:1900015:0”, “工作夹”)
+.如果真 (匿名局部变量_2 <= 0)
+    返回 (0)
+.如果真结束
+匿名局部变量_3 = 窗口_取句柄 (匿名局部变量_2, , “#32770”, )
+.如果真 (匿名局部变量_3 <= 0)
+    返回 (0)
+.如果真结束
+匿名局部变量_4 = 窗口_取句柄 (匿名局部变量_3, , “SysTabControl32”, “Tab1”)
+.如果真 (匿名局部变量_4 <= 0)
+    返回 (0)
+.如果真结束
+.如果真 (窗口_枚举子窗口 (匿名局部变量_4, 匿名局部变量_6, “SysTreeView32”) == 2)
+    返回 (匿名局部变量_6[2])
+.如果真结束
+返回 (0)
+
+

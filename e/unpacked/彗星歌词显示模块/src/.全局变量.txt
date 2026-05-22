@@ -1,0 +1,5 @@
+﻿.版本 2
+
+.全局变量 g_HandCursor, 整数型, , , 手型光标
+.全局变量 g_ArrowCursor, 整数型, , , 默认光标
+.全局变量 g_SizeAllCursor, 整数型, , , 四向箭头指向东、西、南、北

@@ -1,0 +1,399 @@
+﻿.版本 2
+
+.程序集 类_外部选择夹, <对象>, 公开
+
+.程序集变量 hTabCtrl, 整数型
+.程序集变量 dwProcessId, 整数型
+.程序集变量 isRemote, 逻辑型
+.程序集变量 hProcess, 整数型
+.程序集变量 isWow64, 逻辑型
+
+.子程序 _初始化
+
+
+
+
+.子程序 _销毁
+
+.如果真 (hProcess != #NULL)
+    CloseHandle (hProcess)
+    hProcess = #NULL
+.如果真结束
+
+
+
+.子程序 初始化选择夹, 逻辑型, 公开
+.参数 窗口句柄, 整数型
+.局部变量 匿名局部变量_1, 整数型
+
+匿名局部变量_1 = GetCurrentProcessId ()
+GetWindowThreadProcessId (窗口句柄, dwProcessId)
+isRemote = 匿名局部变量_1 != dwProcessId
+hProcess = OpenProcess (#PROCESS_ALL_ACCESS, 0, dwProcessId)
+.如果真 (hProcess != #NULL)
+    .如果真 (IsWow64Process (hProcess, isWow64) && isWow64 == 假)
+        CloseHandle (hProcess)
+        hProcess = #NULL
+        返回 (假)
+    .如果真结束
+    hTabCtrl = 窗口句柄
+.如果真结束
+返回 (hProcess != #NULL)
+
+
+.子程序 销毁, , 公开
+
+.如果真 (hProcess != #NULL)
+    CloseHandle (hProcess)
+    hProcess = #NULL
+.如果真结束
+
+
+
+.子程序 删除子夹, 逻辑型, 公开, 成功返回真
+.参数 欲删除的子夹索引, 整数型, , 0 代表子夹一，1 代表子夹二，如此类推。-1为最末端子夹。(注意：易语言的子夹索引是从1计起，这个类是按照微软的标准从0计起)。
+.局部变量 匿名局部变量_1, 整数型
+.局部变量 匿名局部变量_2, 整数型
+
+.如果真 (欲删除的子夹索引 < 0)
+    匿名局部变量_1 = 取子夹数目 ()
+    .如果真 (匿名局部变量_1 == 0)
+        返回 (假)
+    .如果真结束
+    欲删除的子夹索引 = 匿名局部变量_1 - 1
+.如果真结束
+匿名局部变量_2 = SendMessageA (hTabCtrl, #TCM_DELETEITEM, 欲删除的子夹索引, 0)
+返回 (匿名局部变量_2 != 0)
+
+
+.子程序 插入子夹, 整数型, 公开, 成功返回位置索引，失败返回-1
+.参数 插入位置, 整数型, 可空, 默认为-1，加到子夹末尾。0 代表子夹一，1 代表子夹二，如此类推(注意：易语言的子夹索引是从1计起，这个类是按照微软的标准从0计起)。
+.参数 子夹标题, 文本型
+.参数 子夹项目数值, 整数型, 可空, 默认为0
+.参数 图片索引, 整数型, 可空, 默认为-1(无图片)
+.局部变量 匿名局部变量_1, 整数型
+.局部变量 匿名局部变量_2, 整数型
+.局部变量 匿名局部变量_3, 整数型
+.局部变量 匿名局部变量_4, 整数型
+
+.如果真 (是否为空 (图片索引) || 取图片组句柄 () == 0)
+    图片索引 = -1
+.如果真结束
+匿名局部变量_1 = 取子夹数目 ()
+.如果真 (是否为空 (插入位置) || 插入位置 > 匿名局部变量_1 - 1 || 插入位置 == -1)
+    插入位置 = 匿名局部变量_1
+.如果真结束
+匿名局部变量_2 = 28
+.如果 (isRemote)
+    .如果真 (hProcess != #NULL)
+        匿名局部变量_3 = VirtualAllocEx (hProcess, #NULL, 匿名局部变量_2 + #MAX_PATH, 位或 (#匿名常量_95, #MEM_COMMIT), #PAGE_READWRITE)
+        .如果真 (匿名局部变量_3 != #NULL)
+            匿名API_48 (hProcess, 匿名局部变量_3, 位或 (#TCIF_TEXT, #TCIF_IMAGE, #TCIF_PARAM), 4, #NULL)
+            WriteProcessMemory_文本型 (hProcess, 匿名局部变量_3 + 匿名局部变量_2, 子夹标题 + 字符 (#NULL), 取文本长度 (子夹标题), #NULL)
+            匿名API_48 (hProcess, 匿名局部变量_3 + 12, 匿名局部变量_3 + 匿名局部变量_2, 4, #NULL)
+            匿名API_48 (hProcess, 匿名局部变量_3 + 16, 取文本长度 (子夹标题), 4, #NULL)
+            匿名API_48 (hProcess, 匿名局部变量_3 + 20, 图片索引, 4, #NULL)
+            匿名API_48 (hProcess, 匿名局部变量_3 + 24, 子夹项目数值, 4, #NULL)
+            匿名局部变量_4 = SendMessageA (hTabCtrl, #TCM_INSERTITEMA, 插入位置, 匿名局部变量_3)
+            VirtualFreeEx (hProcess, 匿名局部变量_3, 0, #MEM_RELEASE)
+        .如果真结束
+        
+    .如果真结束
+    
+.否则
+    匿名局部变量_3 = HeapAlloc (GetProcessHeap (), #HEAP_ZERO_MEMORY, 匿名局部变量_2)
+    .如果真 (匿名局部变量_3 != #NULL)
+        __set (匿名局部变量_3, 0, 位或 (#TCIF_TEXT, #TCIF_IMAGE, #TCIF_PARAM))
+        __set (匿名局部变量_3, 12, 取指针文本_ (子夹标题))
+        __set (匿名局部变量_3, 16, 取文本长度 (子夹标题))
+        __set (匿名局部变量_3, 20, 图片索引)
+        __set (匿名局部变量_3, 24, 子夹项目数值)
+        匿名局部变量_4 = SendMessageA (hTabCtrl, #TCM_INSERTITEMA, 插入位置, 匿名局部变量_3)
+        匿名API_308 (GetProcessHeap (), 0, 匿名局部变量_3)
+    .如果真结束
+    
+.如果结束
+.如果真 (匿名局部变量_1 == 0)
+    UpdateWindow (GetParent (hTabCtrl))
+.如果真结束
+返回 (匿名局部变量_4)
+
+
+.子程序 取子夹数目, 整数型, 公开
+
+返回 (SendMessageA (hTabCtrl, #TCM_GETITEMCOUNT, 0, 0))
+
+
+.子程序 取子夹标题, 文本型, 公开
+.参数 子夹索引, 整数型, , 0 代表子夹一，1 代表子夹二，如此类推。-1为最末端子夹。(注意：易语言的子夹索引是从1计起，这个类是按照微软的标准从0计起)。
+.局部变量 匿名局部变量_1, 整数型
+.局部变量 匿名局部变量_2, 整数型
+.局部变量 匿名局部变量_3, 整数型
+.局部变量 匿名局部变量_4, 整数型
+.局部变量 匿名局部变量_5, 文本型
+
+.如果真 (子夹索引 < 0)
+    匿名局部变量_1 = 取子夹数目 ()
+    .如果真 (匿名局部变量_1 == 0)
+        返回 (匿名局部变量_5)
+    .如果真结束
+    子夹索引 = 匿名局部变量_1 - 1
+.如果真结束
+匿名局部变量_2 = 28
+.如果 (isRemote)
+    .如果真 (hProcess != #NULL)
+        匿名局部变量_3 = VirtualAllocEx (hProcess, #NULL, 匿名局部变量_2 + #MAX_PATH, 位或 (#匿名常量_95, #MEM_COMMIT), #PAGE_READWRITE)
+        .如果真 (匿名局部变量_3 != #NULL)
+            匿名API_48 (hProcess, 匿名局部变量_3, #TCIF_TEXT, 4, #NULL)
+            匿名API_48 (hProcess, 匿名局部变量_3 + 12, 匿名局部变量_3 + 匿名局部变量_2, 4, #NULL)
+            匿名API_48 (hProcess, 匿名局部变量_3 + 16, #MAX_PATH, 4, #NULL)
+            匿名局部变量_4 = SendMessageA (hTabCtrl, #TCM_GETITEMA, 子夹索引, 匿名局部变量_3)
+            .如果真 (匿名局部变量_4 != 0)
+                匿名局部变量_5 = 取空白文本 (#MAX_PATH)
+                匿名API_108 (hProcess, 匿名局部变量_3 + 匿名局部变量_2, 匿名局部变量_5, #MAX_PATH, #NULL)
+            .如果真结束
+            VirtualFreeEx (hProcess, 匿名局部变量_3, 0, #MEM_RELEASE)
+        .如果真结束
+        
+    .如果真结束
+    
+.否则
+    匿名局部变量_3 = HeapAlloc (GetProcessHeap (), #HEAP_ZERO_MEMORY, 匿名局部变量_2)
+    .如果真 (匿名局部变量_3 != #NULL)
+        __set (匿名局部变量_3, 0, #TCIF_TEXT)
+        匿名局部变量_5 = 取空白文本 (#MAX_PATH)
+        __set (匿名局部变量_3, 12, 取指针文本_ (匿名局部变量_5))
+        __set (匿名局部变量_3, 16, #MAX_PATH)
+        匿名局部变量_4 = SendMessageA (hTabCtrl, #TCM_GETITEMA, 子夹索引, 匿名局部变量_3)
+        匿名API_308 (GetProcessHeap (), 0, 匿名局部变量_3)
+    .如果真结束
+    
+.如果结束
+返回 (匿名局部变量_5)
+
+
+.子程序 取子夹数值, 整数型, 公开
+.参数 子夹索引, 整数型, , 0 代表子夹一，1 代表子夹二，如此类推。-1为最末端子夹。(注意：易语言的子夹索引是从1计起，这个类是按照微软的标准从0计起)。
+.局部变量 匿名局部变量_1, 整数型
+.局部变量 匿名局部变量_2, 整数型
+.局部变量 匿名局部变量_3, 整数型
+.局部变量 匿名局部变量_4, 整数型
+.局部变量 匿名局部变量_5, 整数型
+
+.如果真 (子夹索引 < 0)
+    匿名局部变量_1 = 取子夹数目 ()
+    .如果真 (匿名局部变量_1 == 0)
+        返回 (0)
+    .如果真结束
+    子夹索引 = 匿名局部变量_1 - 1
+.如果真结束
+匿名局部变量_2 = 28
+.如果 (isRemote)
+    .如果真 (hProcess != #NULL)
+        匿名局部变量_3 = VirtualAllocEx (hProcess, #NULL, 匿名局部变量_2, 位或 (#匿名常量_95, #MEM_COMMIT), #PAGE_READWRITE)
+        .如果真 (匿名局部变量_3 != #NULL)
+            匿名API_48 (hProcess, 匿名局部变量_3, #TCIF_PARAM, 4, #NULL)
+            匿名局部变量_5 = SendMessageA (hTabCtrl, #TCM_GETITEMA, 子夹索引, 匿名局部变量_3)
+            .如果真 (匿名局部变量_5 != 0)
+                ReadProcessMemory_整数型1 (hProcess, 匿名局部变量_3 + 24, 取指针整数_ (匿名局部变量_4), 4, #NULL)
+            .如果真结束
+            VirtualFreeEx (hProcess, 匿名局部变量_3, 0, #MEM_RELEASE)
+        .如果真结束
+        
+    .如果真结束
+    
+.否则
+    匿名局部变量_3 = HeapAlloc (GetProcessHeap (), #HEAP_ZERO_MEMORY, 匿名局部变量_2)
+    .如果真 (匿名局部变量_3 != #NULL)
+        __set (匿名局部变量_3, 0, #TCIF_PARAM)
+        匿名局部变量_5 = SendMessageA (hTabCtrl, #TCM_GETITEMA, 子夹索引, 匿名局部变量_3)
+        .如果真 (匿名局部变量_5 != 0)
+            匿名局部变量_4 = __get (匿名局部变量_3, 24)
+        .如果真结束
+        匿名API_308 (GetProcessHeap (), 0, 匿名局部变量_3)
+    .如果真结束
+    
+.如果结束
+返回 (匿名局部变量_4)
+
+
+.子程序 置子夹标题, 逻辑型, 公开
+.参数 子夹索引, 整数型, , 0 代表子夹一，1 代表子夹二，如此类推。-1为最末端子夹。(注意：易语言的子夹索引是从1计起，这个类是按照微软的标准从0计起)。
+.参数 欲置入的子夹标题, 文本型
+.局部变量 匿名局部变量_1, 整数型
+.局部变量 匿名局部变量_2, 整数型
+.局部变量 匿名局部变量_3, 整数型
+.局部变量 匿名局部变量_4, 整数型
+
+.如果真 (子夹索引 < 0)
+    匿名局部变量_1 = 取子夹数目 ()
+    .如果真 (匿名局部变量_1 == 0)
+        返回 (假)
+    .如果真结束
+    子夹索引 = 匿名局部变量_1 - 1
+.如果真结束
+匿名局部变量_2 = 28
+.如果 (isRemote)
+    .如果真 (hProcess != #NULL)
+        匿名局部变量_3 = VirtualAllocEx (hProcess, #NULL, 匿名局部变量_2 + #MAX_PATH, 位或 (#匿名常量_95, #MEM_COMMIT), #PAGE_READWRITE)
+        .如果真 (匿名局部变量_3 != #NULL)
+            匿名API_48 (hProcess, 匿名局部变量_3, #TCIF_TEXT, 4, #NULL)
+            WriteProcessMemory_文本型 (hProcess, 匿名局部变量_3 + 匿名局部变量_2, 欲置入的子夹标题 + 字符 (#NULL), 取文本长度 (欲置入的子夹标题), #NULL)
+            匿名API_48 (hProcess, 匿名局部变量_3 + 12, 匿名局部变量_3 + 匿名局部变量_2, 4, #NULL)
+            匿名API_48 (hProcess, 匿名局部变量_3 + 16, 取文本长度 (欲置入的子夹标题), 4, #NULL)
+            匿名局部变量_4 = SendMessageA (hTabCtrl, #TCM_SETITEMA, 子夹索引, 匿名局部变量_3)
+            VirtualFreeEx (hProcess, 匿名局部变量_3, 0, #MEM_RELEASE)
+        .如果真结束
+        
+    .如果真结束
+    
+.否则
+    匿名局部变量_3 = HeapAlloc (GetProcessHeap (), #HEAP_ZERO_MEMORY, 匿名局部变量_2)
+    .如果真 (匿名局部变量_3 != #NULL)
+        __set (匿名局部变量_3, 0, #TCIF_TEXT)
+        __set (匿名局部变量_3, 12, 取指针文本_ (欲置入的子夹标题))
+        __set (匿名局部变量_3, 16, 取文本长度 (欲置入的子夹标题))
+        匿名局部变量_4 = SendMessageA (hTabCtrl, #TCM_SETITEMA, 子夹索引, 匿名局部变量_3)
+        匿名API_308 (GetProcessHeap (), 0, 匿名局部变量_3)
+    .如果真结束
+    
+.如果结束
+返回 (匿名局部变量_4 != 0)
+
+
+.子程序 置子夹数值, 逻辑型, 公开
+.参数 子夹索引, 整数型, , 0 代表子夹一，1 代表子夹二，如此类推。-1为最末端子夹。(注意：易语言的子夹索引是从1计起，这个类是按照微软的标准从0计起)。
+.参数 欲置入的子夹数值, 整数型
+.局部变量 匿名局部变量_1, 整数型
+.局部变量 匿名局部变量_2, 整数型
+.局部变量 匿名局部变量_3, 整数型
+.局部变量 匿名局部变量_4, 整数型
+.局部变量 匿名局部变量_5, 整数型
+
+.如果真 (子夹索引 < 0)
+    匿名局部变量_1 = 取子夹数目 ()
+    .如果真 (匿名局部变量_1 == 0)
+        返回 (假)
+    .如果真结束
+    子夹索引 = 匿名局部变量_1 - 1
+.如果真结束
+匿名局部变量_2 = 28
+.如果 (isRemote)
+    .如果真 (hProcess != #NULL)
+        匿名局部变量_3 = VirtualAllocEx (hProcess, #NULL, 匿名局部变量_2, 位或 (#匿名常量_95, #MEM_COMMIT), #PAGE_READWRITE)
+        .如果真 (匿名局部变量_3 != #NULL)
+            匿名API_48 (hProcess, 匿名局部变量_3, #TCIF_PARAM, 4, #NULL)
+            匿名API_48 (hProcess, 匿名局部变量_3 + 24, 欲置入的子夹数值, 4, #NULL)
+            匿名局部变量_5 = SendMessageA (hTabCtrl, #TCM_SETITEMA, 子夹索引, 匿名局部变量_3)
+            VirtualFreeEx (hProcess, 匿名局部变量_3, 0, #MEM_RELEASE)
+        .如果真结束
+        
+    .如果真结束
+    
+.否则
+    匿名局部变量_3 = HeapAlloc (GetProcessHeap (), #HEAP_ZERO_MEMORY, 匿名局部变量_2)
+    .如果真 (匿名局部变量_3 != #NULL)
+        __set (匿名局部变量_3, 0, #TCIF_PARAM)
+        __set (匿名局部变量_3, 24, 欲置入的子夹数值)
+        匿名局部变量_5 = SendMessageA (hTabCtrl, #TCM_SETITEMA, 子夹索引, 匿名局部变量_3)
+        匿名API_308 (GetProcessHeap (), 0, 匿名局部变量_3)
+    .如果真结束
+    
+.如果结束
+返回 (匿名局部变量_5 != 0)
+
+
+.子程序 置现行子夹, , 公开
+.参数 欲选择的子夹索引, 整数型, , 0 代表子夹一，1 代表子夹二，如此类推。-1为最末端子夹。(注意：易语言的子夹索引是从1计起，这个类是按照微软的标准从0计起)。
+.局部变量 匿名局部变量_1, 整数型
+
+.如果真 (欲选择的子夹索引 < 0)
+    匿名局部变量_1 = 取子夹数目 ()
+    .如果真 (匿名局部变量_1 == 0)
+        返回 ()
+    .如果真结束
+    欲选择的子夹索引 = 匿名局部变量_1 - 1
+.如果真结束
+SendMessageA (hTabCtrl, #TCM_SETCURFOCUS, 欲选择的子夹索引, 0)
+
+
+.子程序 取现行子夹, 整数型, 公开, 0 代表子夹一，1 代表子夹二，如此类推(注意：易语言的子夹索引是从1计起，这个类是按照微软的标准从0计起)。
+
+返回 (SendMessageA (hTabCtrl, #TCM_GETCURFOCUS, 0, 0))
+
+
+.子程序 删除全部子夹, , 公开
+
+SendMessageA (hTabCtrl, #TCM_DELETEALLITEMS, 0, 0)
+
+
+.子程序 取图片组句柄, 整数型, 公开
+
+返回 (SendMessageA (hTabCtrl, #TCM_GETIMAGELIST, 0, 0))
+
+
+.子程序 取行数, 整数型, 公开
+
+返回 (SendMessageA (hTabCtrl, #TCM_GETROWCOUNT, 0, 0))
+
+
+.子程序 置入图片组, , 公开
+.参数 图片组句柄, 整数型
+
+SendMessageA (hTabCtrl, #TCM_SETIMAGELIST, 0, 图片组句柄)
+
+
+.子程序 置子夹图片, 逻辑型, 公开
+.参数 子夹索引, 整数型, , 0 代表子夹一，1 代表子夹二，如此类推。-1为最末端子夹。(注意：易语言的子夹索引是从1计起，这个类是按照微软的标准从0计起)。
+.参数 图片索引, 整数型
+.局部变量 匿名局部变量_1, 整数型
+.局部变量 匿名局部变量_2, 整数型
+.局部变量 匿名局部变量_3, 整数型
+.局部变量 匿名局部变量_4, 整数型
+.局部变量 匿名局部变量_5, 整数型
+
+.如果真 (子夹索引 < 0)
+    匿名局部变量_1 = 取子夹数目 ()
+    .如果真 (匿名局部变量_1 == 0)
+        返回 (假)
+    .如果真结束
+    子夹索引 = 匿名局部变量_1 - 1
+.如果真结束
+匿名局部变量_2 = 28
+.如果 (isRemote)
+    .如果真 (hProcess != #NULL)
+        匿名局部变量_3 = VirtualAllocEx (hProcess, #NULL, 匿名局部变量_2, 位或 (#匿名常量_95, #MEM_COMMIT), #PAGE_READWRITE)
+        .如果真 (匿名局部变量_3 != #NULL)
+            匿名API_48 (hProcess, 匿名局部变量_3, #TCIF_IMAGE, 4, #NULL)
+            匿名API_48 (hProcess, 匿名局部变量_3 + 20, 图片索引, 4, #NULL)
+            匿名局部变量_5 = SendMessageA (hTabCtrl, #TCM_SETITEMA, 子夹索引, 匿名局部变量_3)
+            VirtualFreeEx (hProcess, 匿名局部变量_3, 0, #MEM_RELEASE)
+        .如果真结束
+        
+    .如果真结束
+    
+.否则
+    匿名局部变量_3 = HeapAlloc (GetProcessHeap (), #HEAP_ZERO_MEMORY, 匿名局部变量_2)
+    .如果真 (匿名局部变量_3 != #NULL)
+        __set (匿名局部变量_3, 0, #TCIF_IMAGE)
+        __set (匿名局部变量_3, 20, 图片索引)
+        匿名局部变量_5 = SendMessageA (hTabCtrl, #TCM_SETITEMA, 子夹索引, 匿名局部变量_3)
+        匿名API_308 (GetProcessHeap (), 0, 匿名局部变量_3)
+    .如果真结束
+    
+.如果结束
+返回 (匿名局部变量_5 != 0)
+
+
+.子程序 置子夹栏尺寸, , 公开
+.参数 子夹栏宽度, 整数型
+.参数 子夹栏高度, 整数型
+
+SendMessageA (hTabCtrl, #TCM_SETITEMSIZE, 0, MAKEWORD (子夹栏宽度, 子夹栏高度))
+
+
+.子程序 置子夹栏宽度, , 公开
+.参数 子夹栏宽度, 整数型
+
+SendMessageA (hTabCtrl, #TCM_SETMINTABWIDTH, 0, 子夹栏宽度)
+

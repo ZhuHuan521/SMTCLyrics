@@ -1,0 +1,125 @@
+﻿{
+  "dependencies": [
+    {
+      "fileName": "krnln",
+      "guid": "d09f2340818511d396f6aaf844c7e325",
+      "kind": "elib",
+      "name": "系统核心支持库",
+      "path": "",
+      "reExport": false,
+      "resolvedPath": "D:\\eyuyan\\eyy\\lib\\krnln",
+      "versionText": "5.7"
+    },
+    {
+      "fileName": "spec",
+      "guid": "A512548E76954B6E92C21055517615B0",
+      "kind": "elib",
+      "name": "特殊功能支持库",
+      "path": "",
+      "reExport": false,
+      "resolvedPath": "D:\\eyuyan\\eyy\\lib\\spec",
+      "versionText": "3.1"
+    },
+    {
+      "fileName": "EThread",
+      "guid": "5F99C1642A2F4e03850721B4F5D7C3F8",
+      "kind": "elib",
+      "localWorkspace": "elib/多线程支持库.txt",
+      "name": "多线程支持库",
+      "path": "",
+      "reExport": false,
+      "resolvedPath": "D:\\eyuyan\\eyy\\lib\\EThread.fne",
+      "versionText": "2.0"
+    },
+    {
+      "definedIds": [
+        {
+          "count": 69,
+          "start": 1090606371
+        },
+        {
+          "count": 5,
+          "start": 83978513
+        },
+        {
+          "count": 684,
+          "start": 167862540
+        },
+        {
+          "count": 1369,
+          "start": 402744248
+        },
+        {
+          "count": 69,
+          "start": 1224827079
+        },
+        {
+          "count": 2911,
+          "start": 67196264
+        }
+      ],
+      "fileName": "",
+      "guid": "",
+      "kind": "ecom",
+      "localWorkspace": "ecom/精易模块",
+      "name": "精易模块",
+      "path": "D:\\编程\\易语言\\桌面歌词\\精易模块[v11.1.5].ec",
+      "reExport": false,
+      "resolvedPath": "D:\\programming\\SMTCLyrics\\e\\精易模块[v11.1.5].ec",
+      "versionText": ""
+    },
+    {
+      "definedIds": [
+        {
+          "count": 18,
+          "start": 402754230
+        },
+        {
+          "count": 3,
+          "start": 1224837811
+        },
+        {
+          "count": 189,
+          "start": 67209718
+        }
+      ],
+      "fileName": "",
+      "guid": "",
+      "kind": "ecom",
+      "localWorkspace": "ecom/zyJsonValue",
+      "name": "zyJsonValue",
+      "path": "D:\\编程\\易语言\\桌面歌词\\zyJson3.1.5.ec",
+      "reExport": false,
+      "resolvedPath": "D:\\programming\\SMTCLyrics\\e\\zyJson3.1.5.ec",
+      "versionText": ""
+    },
+    {
+      "definedIds": [
+        {
+          "count": 3,
+          "start": 402754755
+        },
+        {
+          "count": 1,
+          "start": 1224838338
+        },
+        {
+          "count": 22,
+          "start": 67210412
+        }
+      ],
+      "fileName": "",
+      "guid": "",
+      "kind": "ecom",
+      "localWorkspace": "ecom/彗星歌词显示模块",
+      "name": "彗星歌词显示模块",
+      "path": "D:\\编程\\SMTC歌词\\彗星歌词显示模块2.ec",
+      "reExport": false,
+      "resolvedPath": "D:\\编程\\SMTC歌词\\彗星歌词显示模块2.ec",
+      "versionText": ""
+    }
+  ],
+  "projectName": "桌面歌词 with SMTC",
+  "sourcePath": "D:\\programming\\SMTCLyrics\\e\\歌词显示模块_演示.e",
+  "versionText": "1.0"
+}
