@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch SMTCLyrics",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/cpp/build/mingw-debug/SMTCLyrics.exe",
+      "cwd": "${workspaceFolder}/cpp/build/mingw-debug",
+      "MIMode": "gdb",
+      "externalConsole": false,
+      "preLaunchTask": "CMake: build debug"
+    },
+    {
+      "name": "Run SMTCLyricsTests",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/cpp/build/mingw-debug/SMTCLyricsTests.exe",
+      "cwd": "${workspaceFolder}/cpp/build/mingw-debug",
+      "MIMode": "gdb",
+      "externalConsole": false,
+      "preLaunchTask": "CMake: build debug"
+    }
+  ]
+}

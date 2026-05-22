@@ -70,23 +70,26 @@ LyricLoadResult LyricRepository::loadForKeyword(std::wstring_view keyword, const
 }
 
 std::vector<std::uint8_t> LyricRepository::loadLocal(std::wstring_view keyword, std::filesystem::path* matchedPath) const {
-    const auto exact = exactLocalPath(keyword);
-    if (std::filesystem::is_regular_file(exact)) {
-        if (matchedPath) *matchedPath = exact;
-        return util::readFileBytes(exact);
-    }
-
-    std::error_code ec;
-    if (!std::filesystem::is_directory(lyricsDirectory_, ec)) return {};
-    const auto normalizedKeyword = lowerNoSpace(std::wstring(keyword));
-    for (const auto& entry : std::filesystem::directory_iterator(lyricsDirectory_, ec)) {
-        if (ec || !entry.is_regular_file()) continue;
-        if (entry.path().extension() != L".lrc") continue;
-        const auto stem = lowerNoSpace(entry.path().stem().wstring());
-        if (stem == normalizedKeyword || stem.find(normalizedKeyword) != std::wstring::npos || normalizedKeyword.find(stem) != std::wstring::npos) {
-            if (matchedPath) *matchedPath = entry.path();
-            return util::readFileBytes(entry.path());
+    try {
+        const auto exact = exactLocalPath(keyword);
+        if (std::filesystem::is_regular_file(exact)) {
+            if (matchedPath) *matchedPath = exact;
+            return util::readFileBytes(exact);
         }
+
+        std::error_code ec;
+        if (!std::filesystem::is_directory(lyricsDirectory_, ec)) return {};
+        const auto normalizedKeyword = lowerNoSpace(std::wstring(keyword));
+        for (const auto& entry : std::filesystem::directory_iterator(lyricsDirectory_, ec)) {
+            if (ec || !entry.is_regular_file()) continue;
+            if (entry.path().extension() != L".lrc") continue;
+            const auto stem = lowerNoSpace(entry.path().stem().wstring());
+            if (stem == normalizedKeyword || stem.find(normalizedKeyword) != std::wstring::npos || normalizedKeyword.find(stem) != std::wstring::npos) {
+                if (matchedPath) *matchedPath = entry.path();
+                return util::readFileBytes(entry.path());
+            }
+        }
+    } catch (...) {
     }
     return {};
 }
@@ -96,8 +99,12 @@ std::filesystem::path LyricRepository::exactLocalPath(std::wstring_view keyword)
 }
 
 std::vector<std::uint8_t> LyricRepository::fetchOnline(LyricSource source, std::wstring_view keyword, const config::AppConfig& config) const {
-    const auto keywordUtf8 = util::wideToUtf8(keyword);
-    return online_.fetch(source, keywordUtf8, util::wideToUtf8(config.cookie));
+    try {
+        const auto keywordUtf8 = util::wideToUtf8(keyword);
+        return online_.fetch(source, keywordUtf8, util::wideToUtf8(config.cookie));
+    } catch (...) {
+        return {};
+    }
 }
 
 std::wstring makeKeyword(std::wstring_view artist, std::wstring_view title) {

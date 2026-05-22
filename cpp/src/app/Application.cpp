@@ -115,30 +115,33 @@ void Application::initialize() {
 }
 
 void Application::tick() {
-    const auto state = smtc_.readState(config_.smtcMode);
-    if (!state.valid) {
-        currentKeyword_.clear();
-        currentSource_ = lyrics::LyricSource::Local;
-        parser_ = lyrics::LrcParser{};
-        showTextOnce(L"未检测到正在播放的 SMTC 媒体");
-        return;
-    }
-
-    const auto keyword = lyrics::makeKeyword(state.artist, state.title);
-    if (keyword.empty()) {
-        return;
-    }
-    if (keyword != currentKeyword_) {
-        currentKeyword_ = keyword;
-        loadLyricsForCurrentTrack(state);
-    }
-
-    if (!parser_.empty()) {
-        const auto frame = parser_.frameAt(static_cast<std::int64_t>(state.positionSeconds) * 1000, config_.displayMode, config_.lyricOffsetSeconds);
-        if (!frame.text.empty() && frame.text != lastShownText_) {
-            window_.updateLyrics(frame.text, frame.highlightPercent);
-            lastShownText_ = frame.text;
+    try {
+        const auto state = smtc_.readState(config_.smtcMode);
+        if (!state.valid) {
+            currentKeyword_.clear();
+            currentSource_ = lyrics::LyricSource::Local;
+            parser_ = lyrics::LrcParser{};
+            showTextOnce(L"未检测到正在播放的 SMTC 媒体");
+            return;
         }
+
+        const auto keyword = lyrics::makeKeyword(state.artist, state.title);
+        if (keyword.empty()) {
+            return;
+        }
+        if (keyword != currentKeyword_) {
+            currentKeyword_ = keyword;
+            loadLyricsForCurrentTrack(state);
+        }
+
+        if (!parser_.empty()) {
+            const auto frame = parser_.frameAt(static_cast<std::int64_t>(state.positionSeconds) * 1000, config_.displayMode, config_.lyricOffsetSeconds);
+            if (!frame.text.empty() && frame.text != lastShownText_) {
+                window_.updateLyrics(frame.text, frame.highlightPercent);
+                lastShownText_ = frame.text;
+            }
+        }
+    } catch (...) {
     }
 }
 
