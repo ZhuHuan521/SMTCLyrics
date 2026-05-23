@@ -1,5 +1,6 @@
 #include "app/Application.h"
 
+#include "lyrics/LyricRepository.h"
 #include "resource.h"
 #include "util/Encoding.h"
 #include "util/Path.h"
@@ -10,7 +11,10 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstdint>
 #include <iterator>
+#include <memory>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -19,6 +23,15 @@ namespace {
 
 constexpr int kMinSmtcPollIntervalMs = 500;
 constexpr int kMaxSmtcPollIntervalMs = 2000;
+constexpr UINT kLyricsLoadedMessage = WM_APP + 101;
+
+struct AsyncLyricLoadResult {
+    std::uint64_t requestId = 0;
+    std::wstring keyword;
+    lyrics::LyricSource source = lyrics::LyricSource::Local;
+    lyrics::LrcParser parser;
+    bool success = false;
+};
 
 UINT smtcPollIntervalMs(const config::AppConfig& config) {
     return static_cast<UINT>(std::clamp(config.smtcPollIntervalMs, kMinSmtcPollIntervalMs, kMaxSmtcPollIntervalMs));
@@ -65,14 +78,17 @@ Application::Application()
     : exeDir_(util::executableDirectory()),
       lyricsDir_(chooseLyricsDirectory(exeDir_)),
       configStore_(exeDir_ / L"config.ini"),
-      cache_(exeDir_ / L"cache.json"),
-      repository_(lyricsDir_, cache_) {}
+      cache_(exeDir_ / L"cache.json") {}
 
 int Application::run() {
     initialize();
 
     MSG message{};
     while (GetMessageW(&message, nullptr, 0, 0) > 0) {
+        if (message.message == kLyricsLoadedMessage) {
+            handleLyricsLoadedMessage(message.lParam);
+            continue;
+        }
         if (message.message == WM_TIMER) {
             if (message.wParam == kSmtcTimerId) {
                 smtcTick();
@@ -139,6 +155,7 @@ void Application::smtcTick() {
     try {
         const auto state = smtc_.readState(config_.smtcMode);
         if (!state.valid) {
+            ++lyricLoadRequestId_;
             currentKeyword_.clear();
             currentSource_ = lyrics::LyricSource::Local;
             parser_ = lyrics::LrcParser{};
@@ -262,15 +279,66 @@ void Application::loadLyricsForCurrentTrack(const smtc_provider::MediaState& sta
     const auto keywordUtf8 = util::wideToUtf8(keyword);
     currentSongOffsetMs_ = cache_.offsetFor(keywordUtf8).value_or(0);
     controlWindow_.setSongOffset(currentSongOffsetMs_);
-    const auto& activeConfig = configOverride ? *configOverride : config_;
-    const auto result = repository_.loadForKeyword(keyword, activeConfig, ignoreCache);
-    if (result.lrcBytes.empty() || !parser_.parseBytes(result.lrcBytes)) {
-        showTextOnce(L"未找到歌词：" + keyword);
+    showTextOnce(L"正在解析歌词...");
+    controlWindow_.setStatusText(L"正在解析歌词...");
+
+    const auto asyncConfig = configOverride ? *configOverride : config_;
+    const auto requestId = ++lyricLoadRequestId_;
+    const auto hwnd = window_.hwnd();
+    const auto exeDir = exeDir_;
+    const auto lyricsDir = lyricsDir_;
+
+    std::thread([requestId, hwnd, exeDir, lyricsDir, keyword, asyncConfig, ignoreCache] {
+        auto asyncResult = std::make_unique<AsyncLyricLoadResult>();
+        asyncResult->requestId = requestId;
+        asyncResult->keyword = keyword;
+
+        try {
+            cache::LyricCache cache(exeDir / L"cache.json");
+            cache.load();
+            lyrics::LyricRepository repository(lyricsDir, cache);
+            const auto result = repository.loadForKeyword(keyword, asyncConfig, ignoreCache);
+            asyncResult->source = result.source;
+            asyncResult->success = !result.lrcBytes.empty() && asyncResult->parser.parseBytes(result.lrcBytes);
+        } catch (...) {
+            asyncResult->success = false;
+        }
+
+        if (PostMessageW(hwnd, kLyricsLoadedMessage, 0, reinterpret_cast<LPARAM>(asyncResult.get()))) {
+            asyncResult.release();
+        }
+    }).detach();
+    return;
+}
+
+void Application::handleLyricsLoadedMessage(LPARAM lParam) {
+    std::unique_ptr<AsyncLyricLoadResult> result(reinterpret_cast<AsyncLyricLoadResult*>(lParam));
+    if (!result) return;
+    if (result->requestId != lyricLoadRequestId_ || result->keyword != currentKeyword_) {
+        return;
+    }
+
+    lastShownText_.clear();
+    lastHighlightPercent_ = -1;
+    lastHighlightLine_ = -1;
+
+    if (!result->success) {
+        parser_ = lyrics::LrcParser{};
+        currentSource_ = lyrics::LyricSource::Local;
+        showTextOnce(L"未找到歌词：" + result->keyword);
         controlWindow_.setStatusText(L"未找到歌词");
         return;
     }
-    currentSource_ = result.source;
-    showTextOnce(L"已载入歌词：" + keyword);
+
+    parser_ = std::move(result->parser);
+    currentSource_ = result->source;
+    if (currentSource_ != lyrics::LyricSource::Local) {
+        const auto keywordUtf8 = util::wideToUtf8(result->keyword);
+        cache_.setSource(keywordUtf8, static_cast<int>(currentSource_));
+        cache_.save();
+    }
+
+    showTextOnce(L"已载入歌词：" + result->keyword);
     controlWindow_.setStatusText(L"已载入歌词");
 }
 
@@ -281,7 +349,6 @@ void Application::reloadLyrics(bool ignoreCache) {
         return;
     }
     loadLyricsForCurrentTrack(state, ignoreCache);
-    if (ignoreCache) cache_.save();
 }
 
 void Application::switchLyricsSource() {
@@ -293,8 +360,6 @@ void Application::switchLyricsSource() {
     auto config = config_;
     config.sourcePriority = sourcePriorityAfter(config_.sourcePriority, currentSource_);
     loadLyricsForCurrentTrack(state, true, &config);
-    cache_.save();
-    controlWindow_.setStatusText(L"已尝试切换歌词源");
 }
 
 void Application::clearLyricCache() {

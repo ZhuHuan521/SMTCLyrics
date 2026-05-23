@@ -243,6 +243,25 @@ void testCache() {
     cache.load();
     const auto source = cache.sourceFor("Jordan Chan 算你狠");
     require(source && *source == 2, "cache should persist source index");
+
+    smtc::util::writeFileBytes(path, std::vector<std::uint8_t>{'{', '"', 'o', 'f', 'f', 's', 'e', 't', '"', ':', '{', '}', '}'});
+    cache.load();
+    require(!cache.sourceFor("missing").has_value(), "cache without source object should not assert");
+    cache.setSource("missing", 3);
+    require(cache.sourceFor("missing").value_or(0) == 3, "cache should recreate missing source object");
+
+    const std::string malformedShape = R"({"source":[],"offset":"bad"})";
+    smtc::util::writeFileBytes(path, std::vector<std::uint8_t>(malformedShape.begin(), malformedShape.end()));
+    cache.load();
+    require(!cache.sourceFor("missing").has_value(), "cache with malformed source should not assert");
+    require(!cache.offsetFor("missing").has_value(), "cache with malformed offset should not assert");
+
+    const std::string nonObjectRoot = R"(["not","an","object"])";
+    smtc::util::writeFileBytes(path, std::vector<std::uint8_t>(nonObjectRoot.begin(), nonObjectRoot.end()));
+    cache.load();
+    cache.setOffset("missing", 42);
+    require(cache.offsetFor("missing").value_or(0) == 42, "cache should recover from non-object root");
+
     std::filesystem::remove(path);
 }
 

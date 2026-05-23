@@ -3,7 +3,7 @@
 #include "cache/Cache.h"
 #include "config/Config.h"
 #include "lyrics/LrcParser.h"
-#include "lyrics/LyricRepository.h"
+#include "lyrics/OnlineLyrics.h"
 #include "smtc/SmtcProvider.h"
 #include "ui/ControlWindow.h"
 #include "ui/DesktopLyricsWindow.h"
@@ -11,6 +11,7 @@
 #include <windows.h>
 
 #include <array>
+#include <cstdint>
 #include <filesystem>
 #include <string>
 
@@ -28,6 +29,7 @@ private:
     void applyConfig(const config::AppConfig& config);
     void restartTimers();
     void loadLyricsForCurrentTrack(const smtc_provider::MediaState& state, bool ignoreCache = false, const config::AppConfig* configOverride = nullptr);
+    void handleLyricsLoadedMessage(LPARAM lParam);
     void reloadLyrics(bool ignoreCache);
     void switchLyricsSource();
     void clearLyricCache();
@@ -44,7 +46,6 @@ private:
     config::ConfigStore configStore_;
     config::AppConfig config_;
     cache::LyricCache cache_;
-    lyrics::LyricRepository repository_;
     smtc_provider::SmtcProvider smtc_;
     ui::DesktopLyricsWindow window_;
     ui::ControlWindow controlWindow_;
@@ -55,6 +56,7 @@ private:
     std::wstring lastShownText_;
     int lastHighlightPercent_ = -1;
     int lastHighlightLine_ = -1;
+    std::uint64_t lyricLoadRequestId_ = 0;
 
     // Interpolation state for smooth rendering between SMTC polls
     long long lastSmtcPositionMs_ = 0;

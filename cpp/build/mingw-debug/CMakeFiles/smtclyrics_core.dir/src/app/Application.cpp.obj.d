@@ -398,7 +398,6 @@ CMakeFiles/smtclyrics_core.dir/src/app/Application.cpp.obj: \
  D:/mingw64/include/c++/15.2.0/bits/stl_bvector.h \
  D:/mingw64/include/c++/15.2.0/bits/vector.tcc \
  D:/programming/SMTCLyrics/cpp/src/lyrics/LrcParser.h \
- D:/programming/SMTCLyrics/cpp/src/lyrics/LyricRepository.h \
  D:/programming/SMTCLyrics/cpp/src/lyrics/OnlineLyrics.h \
  D:/programming/SMTCLyrics/cpp/src/http/HttpClient.h \
  D:/mingw64/include/c++/15.2.0/utility \
@@ -578,6 +577,7 @@ CMakeFiles/smtclyrics_core.dir/src/app/Application.cpp.obj: \
  D:/mingw64/x86_64-w64-mingw32/include/gdiplus/gdiplusgraphics.h \
  D:/mingw64/x86_64-w64-mingw32/include/gdiplus/gdipluslinecaps.h \
  D:/mingw64/x86_64-w64-mingw32/include/gdiplus/gdiplusimpl.h \
+ D:/programming/SMTCLyrics/cpp/src/lyrics/LyricRepository.h \
  D:/programming/SMTCLyrics/cpp/src/resource.h \
  D:/programming/SMTCLyrics/cpp/src/util/Encoding.h \
  D:/programming/SMTCLyrics/cpp/src/util/Path.h \
