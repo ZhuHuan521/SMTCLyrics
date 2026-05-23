@@ -1,0 +1,45 @@
+Date : 2026-05-23 15:50:53
+Directory : d:\programming\SMTCLyrics\cpp\src
+Total : 14 files,  208 codes, 22 comments, 30 blanks, all 260 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| C++      |         14 |        208 |         22 |         30 |        260 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++--------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                         | files      | code       | comment    | blank      | total      |
++--------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                            |         14 |        208 |         22 |         30 |        260 |
+| . (Files)                                                    |          2 |          5 |          1 |          4 |         10 |
+| app                                                          |          2 |        109 |         13 |         15 |        137 |
+| cache                                                        |          2 |         25 |          0 |          4 |         29 |
+| config                                                       |          2 |         15 |          0 |          2 |         17 |
+| lyrics                                                       |          1 |         -1 |          0 |          0 |         -1 |
+| smtc                                                         |          2 |          2 |          0 |          0 |          2 |
+| ui                                                           |          3 |         53 |          8 |          5 |         66 |
++--------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++--------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                     | language | code       | comment    | blank      | total      |
++--------------------------------------------------------------+----------+------------+------------+------------+------------+
+| d:\programming\SMTCLyrics\cpp\src\app\Application.cpp        | C++      |         94 |         12 |         12 |        118 |
+| d:\programming\SMTCLyrics\cpp\src\app\Application.h          | C++      |         15 |          1 |          3 |         19 |
+| d:\programming\SMTCLyrics\cpp\src\cache\Cache.cpp            | C++      |         23 |          0 |          3 |         26 |
+| d:\programming\SMTCLyrics\cpp\src\cache\Cache.h              | C++      |          2 |          0 |          1 |          3 |
+| d:\programming\SMTCLyrics\cpp\src\config\Config.cpp          | C++      |         13 |          0 |          2 |         15 |
+| d:\programming\SMTCLyrics\cpp\src\config\Config.h            | C++      |          2 |          0 |          0 |          2 |
+| d:\programming\SMTCLyrics\cpp\src\lyrics\LyricRepository.cpp | C++      |         -1 |          0 |          0 |         -1 |
+| d:\programming\SMTCLyrics\cpp\src\main.cpp                   | C++      |          3 |          1 |          2 |          6 |
+| d:\programming\SMTCLyrics\cpp\src\resource.h                 | C++      |          2 |          0 |          2 |          4 |
+| d:\programming\SMTCLyrics\cpp\src\smtc\SmtcProvider.cpp      | C++      |          1 |          0 |          0 |          1 |
+| d:\programming\SMTCLyrics\cpp\src\smtc\SmtcProvider.h        | C++      |          1 |          0 |          0 |          1 |
+| d:\programming\SMTCLyrics\cpp\src\ui\ControlWindow.cpp       | C++      |         46 |          6 |          4 |         56 |
+| d:\programming\SMTCLyrics\cpp\src\ui\ControlWindow.h         | C++      |          3 |          0 |          0 |          3 |
+| d:\programming\SMTCLyrics\cpp\src\ui\DesktopLyricsWindow.cpp | C++      |          4 |          2 |          1 |          7 |
+| Total                                                        |          |        208 |         22 |         30 |        260 |
++--------------------------------------------------------------+----------+------------+------------+------------+------------+
