@@ -14,26 +14,30 @@ int decodeValue(unsigned char ch) {
     if (ch == '/') return 63;
     return -1;
 }
-}
 
-std::string base64Encode(std::string_view text) {
-    return base64Encode(std::vector<std::uint8_t>(text.begin(), text.end()));
-}
-
-std::string base64Encode(const std::vector<std::uint8_t>& bytes) {
+std::string base64EncodeBytes(const std::uint8_t* data, std::size_t size) {
     std::string out;
-    out.reserve(((bytes.size() + 2) / 3) * 4);
-    for (std::size_t i = 0; i < bytes.size(); i += 3) {
-        const std::uint32_t a = bytes[i];
-        const std::uint32_t b = i + 1 < bytes.size() ? bytes[i + 1] : 0;
-        const std::uint32_t c = i + 2 < bytes.size() ? bytes[i + 2] : 0;
+    out.reserve(((size + 2) / 3) * 4);
+    for (std::size_t i = 0; i < size; i += 3) {
+        const std::uint32_t a = data[i];
+        const std::uint32_t b = i + 1 < size ? data[i + 1] : 0;
+        const std::uint32_t c = i + 2 < size ? data[i + 2] : 0;
         const std::uint32_t triple = (a << 16) | (b << 8) | c;
         out.push_back(alphabet[(triple >> 18) & 0x3F]);
         out.push_back(alphabet[(triple >> 12) & 0x3F]);
-        out.push_back(i + 1 < bytes.size() ? alphabet[(triple >> 6) & 0x3F] : '=');
-        out.push_back(i + 2 < bytes.size() ? alphabet[triple & 0x3F] : '=');
+        out.push_back(i + 1 < size ? alphabet[(triple >> 6) & 0x3F] : '=');
+        out.push_back(i + 2 < size ? alphabet[triple & 0x3F] : '=');
     }
     return out;
+}
+}
+
+std::string base64Encode(std::string_view text) {
+    return base64EncodeBytes(reinterpret_cast<const std::uint8_t*>(text.data()), text.size());
+}
+
+std::string base64Encode(const std::vector<std::uint8_t>& bytes) {
+    return base64EncodeBytes(bytes.data(), bytes.size());
 }
 
 std::vector<std::uint8_t> base64Decode(std::string_view text) {

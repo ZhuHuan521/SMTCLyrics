@@ -7,6 +7,7 @@
 #include <gdiplus.h>
 
 #include <functional>
+#include <memory>
 #include <string>
 
 namespace smtc::ui {
@@ -31,6 +32,9 @@ private:
     static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
     LRESULT handleMessage(UINT message, WPARAM wParam, LPARAM lParam);
     void redraw();
+    bool ensureBackBuffer(HDC referenceDc);
+    void releaseBackBuffer();
+    Gdiplus::FontFamily* fontFamily();
     void notifyGeometryChanged() const;
     Gdiplus::Color colorFromColorRef(COLORREF color, BYTE alpha = 255) const;
 
@@ -44,6 +48,14 @@ private:
     config::AppConfig config_;
     std::function<void(const config::WindowConfig&)> geometryChanged_;
     ULONG_PTR gdiplusToken_ = 0;
+    HDC memoryDc_ = nullptr;
+    HBITMAP backBufferBitmap_ = nullptr;
+    HGDIOBJ oldBackBufferBitmap_ = nullptr;
+    void* backBufferBits_ = nullptr;
+    int backBufferWidth_ = 0;
+    int backBufferHeight_ = 0;
+    std::unique_ptr<Gdiplus::FontFamily> fontFamily_;
+    std::wstring cachedFontRequest_;
 };
 
 }

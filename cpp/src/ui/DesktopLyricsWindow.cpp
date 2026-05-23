@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <cstring>
 #include <memory>
-#include <sstream>
 #include <vector>
 
 namespace smtc::ui {
@@ -32,15 +31,20 @@ std::unique_ptr<Gdiplus::Brush> makeBrush(const config::TextStyle& style, const 
     return std::make_unique<Gdiplus::LinearGradientBrush>(p1, p2, toGdiColor(style.color1), toGdiColor(style.color2));
 }
 
-std::vector<std::wstring> splitDisplayLines(std::wstring_view text) {
-    std::vector<std::wstring> lines;
-    std::wstringstream stream{std::wstring(text)};
-    std::wstring line;
-    while (std::getline(stream, line, L'\n')) {
-        lines.push_back(line);
+std::vector<std::wstring_view> splitDisplayLines(std::wstring_view text) {
+    std::vector<std::wstring_view> lines;
+    std::size_t start = 0;
+    while (start <= text.size()) {
+        const auto end = text.find(L'\n', start);
+        if (end == std::wstring_view::npos) {
+            lines.push_back(text.substr(start));
+            break;
+        }
+        lines.push_back(text.substr(start, end - start));
+        start = end + 1;
     }
     if (lines.empty()) {
-        lines.emplace_back();
+        lines.push_back(text.substr(0, 0));
     }
     return lines;
 }
@@ -102,6 +106,7 @@ void DesktopLyricsWindow::destroy() {
         DestroyWindow(hwnd_);
         hwnd_ = nullptr;
     }
+    releaseBackBuffer();
 }
 
 void DesktopLyricsWindow::applyConfig(const config::AppConfig& config) {
@@ -186,34 +191,24 @@ void DesktopLyricsWindow::redraw() {
     if (!hwnd_ || width_ <= 0 || height_ <= 0) return;
 
     HDC screenDc = GetDC(nullptr);
-    HDC memoryDc = CreateCompatibleDC(screenDc);
+    if (!screenDc) return;
+    if (!ensureBackBuffer(screenDc)) {
+        ReleaseDC(nullptr, screenDc);
+        return;
+    }
 
-    BITMAPINFO bitmapInfo{};
-    bitmapInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bitmapInfo.bmiHeader.biWidth = width_;
-    bitmapInfo.bmiHeader.biHeight = -height_;
-    bitmapInfo.bmiHeader.biPlanes = 1;
-    bitmapInfo.bmiHeader.biBitCount = 32;
-    bitmapInfo.bmiHeader.biCompression = BI_RGB;
-
-    void* bits = nullptr;
-    HBITMAP bitmap = CreateDIBSection(screenDc, &bitmapInfo, DIB_RGB_COLORS, &bits, nullptr, 0);
-    HGDIOBJ oldBitmap = SelectObject(memoryDc, bitmap);
-    if (bits) {
-        std::memset(bits, 0, static_cast<std::size_t>(width_) * static_cast<std::size_t>(height_) * 4);
+    if (backBufferBits_) {
+        std::memset(backBufferBits_, 0, static_cast<std::size_t>(width_) * static_cast<std::size_t>(height_) * 4);
     }
 
     {
-        Gdiplus::Graphics graphics(memoryDc);
+        Gdiplus::Graphics graphics(memoryDc_);
         graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
         graphics.SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAliasGridFit);
         graphics.Clear(Gdiplus::Color(0, 0, 0, 0));
 
         if (!text_.empty()) {
-            auto family = std::make_unique<Gdiplus::FontFamily>(config_.font.name.c_str());
-            if (family->GetLastStatus() != Gdiplus::Ok) {
-                family = std::make_unique<Gdiplus::FontFamily>(L"Microsoft YaHei");
-            }
+            auto* family = fontFamily();
             const auto style = fontStyleFromConfig(config_.font);
             Gdiplus::StringFormat format;
             format.SetAlignment(Gdiplus::StringAlignmentCenter);
@@ -242,12 +237,12 @@ void DesktopLyricsWindow::redraw() {
 
                 Gdiplus::GraphicsPath shadowPath;
                 Gdiplus::RectF shadowLayout(2.0f, y + 2.0f, static_cast<Gdiplus::REAL>(width_), lineHeight);
-                shadowPath.AddString(lines[i].c_str(), -1, family.get(), style, fontSize, shadowLayout, &format);
+                shadowPath.AddString(lines[i].data(), static_cast<INT>(lines[i].size()), family, style, fontSize, shadowLayout, &format);
                 Gdiplus::SolidBrush shadowBrush(Gdiplus::Color(150, 0, 0, 0));
                 graphics.FillPath(&shadowBrush, &shadowPath);
 
                 Gdiplus::GraphicsPath textPath;
-                textPath.AddString(lines[i].c_str(), -1, family.get(), style, fontSize, layout, &format);
+                textPath.AddString(lines[i].data(), static_cast<INT>(lines[i].size()), family, style, fontSize, layout, &format);
                 Gdiplus::RectF bounds;
                 textPath.GetBounds(&bounds);
                 Gdiplus::Pen outline(colorFromColorRef(lineBorderStyle), 1.0f);
@@ -275,12 +270,74 @@ void DesktopLyricsWindow::redraw() {
     POINT src{0, 0};
     SIZE size{width_, height_};
     BLENDFUNCTION blend{AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
-    UpdateLayeredWindow(hwnd_, screenDc, &dst, &size, memoryDc, &src, 0, &blend, ULW_ALPHA);
+    UpdateLayeredWindow(hwnd_, screenDc, &dst, &size, memoryDc_, &src, 0, &blend, ULW_ALPHA);
 
-    SelectObject(memoryDc, oldBitmap);
-    DeleteObject(bitmap);
-    DeleteDC(memoryDc);
     ReleaseDC(nullptr, screenDc);
+}
+
+bool DesktopLyricsWindow::ensureBackBuffer(HDC referenceDc) {
+    if (memoryDc_ && backBufferBitmap_ && backBufferWidth_ == width_ && backBufferHeight_ == height_) {
+        return true;
+    }
+
+    releaseBackBuffer();
+
+    memoryDc_ = CreateCompatibleDC(referenceDc);
+    if (!memoryDc_) return false;
+
+    BITMAPINFO bitmapInfo{};
+    bitmapInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bitmapInfo.bmiHeader.biWidth = width_;
+    bitmapInfo.bmiHeader.biHeight = -height_;
+    bitmapInfo.bmiHeader.biPlanes = 1;
+    bitmapInfo.bmiHeader.biBitCount = 32;
+    bitmapInfo.bmiHeader.biCompression = BI_RGB;
+
+    backBufferBitmap_ = CreateDIBSection(referenceDc, &bitmapInfo, DIB_RGB_COLORS, &backBufferBits_, nullptr, 0);
+    if (!backBufferBitmap_) {
+        releaseBackBuffer();
+        return false;
+    }
+
+    oldBackBufferBitmap_ = SelectObject(memoryDc_, backBufferBitmap_);
+    if (!oldBackBufferBitmap_) {
+        releaseBackBuffer();
+        return false;
+    }
+
+    backBufferWidth_ = width_;
+    backBufferHeight_ = height_;
+    return true;
+}
+
+void DesktopLyricsWindow::releaseBackBuffer() {
+    if (memoryDc_ && oldBackBufferBitmap_) {
+        SelectObject(memoryDc_, oldBackBufferBitmap_);
+        oldBackBufferBitmap_ = nullptr;
+    }
+    if (backBufferBitmap_) {
+        DeleteObject(backBufferBitmap_);
+        backBufferBitmap_ = nullptr;
+    }
+    if (memoryDc_) {
+        DeleteDC(memoryDc_);
+        memoryDc_ = nullptr;
+    }
+    backBufferBits_ = nullptr;
+    backBufferWidth_ = 0;
+    backBufferHeight_ = 0;
+}
+
+Gdiplus::FontFamily* DesktopLyricsWindow::fontFamily() {
+    if (!fontFamily_ || cachedFontRequest_ != config_.font.name) {
+        cachedFontRequest_ = config_.font.name;
+        auto candidate = std::make_unique<Gdiplus::FontFamily>(config_.font.name.c_str());
+        if (candidate->GetLastStatus() != Gdiplus::Ok) {
+            candidate = std::make_unique<Gdiplus::FontFamily>(L"Microsoft YaHei");
+        }
+        fontFamily_ = std::move(candidate);
+    }
+    return fontFamily_.get();
 }
 
 void DesktopLyricsWindow::notifyGeometryChanged() const {

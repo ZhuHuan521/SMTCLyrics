@@ -440,10 +440,14 @@ void Application::showTextOnce(const std::wstring& text) {
 }
 
 long long Application::currentTimeMs() const {
-    LARGE_INTEGER freq, counter;
-    QueryPerformanceFrequency(&freq);
+    static const long long frequency = [] {
+        LARGE_INTEGER freq{};
+        QueryPerformanceFrequency(&freq);
+        return freq.QuadPart;
+    }();
+    LARGE_INTEGER counter{};
     QueryPerformanceCounter(&counter);
-    return (counter.QuadPart * 1000) / freq.QuadPart;
+    return (counter.QuadPart * 1000) / frequency;
 }
 
 }
