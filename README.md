@@ -1,106 +1,160 @@
 # SMTCLyrics
 
-Windows 桌面歌词显示工具，通过 SMTC (System Media Transport Controls) 获取当前播放信息，自动从多个在线音乐平台获取歌词，并以卡拉OK风格实时同步显示在桌面上。
+SMTCLyrics 是一个 Windows 桌面歌词显示工具。它通过 SMTC（System Media Transport Controls）读取当前播放的歌曲信息和进度，自动从多个在线音乐源获取歌词，并以桌面悬浮窗的方式实时同步显示。
 
 ## 功能特性
 
-- **SMTC 媒体感知** — 自动获取当前播放的歌曲信息（歌手、歌名、播放进度），支持两种轮询模式
-- **多源歌词获取** — 支持 QQ音乐、酷狗、酷我、网易云音乐，按优先级自动切换
-- **桌面歌词悬浮窗** — 透明置顶窗口，支持卡拉OK逐字高亮、渐变着色
-- **丰富自定义** — 字体、颜色（支持2/3色渐变）、描边、显示模式（单行/双行）、全局/单曲偏移量
-- **歌词缓存** — 记住每首歌的歌词来源和偏移设置，下次播放自动匹配
-- **本地歌词** — 支持从 `lyrics/` 目录读取 `.lrc` 文件，模糊匹配歌名
-
-## 截图
-
-<!-- TODO: 添加截图 -->
-
-## 构建
-
-### 环境要求
-
-- Windows 10/11
-- CMake 3.22+
-- MinGW (g++ with C++20) 或 MSVC
-
-### 编译
-
-```bash
-cd cpp
-cmake --preset mingw-debug      # 或 mingw-release
-cmake --build build/mingw-debug
-```
-
-编译产物位于 `cpp/build/mingw-debug/`：
-
-| 文件 | 说明 |
-|------|------|
-| `SMTCLyrics.exe` | 主程序 |
-| `SMTCLyricsTests.exe` | 单元测试 |
-| `config.ini` | 配置文件 |
-| `cache.json` | 歌词缓存 |
-
-### 运行
-
-直接双击 `SMTCLyrics.exe`，播放任意音乐后程序会自动获取并显示歌词。
-
-## 配置说明
-
-程序目录下的 `config.ini` 控制各项设置：
-
-```ini
-[Font]
-Name=微软雅黑          ; 字体名称
-Size=36                ; 字体大小
-Bold=1                 ; 粗体
-Italic=0               ; 斜体
-
-[Lyrics]
-GlobalOffset=0         ; 全局偏移量 (毫秒)
-
-[Sources]
-Priority=qq,kugou,kuwo,netease   ; 歌词源优先级
-
-[SMTC]
-Mode=1                 ; SMTC 模式 (1=轮询, 2=事件驱动)
-Interval=1000          ; 轮询间隔 (毫秒)
-
-[Display]
-Mode=1                 ; 显示模式 (0=单行, 1=当前+下一句, 2=上一句+当前)
-```
-
-颜色、窗口位置等更多设置可通过程序内的控制面板界面调整。
+- 自动读取当前播放器的歌曲名、歌手、播放状态和播放进度。
+- 支持本地歌词和在线歌词源：QQ 音乐、酷狗、酷我、网易云音乐。
+- 支持普通 LRC 歌词和逐字歌词。
+- QQ 音乐源支持 QRC 精确逐字歌词解析。
+- 酷狗源支持 KRC 逐字歌词解析。
+- 歌词解析在后台线程执行，解析 QRC/KRC 时不会卡住控制窗口。
+- 解析期间歌词窗口会显示“正在解析歌词...”。
+- 支持桌面歌词悬浮窗、置顶显示、拖动定位、字体与颜色配置。
+- 支持单行、当前行加下一行、上一行加当前行等显示模式。
+- 支持全局歌词偏移和单曲偏移记忆。
+- 支持歌词源缓存，下次播放同一首歌时优先使用上次成功的来源。
 
 ## 项目结构
 
-```
+```text
 SMTCLyrics/
-├── cpp/                        # C++ 主程序
-│   ├── CMakeLists.txt
-│   ├── CMakePresets.json
-│   ├── src/
-│   │   ├── main.cpp
-│   │   ├── app/                # 应用主逻辑
-│   │   ├── ui/                 # 界面 (控制面板 + 桌面歌词窗)
-│   │   ├── lyrics/             # 歌词解析与在线获取
-│   │   ├── smtc/               # SMTC 媒体会话集成
-│   │   ├── http/               # HTTP 客户端
-│   │   ├── config/             # 配置读写
-│   │   ├── cache/              # 缓存管理
-│   │   └── util/               # 工具函数
-│   └── tests/
-├── e/                          # 易语言原版源码
-└── e-packager-master/          # 易语言文件解包工具
+├─ cpp/                  # C++ 主程序
+│  ├─ src/
+│  │  ├─ app/            # 应用主逻辑
+│  │  ├─ cache/          # 歌词源和偏移缓存
+│  │  ├─ config/         # 配置读写
+│  │  ├─ http/           # WinHTTP 客户端
+│  │  ├─ lyrics/         # 歌词获取、解密、解析
+│  │  ├─ smtc/           # SMTC 媒体会话读取
+│  │  ├─ ui/             # 控制窗口和桌面歌词窗口
+│  │  └─ util/           # 编码、路径、压缩等工具
+│  └─ tests/             # 核心测试
+├─ e/                    # 易语言原工程相关内容
+├─ e-packager-master/    # 易语言工程解包工具和第三方 json.hpp
+└─ qrckit-master/        # QQ 音乐 QRC 解密解析参考实现
 ```
 
-## 技术栈
+## 构建要求
 
-- **C++20** / Win32 API / WinRT
-- **GDI+** — 文字渲染（渐变、描边、抗锯齿）
-- **WinHTTP** — 在线歌词获取
-- **nlohmann/json** — JSON 解析
-- **CMake** — 构建系统
+- Windows 10 或 Windows 11
+- CMake 3.22+
+- MinGW 或 MSVC
+- 支持 C++20 的编译器
 
-## 许可证
+## 构建方法
 
-<!-- TODO: 选择许可证 -->
+进入 `cpp` 目录后构建：
+
+```powershell
+cd cpp
+cmake --preset mingw-debug
+cmake --build build/mingw-debug
+```
+
+Release 构建：
+
+```powershell
+cd cpp
+cmake --preset mingw-release
+cmake --build build/mingw-release
+```
+
+构建产物位于：
+
+```text
+cpp/build/mingw-debug/SMTCLyrics.exe
+cpp/build/mingw-release/SMTCLyrics.exe
+```
+
+## 运行
+
+运行对应构建目录下的 `SMTCLyrics.exe`。启动后播放支持 SMTC 的音乐播放器，程序会自动识别当前歌曲并加载歌词。
+
+常见运行文件：
+
+```text
+SMTCLyrics.exe       # 主程序
+SMTCLyricsTests.exe  # 核心测试
+config.ini          # 配置文件
+cache.json          # 歌词源和单曲偏移缓存
+lyrics/             # 本地歌词目录
+```
+
+## 本地歌词
+
+程序会优先读取运行目录下的 `lyrics/` 文件夹。歌词文件建议命名为：
+
+```text
+歌手 歌名.lrc
+```
+
+如果没有精确匹配，程序会尝试做简单的模糊匹配。
+
+## 在线歌词源
+
+默认支持以下来源：
+
+1. QQ 音乐
+2. 酷狗音乐
+3. 酷我音乐
+4. 网易云音乐
+
+其中 QQ 音乐会优先尝试获取 QRC 精确逐字歌词；酷狗会优先尝试 KRC 逐字歌词。如果逐字歌词不可用，则回退到普通 LRC。
+
+## 配置说明
+
+配置文件为运行目录下的 `config.ini`。常见配置项包括：
+
+```ini
+[Font]
+name=Microsoft YaHei
+size=36
+bold=1
+italic=0
+underline=0
+
+[Lyrics]
+globalOffsetMs=0
+
+[Sources]
+priority1=1
+priority2=2
+priority3=3
+priority4=4
+
+[SMTC]
+mode=1
+pollIntervalMs=1000
+
+[Display]
+mode=2
+```
+
+说明：
+
+- `globalOffsetMs`：全局歌词偏移，单位毫秒。
+- `priority1` 到 `priority4`：歌词源优先级，`1=QQ`，`2=酷狗`，`3=酷我`，`4=网易云`。
+- `mode`：SMTC 读取模式。
+- `Display.mode`：歌词显示模式。
+
+更多字体、颜色、窗口位置等设置可以通过控制窗口调整。
+
+## 测试
+
+```powershell
+cd cpp
+.\build\mingw-debug\SMTCLyricsTests.exe
+```
+
+或：
+
+```powershell
+cd cpp
+.\build\mingw-release\SMTCLyricsTests.exe
+```
+
+## 说明
+
+QQ 音乐 QRC 解密和解析逻辑参考了目录下的 `qrckit-master`。当前 C++ 主程序已经将其关键流程移植到 `cpp/src/lyrics/` 中，用于获取和显示 QQ 音乐源的精确逐字歌词。
