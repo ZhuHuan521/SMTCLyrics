@@ -403,5 +403,6 @@ CMakeFiles/SMTCLyricsTests.dir/tests/core_tests.cpp.obj: \
  D:/mingw64/include/c++/15.2.0/utility \
  D:/mingw64/include/c++/15.2.0/bits/stl_relops.h \
  D:/programming/SMTCLyrics/cpp/src/util/Encoding.h \
+ D:/programming/SMTCLyrics/cpp/src/util/Inflate.h \
  D:/programming/SMTCLyrics/cpp/src/util/Path.h \
  D:/mingw64/include/c++/15.2.0/iostream

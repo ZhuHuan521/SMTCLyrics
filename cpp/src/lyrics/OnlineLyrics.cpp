@@ -3,7 +3,10 @@
 #include "json.hpp"
 #include "util/Base64.h"
 #include "util/Encoding.h"
+#include "util/Inflate.h"
 
+#include <algorithm>
+#include <cstring>
 #include <iomanip>
 #include <random>
 #include <sstream>
@@ -17,12 +20,9 @@ std::vector<http::HttpClient::Header> browserHeaders() {
     };
 }
 
-std::vector<http::HttpClient::Header> qqHeaders(std::string_view cookie) {
+std::vector<http::HttpClient::Header> qqHeaders() {
     auto headers = browserHeaders();
     headers.emplace_back("Referer", "https://y.qq.com/");
-    if (!cookie.empty()) {
-        headers.emplace_back("Cookie", std::string(cookie));
-    }
     return headers;
 }
 
@@ -44,6 +44,21 @@ std::string jsonString(const nlohmann::json& value) {
 
 std::vector<std::uint8_t> toBytes(std::string_view text) {
     return {text.begin(), text.end()};
+}
+
+std::vector<std::uint8_t> decryptKrc(const std::vector<std::uint8_t>& bytes) {
+    constexpr std::uint8_t kHeader[] = {'k', 'r', 'c', '1'};
+    constexpr std::uint8_t kKey[] = {64, 71, 97, 119, 94, 50, 116, 71, 81, 54, 49, 45, 206, 210, 110, 105};
+    if (bytes.size() <= sizeof(kHeader) || std::memcmp(bytes.data(), kHeader, sizeof(kHeader)) != 0) {
+        return {};
+    }
+
+    std::vector<std::uint8_t> zlibBytes(bytes.begin() + sizeof(kHeader), bytes.end());
+    for (std::size_t i = 0; i < zlibBytes.size(); ++i) {
+        zlibBytes[i] ^= kKey[i % std::size(kKey)];
+    }
+
+    return util::inflateZlib(zlibBytes);
 }
 
 std::string formatLrcTimestamp(double seconds) {
@@ -102,9 +117,9 @@ std::optional<LyricSource> sourceFromIndex(int index) {
 
 OnlineLyrics::OnlineLyrics(http::HttpClient client) : client_(std::move(client)) {}
 
-std::vector<std::uint8_t> OnlineLyrics::fetch(LyricSource source, std::string_view keywordUtf8, std::string_view qqCookieUtf8) const {
+std::vector<std::uint8_t> OnlineLyrics::fetch(LyricSource source, std::string_view keywordUtf8) const {
     switch (source) {
-    case LyricSource::QQ: return fetchQQ(keywordUtf8, qqCookieUtf8);
+    case LyricSource::QQ: return fetchQQ(keywordUtf8);
     case LyricSource::Kugou: return fetchKugou(keywordUtf8);
     case LyricSource::Kuwo: return fetchKuwo(keywordUtf8);
     case LyricSource::Netease: return fetchNetease(keywordUtf8);
@@ -113,10 +128,10 @@ std::vector<std::uint8_t> OnlineLyrics::fetch(LyricSource source, std::string_vi
     return {};
 }
 
-std::vector<std::uint8_t> OnlineLyrics::fetchQQ(std::string_view keywordUtf8, std::string_view cookieUtf8) const {
+std::vector<std::uint8_t> OnlineLyrics::fetchQQ(std::string_view keywordUtf8) const {
     const auto encoded = util::urlEncode(keywordUtf8);
     const auto searchUrl = "https://shc.y.qq.com/soso/fcgi-bin/search_for_qq_cp?_=1657641526460&g_tk=1037878909&format=json&inCharset=utf-8&outCharset=utf-8&notice=0&platform=h5&needNewCode=1&w=" + encoded + "&zhidaqu=1&catZhida=1&t=0&flag=1&ie=utf-8&sem=1&aggr=0&perpage=20&n=20&p=1&remoteplace=txt.mqq.all";
-    const auto search = parseJson(client_.get(searchUrl, qqHeaders(cookieUtf8)).body);
+    const auto search = parseJson(client_.get(searchUrl, qqHeaders()).body);
     if (!search.contains("data")) return {};
     const auto list = search["data"]["song"]["list"];
     if (!list.is_array() || list.empty()) return {};
@@ -132,7 +147,7 @@ std::vector<std::uint8_t> OnlineLyrics::fetchQQ(std::string_view keywordUtf8, st
     for (int i = 0; i < 10; ++i) loginUin += static_cast<char>('0' + digit(rd));
 
     const auto lyricUrl = "https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg?format=json&loginUin=" + loginUin + "&songmid=" + songmid;
-    const auto lyricJson = parseJson(client_.get(lyricUrl, qqHeaders(cookieUtf8)).body);
+    const auto lyricJson = parseJson(client_.get(lyricUrl, qqHeaders()).body);
     const auto lyricBase64 = jsonString(lyricJson["lyric"]);
     if (lyricBase64.empty()) return {};
     auto decoded = util::base64DecodeToString(lyricBase64);
@@ -162,15 +177,20 @@ std::vector<std::uint8_t> OnlineLyrics::fetchKugou(std::string_view keywordUtf8)
     const auto accessKey = jsonString(list[0]["accesskey"]);
     if (id.empty() || accessKey.empty()) return {};
 
-    const auto downloadUrl = "http://lyrics2.kugou.com/download?accesskey=" + accessKey + "&charset=utf8&client=pc&fmt=lrc&id=" + id + "&ver=1";
-    const auto download = parseJson(client_.get(downloadUrl, headers).body);
-    const auto content = jsonString(download["content"]);
-    if (content.empty()) return {};
-    const auto decoded = util::base64Decode(content);
-    if (decoded.size() >= 4 && decoded[0] == 'k' && decoded[1] == 'r' && decoded[2] == 'c' && decoded[3] == '1') {
-        return {};
+    const auto krcUrl = "http://lyrics2.kugou.com/download?accesskey=" + accessKey + "&charset=utf8&client=pc&fmt=krc&id=" + id + "&ver=1";
+    const auto krcDownload = parseJson(client_.get(krcUrl, headers).body);
+    const auto krcContent = jsonString(krcDownload["content"]);
+    if (!krcContent.empty()) {
+        const auto decoded = util::base64Decode(krcContent);
+        if (auto decrypted = decryptKrc(decoded); !decrypted.empty()) {
+            return decrypted;
+        }
     }
-    return decoded;
+
+    const auto lrcUrl = "http://lyrics2.kugou.com/download?accesskey=" + accessKey + "&charset=utf8&client=pc&fmt=lrc&id=" + id + "&ver=1";
+    const auto lrcDownload = parseJson(client_.get(lrcUrl, headers).body);
+    const auto lrcContent = jsonString(lrcDownload["content"]);
+    return lrcContent.empty() ? std::vector<std::uint8_t>{} : util::base64Decode(lrcContent);
 }
 
 std::vector<std::uint8_t> OnlineLyrics::fetchKuwo(std::string_view keywordUtf8) const {

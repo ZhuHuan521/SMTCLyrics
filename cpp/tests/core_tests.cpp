@@ -3,11 +3,13 @@
 #include "lyrics/LrcParser.h"
 #include "lyrics/LyricRepository.h"
 #include "util/Encoding.h"
+#include "util/Inflate.h"
 #include "util/Path.h"
 
 #include <filesystem>
 #include <iostream>
 #include <stdexcept>
+#include <string>
 
 namespace {
 
@@ -15,6 +17,17 @@ void require(bool condition, const char* message) {
     if (!condition) {
         throw std::runtime_error(message);
     }
+}
+
+std::wstring readIniString(const std::filesystem::path& path, const wchar_t* section, const wchar_t* key, const wchar_t* fallback = L"") {
+    std::wstring buffer(256, L'\0');
+    const DWORD chars = GetPrivateProfileStringW(section, key, fallback, buffer.data(), static_cast<DWORD>(buffer.size()), path.c_str());
+    buffer.resize(chars);
+    return buffer;
+}
+
+void writeIniString(const std::filesystem::path& path, const wchar_t* section, const wchar_t* key, const wchar_t* value) {
+    WritePrivateProfileStringW(section, key, value, path.c_str());
 }
 
 void testLrcParser() {
@@ -31,6 +44,34 @@ void testLrcParser() {
     require(frame.text.find(L"\n") != std::wstring::npos, "two-line-down mode should include next line");
     frame = parser.frameAt(24'760, 3, 0);
     require(frame.text.find(L"\n") != std::wstring::npos, "two-line-up mode should include previous line");
+
+    smtc::lyrics::LrcParser blankLineParser;
+    require(blankLineParser.parseUtf8("[00:01.000]\n[00:02.000]first\n[00:03.000]second\n"), "blank-line lrc should parse");
+    frame = blankLineParser.frameAt(1'000, 2, 0);
+    require(frame.text == L"first\nsecond", "two-line-down mode should not repeat the resolved current line after a blank timestamp");
+
+    smtc::lyrics::LrcParser duplicateLineParser;
+    require(duplicateLineParser.parseUtf8("[00:01.000]same\n[00:02.000]same\n[00:03.000]next\n"), "duplicate-line lrc should parse");
+    frame = duplicateLineParser.frameAt(1'000, 2, 0);
+    require(frame.text == L"same\nnext", "two-line-down mode should skip an adjacent duplicate line when possible");
+
+    smtc::lyrics::LrcParser krcParser;
+    require(krcParser.parseUtf8("[1000,4000]<0,1000,0>A<1000,1000,0>B<2000,1000,0>C<3000,1000,0>D\n[6000,1000]<0,1000,0>E\n"), "krc lyric should parse");
+    frame = krcParser.frameAt(2'500, 1, 0);
+    require(frame.text == L"ABCD", "krc tags should be stripped from displayed text");
+    require(frame.highlightPercent >= 35 && frame.highlightPercent <= 40, "krc per-word progress should map to highlight percent");
+    frame = krcParser.frameAt(2'500, 2, 0);
+    require(frame.text == L"ABCD\nE" && frame.highlightLine == 0, "krc two-line-down mode should highlight the current first line");
+    frame = krcParser.frameAt(6'500, 3, 0);
+    require(frame.text == L"ABCD\nE" && frame.highlightLine == 1, "krc two-line-up mode should highlight the current second line");
+}
+
+void testInflateZlib() {
+    const std::vector<std::uint8_t> compressed{
+        0x78, 0x9c, 0xcb, 0x48, 0xcd, 0xc9, 0xc9, 0x07, 0x00, 0x06, 0x2c, 0x02, 0x15
+    };
+    const auto inflated = smtc::util::inflateZlib(compressed);
+    require(std::string(inflated.begin(), inflated.end()) == "hello", "zlib inflater should decode a basic deflate stream");
 }
 
 void testConfig() {
@@ -39,6 +80,96 @@ void testConfig() {
     require(config.font.size > 0, "font size should load");
     require(config.displayMode >= 1 && config.displayMode <= 3, "display mode should be valid");
     require(config.sourcePriority.size() == 4, "source priority should contain four sources");
+}
+
+void testEnglishConfigRoundTrip() {
+    const auto path = std::filesystem::temp_directory_path() / L"smtclyrics-config-english.ini";
+    std::filesystem::remove(path);
+
+    smtc::config::AppConfig config;
+    config.font.name = L"Microsoft YaHei";
+    config.font.size = 42;
+    config.font.bold = false;
+    config.font.italic = true;
+    config.font.underline = true;
+    config.lyricOffsetSeconds = -2;
+    config.normal.color1 = RGB(12, 34, 56);
+    config.normal.color2 = RGB(222, 111, 1);
+    config.normal.border = RGB(1, 2, 3);
+    config.highlight.color1 = RGB(4, 5, 6);
+    config.highlight.color2 = RGB(7, 8, 9);
+    config.highlight.border = RGB(10, 11, 12);
+    config.sourcePriority = {4, 3, 2, 1};
+    config.smtcMode = 2;
+    config.smtcPollIntervalMs = 75;
+    config.displayMode = 3;
+    config.window = {120, 80, 1280, 160, true};
+
+    smtc::config::ConfigStore store(path);
+    store.save(config);
+    const auto loaded = store.load();
+
+    require(loaded.font.name == config.font.name, "english font name should round-trip");
+    require(loaded.font.size == 42, "english font size should round-trip");
+    require(!loaded.font.bold && loaded.font.italic && loaded.font.underline, "english font styles should round-trip");
+    require(loaded.lyricOffsetSeconds == -2, "english offset should round-trip");
+    require(loaded.normal.color1 == RGB(12, 34, 56), "hex color should round-trip");
+    require(loaded.highlight.border == RGB(10, 11, 12), "highlight border color should round-trip");
+    require(loaded.sourcePriority == std::vector<int>({4, 3, 2, 1}), "source priority should save as one-based indexes");
+    require(loaded.smtcPollIntervalMs == 75, "SMTC poll interval should round-trip");
+    require(loaded.window.hasPosition && loaded.window.left == 120 && loaded.window.top == 80, "window position should round-trip");
+    require(readIniString(path, L"Lyrics", L"normalColor1") == L"#0C2238", "colors should be written as #RRGGBB");
+    require(readIniString(path, L"SMTC", L"pollIntervalMs") == L"75", "SMTC poll interval should be written in milliseconds");
+    require(readIniString(path, L"Account", L"cookie", L"missing") == L"missing", "cookie account section should not be written");
+
+    std::filesystem::remove(path);
+}
+
+void testLegacyConfigMigration() {
+    const auto path = std::filesystem::temp_directory_path() / L"smtclyrics-config-legacy.ini";
+    std::filesystem::remove(path);
+
+    writeIniString(path, L"字体", L"字体名称", L"楷体");
+    writeIniString(path, L"字体", L"字体大小", L"31");
+    writeIniString(path, L"字体", L"字体加粗", L"真");
+    writeIniString(path, L"字体", L"字体倾斜", L"假");
+    writeIniString(path, L"字体", L"字体下划线", L"真");
+    writeIniString(path, L"字体", L"文字颜色1", L"255");
+    writeIniString(path, L"字体", L"文字颜色2", L"65535");
+    writeIniString(path, L"字体", L"文字边框颜色", L"0");
+    writeIniString(path, L"账号", L"cookie", L"unused-cookie");
+    writeIniString(path, L"歌词", L"微调", L"5");
+    writeIniString(path, L"歌词源", L"优先级1", L"0");
+    writeIniString(path, L"歌词源", L"优先级2", L"1");
+    writeIniString(path, L"歌词源", L"优先级3", L"2");
+    writeIniString(path, L"歌词源", L"优先级4", L"3");
+    writeIniString(path, L"SMTC", L"SMTC", L"2");
+    writeIniString(path, L"显示方式", L"显示方式", L"2");
+    writeIniString(path, L"歌词窗口", L"左边", L"33");
+    writeIniString(path, L"歌词窗口", L"顶边", L"44");
+    writeIniString(path, L"歌词窗口", L"宽度", L"900");
+    writeIniString(path, L"歌词窗口", L"高度", L"140");
+
+    smtc::config::ConfigStore store(path);
+    const auto loaded = store.load();
+    require(loaded.font.name == L"楷体", "legacy font name should load");
+    require(loaded.font.size == 31, "legacy font size should load");
+    require(loaded.font.bold && loaded.font.underline, "legacy booleans should load");
+    require(loaded.normal.color1 == RGB(255, 0, 0), "legacy decimal color should load");
+    require(loaded.sourcePriority == std::vector<int>({1, 2, 3, 4}), "legacy zero-based source priority should migrate");
+    require(loaded.smtcMode == 2 && loaded.displayMode == 2, "legacy modes should load");
+    require(loaded.smtcPollIntervalMs == 100, "missing SMTC poll interval should use the default");
+    require(loaded.window.hasPosition && loaded.window.left == 33 && loaded.window.top == 44, "legacy window position should load");
+
+    store.save(loaded);
+    require(readIniString(path, L"Font", L"name") == L"楷体", "migrated config should write english font key");
+    require(readIniString(path, L"Lyrics", L"normalColor1") == L"#FF0000", "migrated config should write hex color");
+    require(readIniString(path, L"Sources", L"priority1") == L"1", "migrated config should write one-based source priority");
+    require(readIniString(path, L"字体", L"字体名称", L"missing") == L"missing", "legacy font section should be removed");
+    require(readIniString(path, L"账号", L"cookie", L"missing") == L"missing", "legacy cookie should be removed");
+    require(readIniString(path, L"SMTC", L"SMTC", L"missing") == L"missing", "legacy SMTC key should be removed");
+
+    std::filesystem::remove(path);
 }
 
 void testCache() {
@@ -58,7 +189,10 @@ void testCache() {
 int main() {
     try {
         testLrcParser();
+        testInflateZlib();
         testConfig();
+        testEnglishConfigRoundTrip();
+        testLegacyConfigMigration();
         testCache();
         std::cout << "All SMTCLyrics core tests passed.\n";
         return 0;

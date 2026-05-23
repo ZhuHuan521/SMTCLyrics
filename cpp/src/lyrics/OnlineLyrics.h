@@ -26,10 +26,10 @@ public:
     OnlineLyrics() = default;
     explicit OnlineLyrics(http::HttpClient client);
 
-    std::vector<std::uint8_t> fetch(LyricSource source, std::string_view keywordUtf8, std::string_view qqCookieUtf8) const;
+    std::vector<std::uint8_t> fetch(LyricSource source, std::string_view keywordUtf8) const;
 
 private:
-    std::vector<std::uint8_t> fetchQQ(std::string_view keywordUtf8, std::string_view cookieUtf8) const;
+    std::vector<std::uint8_t> fetchQQ(std::string_view keywordUtf8) const;
     std::vector<std::uint8_t> fetchKugou(std::string_view keywordUtf8) const;
     std::vector<std::uint8_t> fetchKuwo(std::string_view keywordUtf8) const;
     std::vector<std::uint8_t> fetchNetease(std::string_view keywordUtf8) const;

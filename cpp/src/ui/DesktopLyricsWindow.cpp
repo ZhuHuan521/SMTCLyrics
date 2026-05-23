@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cstring>
 #include <memory>
+#include <sstream>
+#include <vector>
 
 namespace smtc::ui {
 namespace {
@@ -28,6 +30,19 @@ std::unique_ptr<Gdiplus::Brush> makeBrush(const config::TextStyle& style, const 
     Gdiplus::PointF p1(rect.X, rect.Y);
     Gdiplus::PointF p2(rect.X, rect.Y + std::max(1.0f, rect.Height));
     return std::make_unique<Gdiplus::LinearGradientBrush>(p1, p2, toGdiColor(style.color1), toGdiColor(style.color2));
+}
+
+std::vector<std::wstring> splitDisplayLines(std::wstring_view text) {
+    std::vector<std::wstring> lines;
+    std::wstringstream stream{std::wstring(text)};
+    std::wstring line;
+    while (std::getline(stream, line, L'\n')) {
+        lines.push_back(line);
+    }
+    if (lines.empty()) {
+        lines.emplace_back();
+    }
+    return lines;
 }
 
 }
@@ -94,14 +109,19 @@ void DesktopLyricsWindow::applyConfig(const config::AppConfig& config) {
     redraw();
 }
 
-void DesktopLyricsWindow::updateLyrics(std::wstring text, int highlightPercent) {
+void DesktopLyricsWindow::updateLyrics(std::wstring text, int highlightPercent, int highlightLine) {
     text_ = std::move(text);
     highlightPercent_ = std::clamp(highlightPercent, 0, 100);
+    highlightLine_ = std::max(0, highlightLine);
     redraw();
 }
 
 void DesktopLyricsWindow::setDraggable(bool draggable) {
     draggable_ = draggable;
+}
+
+void DesktopLyricsWindow::setGeometryChangedCallback(std::function<void(const config::WindowConfig&)> callback) {
+    geometryChanged_ = std::move(callback);
 }
 
 void DesktopLyricsWindow::move(int left, int top, int width, int height) {
@@ -110,6 +130,7 @@ void DesktopLyricsWindow::move(int left, int top, int width, int height) {
     height_ = height;
     SetWindowPos(hwnd_, HWND_TOPMOST, left, top, width_, height_, SWP_NOACTIVATE);
     redraw();
+    notifyGeometryChanged();
 }
 
 config::WindowConfig DesktopLyricsWindow::geometry() const {
@@ -146,6 +167,7 @@ LRESULT DesktopLyricsWindow::handleMessage(UINT message, WPARAM wParam, LPARAM l
         if (draggable_) {
             ReleaseCapture();
             SendMessageW(hwnd_, WM_NCLBUTTONDOWN, HTCAPTION, 0);
+            notifyGeometryChanged();
             return 0;
         }
         break;
@@ -192,36 +214,50 @@ void DesktopLyricsWindow::redraw() {
             if (family->GetLastStatus() != Gdiplus::Ok) {
                 family = std::make_unique<Gdiplus::FontFamily>(L"Microsoft YaHei");
             }
+            const auto style = fontStyleFromConfig(config_.font);
             Gdiplus::StringFormat format;
             format.SetAlignment(Gdiplus::StringAlignmentCenter);
             format.SetLineAlignment(Gdiplus::StringAlignmentCenter);
             format.SetFormatFlags(Gdiplus::StringFormatFlagsNoWrap);
 
-            Gdiplus::RectF layout(0.0f, 0.0f, static_cast<Gdiplus::REAL>(width_), static_cast<Gdiplus::REAL>(height_));
-            Gdiplus::GraphicsPath shadowPath;
-            Gdiplus::RectF shadowLayout(2.0f, 2.0f, static_cast<Gdiplus::REAL>(width_), static_cast<Gdiplus::REAL>(height_));
-            shadowPath.AddString(text_.c_str(), -1, family.get(), fontStyleFromConfig(config_.font), static_cast<Gdiplus::REAL>(config_.font.size), shadowLayout, &format);
-            Gdiplus::SolidBrush shadowBrush(Gdiplus::Color(150, 0, 0, 0));
-            graphics.FillPath(&shadowBrush, &shadowPath);
+            const auto lines = splitDisplayLines(text_);
+            const int emHeight = family->GetEmHeight(style);
+            const int lineSpacing = family->GetLineSpacing(style);
+            const float fontSize = static_cast<float>(config_.font.size);
+            const float lineHeight = emHeight > 0 ? fontSize * static_cast<float>(lineSpacing) / static_cast<float>(emHeight) : fontSize * 1.25f;
+            const float totalHeight = lineHeight * static_cast<float>(lines.size());
+            const float startY = (static_cast<float>(height_) - totalHeight) / 2.0f;
+            const int activeLine = std::clamp(highlightLine_, 0, static_cast<int>(lines.size()) - 1);
 
-            Gdiplus::GraphicsPath textPath;
-            textPath.AddString(text_.c_str(), -1, family.get(), fontStyleFromConfig(config_.font), static_cast<Gdiplus::REAL>(config_.font.size), layout, &format);
-            Gdiplus::RectF bounds;
-            textPath.GetBounds(&bounds);
-            Gdiplus::Pen outline(colorFromColorRef(config_.normal.border), 1.0f);
-            graphics.DrawPath(&outline, &textPath);
-            auto brush = makeBrush(config_.normal, bounds);
-            graphics.FillPath(brush.get(), &textPath);
+            for (std::size_t i = 0; i < lines.size(); ++i) {
+                const float y = startY + static_cast<float>(i) * lineHeight;
+                Gdiplus::RectF layout(0.0f, y, static_cast<Gdiplus::REAL>(width_), lineHeight);
 
-            if (highlightPercent_ > 0) {
-                Gdiplus::GraphicsState state = graphics.Save();
-                Gdiplus::RectF clip(bounds.X, bounds.Y, bounds.Width * highlightPercent_ / 100.0f, bounds.Height);
-                graphics.SetClip(clip);
-                Gdiplus::Pen highlightOutline(colorFromColorRef(config_.highlight.border), 1.0f);
-                graphics.DrawPath(&highlightOutline, &textPath);
-                auto highlightBrush = makeBrush(config_.highlight, bounds);
-                graphics.FillPath(highlightBrush.get(), &textPath);
-                graphics.Restore(state);
+                Gdiplus::GraphicsPath shadowPath;
+                Gdiplus::RectF shadowLayout(2.0f, y + 2.0f, static_cast<Gdiplus::REAL>(width_), lineHeight);
+                shadowPath.AddString(lines[i].c_str(), -1, family.get(), style, fontSize, shadowLayout, &format);
+                Gdiplus::SolidBrush shadowBrush(Gdiplus::Color(150, 0, 0, 0));
+                graphics.FillPath(&shadowBrush, &shadowPath);
+
+                Gdiplus::GraphicsPath textPath;
+                textPath.AddString(lines[i].c_str(), -1, family.get(), style, fontSize, layout, &format);
+                Gdiplus::RectF bounds;
+                textPath.GetBounds(&bounds);
+                Gdiplus::Pen outline(colorFromColorRef(config_.normal.border), 1.0f);
+                graphics.DrawPath(&outline, &textPath);
+                auto brush = makeBrush(config_.normal, bounds);
+                graphics.FillPath(brush.get(), &textPath);
+
+                if (highlightPercent_ > 0 && static_cast<int>(i) == activeLine) {
+                    Gdiplus::GraphicsState state = graphics.Save();
+                    Gdiplus::RectF clip(bounds.X, bounds.Y, bounds.Width * highlightPercent_ / 100.0f, bounds.Height);
+                    graphics.SetClip(clip);
+                    Gdiplus::Pen highlightOutline(colorFromColorRef(config_.highlight.border), 1.0f);
+                    graphics.DrawPath(&highlightOutline, &textPath);
+                    auto highlightBrush = makeBrush(config_.highlight, bounds);
+                    graphics.FillPath(highlightBrush.get(), &textPath);
+                    graphics.Restore(state);
+                }
             }
         }
     }
@@ -238,6 +274,12 @@ void DesktopLyricsWindow::redraw() {
     DeleteObject(bitmap);
     DeleteDC(memoryDc);
     ReleaseDC(nullptr, screenDc);
+}
+
+void DesktopLyricsWindow::notifyGeometryChanged() const {
+    if (geometryChanged_) {
+        geometryChanged_(geometry());
+    }
 }
 
 Gdiplus::Color DesktopLyricsWindow::colorFromColorRef(COLORREF color, BYTE alpha) const {

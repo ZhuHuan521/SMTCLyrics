@@ -101,7 +101,8 @@ std::filesystem::path LyricRepository::exactLocalPath(std::wstring_view keyword)
 std::vector<std::uint8_t> LyricRepository::fetchOnline(LyricSource source, std::wstring_view keyword, const config::AppConfig& config) const {
     try {
         const auto keywordUtf8 = util::wideToUtf8(keyword);
-        return online_.fetch(source, keywordUtf8, util::wideToUtf8(config.cookie));
+        (void)config;
+        return online_.fetch(source, keywordUtf8);
     } catch (...) {
         return {};
     }

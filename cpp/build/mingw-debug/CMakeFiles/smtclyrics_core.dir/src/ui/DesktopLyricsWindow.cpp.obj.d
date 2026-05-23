@@ -463,6 +463,16 @@ CMakeFiles/smtclyrics_core.dir/src/ui/DesktopLyricsWindow.cpp.obj: \
  D:/mingw64/x86_64-w64-mingw32/include/gdiplus/gdiplusgraphics.h \
  D:/mingw64/x86_64-w64-mingw32/include/gdiplus/gdipluslinecaps.h \
  D:/mingw64/x86_64-w64-mingw32/include/gdiplus/gdiplusimpl.h \
+ D:/mingw64/include/c++/15.2.0/functional \
+ D:/mingw64/include/c++/15.2.0/bits/std_function.h \
+ D:/mingw64/include/c++/15.2.0/unordered_map \
+ D:/mingw64/include/c++/15.2.0/bits/unordered_map.h \
+ D:/mingw64/include/c++/15.2.0/bits/hashtable.h \
+ D:/mingw64/include/c++/15.2.0/bits/hashtable_policy.h \
+ D:/mingw64/include/c++/15.2.0/bits/enable_special_members.h \
+ D:/mingw64/include/c++/15.2.0/bits/node_handle.h \
+ D:/mingw64/include/c++/15.2.0/bits/erase_if.h \
+ D:/mingw64/include/c++/15.2.0/array \
  D:/mingw64/include/c++/15.2.0/algorithm \
  D:/mingw64/include/c++/15.2.0/bits/stl_algo.h \
  D:/mingw64/include/c++/15.2.0/bits/algorithmfwd.h \

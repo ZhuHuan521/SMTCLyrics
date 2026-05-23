@@ -7,6 +7,7 @@
 #include <shellapi.h>
 
 #include <algorithm>
+#include <array>
 #include <iterator>
 #include <utility>
 #include <vector>
@@ -15,7 +16,12 @@ namespace smtc::app {
 namespace {
 
 constexpr UINT_PTR kTimerId = 1;
-constexpr UINT kTimerMs = 800;
+constexpr int kMinSmtcPollIntervalMs = 30;
+constexpr int kMaxSmtcPollIntervalMs = 2000;
+
+UINT timerIntervalMs(const config::AppConfig& config) {
+    return static_cast<UINT>(std::clamp(config.smtcPollIntervalMs, kMinSmtcPollIntervalMs, kMaxSmtcPollIntervalMs));
+}
 
 std::filesystem::path chooseLyricsDirectory(const std::filesystem::path& exeDir) {
     auto path = exeDir / L"lyrics";
@@ -80,29 +86,30 @@ void Application::initialize() {
     cache_.ensureExists();
     cache_.load();
     config_ = configStore_.load();
+    configStore_.save(config_);
     if (!window_.create(config_.window)) {
         MessageBoxW(nullptr, L"歌词窗口创建失败", L"SMTCLyrics", MB_ICONERROR | MB_OK);
         PostQuitMessage(1);
         return;
     }
     window_.applyConfig(config_);
-    window_.setDraggable(true);
+    window_.setDraggable(false);
+    window_.setGeometryChangedCallback([this](const config::WindowConfig& window) { rememberLyricWindow(window); });
+    rememberLyricWindow(window_.geometry());
 
     ui::ControlWindowCallbacks callbacks;
     callbacks.applyConfig = [this](const config::AppConfig& config) { applyConfig(config); };
     callbacks.getLyricGeometry = [this] { return window_.geometry(); };
     callbacks.moveLyricWindow = [this](const config::WindowConfig& window) {
         if (!window.hasPosition) return;
-        config_.window = window;
         window_.move(window.left, window.top, window.width, window.height);
-        configStore_.saveWindow(window);
-        controlWindow_.setConfig(config_);
     };
     callbacks.setLyricDraggable = [this](bool draggable) { window_.setDraggable(draggable); };
     callbacks.reloadLyrics = [this] { reloadLyrics(true); };
     callbacks.switchSource = [this] { switchLyricsSource(); };
     callbacks.clearCache = [this] { clearLyricCache(); };
     callbacks.openLocalLyric = [this] { openLocalLyric(); };
+    callbacks.checkLyricSources = [] { return checkLyricSources(); };
     if (!controlWindow_.create(config_, std::move(callbacks))) {
         MessageBoxW(nullptr, L"控制窗口创建失败", L"SMTCLyrics", MB_ICONERROR | MB_OK);
         PostQuitMessage(1);
@@ -111,7 +118,7 @@ void Application::initialize() {
     controlWindow_.show();
 
     showTextOnce(L"等待 SMTC 媒体会话...");
-    SetTimer(window_.hwnd(), kTimerId, kTimerMs, nullptr);
+    restartTimer();
 }
 
 void Application::tick() {
@@ -135,10 +142,12 @@ void Application::tick() {
         }
 
         if (!parser_.empty()) {
-            const auto frame = parser_.frameAt(static_cast<std::int64_t>(state.positionSeconds) * 1000, config_.displayMode, config_.lyricOffsetSeconds);
-            if (!frame.text.empty() && frame.text != lastShownText_) {
-                window_.updateLyrics(frame.text, frame.highlightPercent);
+            const auto frame = parser_.frameAt(state.positionMs, config_.displayMode, config_.lyricOffsetSeconds);
+            if (!frame.text.empty() && (frame.text != lastShownText_ || frame.highlightPercent != lastHighlightPercent_ || frame.highlightLine != lastHighlightLine_)) {
+                window_.updateLyrics(frame.text, frame.highlightPercent, frame.highlightLine);
                 lastShownText_ = frame.text;
+                lastHighlightPercent_ = frame.highlightPercent;
+                lastHighlightLine_ = frame.highlightLine;
             }
         }
     } catch (...) {
@@ -149,12 +158,23 @@ void Application::applyConfig(const config::AppConfig& config) {
     config_ = config;
     configStore_.save(config_);
     window_.applyConfig(config_);
+    restartTimer();
     lastShownText_.clear();
+    lastHighlightPercent_ = -1;
+    lastHighlightLine_ = -1;
     controlWindow_.setConfig(config_);
+}
+
+void Application::restartTimer() {
+    if (!window_.hwnd()) return;
+    KillTimer(window_.hwnd(), kTimerId);
+    SetTimer(window_.hwnd(), kTimerId, timerIntervalMs(config_), nullptr);
 }
 
 void Application::loadLyricsForCurrentTrack(const smtc_provider::MediaState& state, bool ignoreCache, const config::AppConfig* configOverride) {
     lastShownText_.clear();
+    lastHighlightPercent_ = -1;
+    lastHighlightLine_ = -1;
     parser_ = lyrics::LrcParser{};
     currentSource_ = lyrics::LyricSource::Local;
     const auto keyword = lyrics::makeKeyword(state.artist, state.title);
@@ -219,10 +239,39 @@ void Application::openLocalLyric() {
     controlWindow_.setStatusText(reinterpret_cast<INT_PTR>(result) > 32 ? L"已打开本地歌词" : L"打开本地歌词失败");
 }
 
+void Application::rememberLyricWindow(const config::WindowConfig& window) {
+    if (!window.hasPosition) return;
+    config_.window = window;
+    configStore_.saveWindow(window);
+    controlWindow_.syncLyricGeometry(window);
+}
+
+std::array<bool, 4> Application::checkLyricSources() {
+    std::array<bool, 4> result{};
+    const auto keywordUtf8 = util::wideToUtf8(L"关键词");
+    lyrics::OnlineLyrics online;
+
+    for (int sourceIndex = 1; sourceIndex <= 4; ++sourceIndex) {
+        try {
+            const auto source = lyrics::sourceFromIndex(sourceIndex);
+            if (!source) continue;
+            const auto bytes = online.fetch(*source, keywordUtf8);
+            lyrics::LrcParser parser;
+            result[static_cast<std::size_t>(sourceIndex - 1)] = bytes.size() >= 10 && parser.parseBytes(bytes);
+        } catch (...) {
+            result[static_cast<std::size_t>(sourceIndex - 1)] = false;
+        }
+    }
+
+    return result;
+}
+
 void Application::showTextOnce(const std::wstring& text) {
     if (text != lastShownText_) {
         window_.updateLyrics(text, 0);
         lastShownText_ = text;
+        lastHighlightPercent_ = 0;
+        lastHighlightLine_ = 0;
     }
 }
 

@@ -36,10 +36,10 @@ struct AppConfig {
     TextStyle normal;
     TextStyle highlight{RGB(0, 128, 255), RGB(0, 255, 255), RGB(0, 0, 0), 1};
     WindowConfig window;
-    std::wstring cookie;
     int lyricOffsetSeconds = 0;
     std::vector<int> sourcePriority{1, 2, 3, 4};
     int smtcMode = 1;
+    int smtcPollIntervalMs = 100;
     int displayMode = 1;
 };
 
@@ -57,9 +57,16 @@ public:
 
 private:
     std::wstring readString(std::wstring_view section, std::wstring_view key, std::wstring_view fallback) const;
+    std::wstring readStringAny(std::wstring_view section, std::wstring_view key, std::wstring_view legacySection, std::wstring_view legacyKey, std::wstring_view fallback) const;
+    COLORREF readColorAny(std::wstring_view section, std::wstring_view key, std::wstring_view legacySection, std::wstring_view legacyKey, COLORREF fallback) const;
+    int readSourcePriority(std::wstring_view key, std::wstring_view legacyKey, int fallback) const;
     int readInt(std::wstring_view section, std::wstring_view key, int fallback) const;
+    int readIntAny(std::wstring_view section, std::wstring_view key, std::wstring_view legacySection, std::wstring_view legacyKey, int fallback) const;
     bool readBool(std::wstring_view section, std::wstring_view key, bool fallback) const;
+    bool readBoolAny(std::wstring_view section, std::wstring_view key, std::wstring_view legacySection, std::wstring_view legacyKey, bool fallback) const;
     void writeString(std::wstring_view section, std::wstring_view key, std::wstring_view value) const;
+    void deleteKey(std::wstring_view section, std::wstring_view key) const;
+    void deleteSection(std::wstring_view section) const;
 
     std::filesystem::path path_;
 };

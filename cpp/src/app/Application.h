@@ -8,6 +8,7 @@
 #include "ui/ControlWindow.h"
 #include "ui/DesktopLyricsWindow.h"
 
+#include <array>
 #include <filesystem>
 #include <string>
 
@@ -22,11 +23,14 @@ private:
     void initialize();
     void tick();
     void applyConfig(const config::AppConfig& config);
+    void restartTimer();
     void loadLyricsForCurrentTrack(const smtc_provider::MediaState& state, bool ignoreCache = false, const config::AppConfig* configOverride = nullptr);
     void reloadLyrics(bool ignoreCache);
     void switchLyricsSource();
     void clearLyricCache();
     void openLocalLyric();
+    void rememberLyricWindow(const config::WindowConfig& window);
+    static std::array<bool, 4> checkLyricSources();
     void showTextOnce(const std::wstring& text);
 
     std::filesystem::path exeDir_;
@@ -42,6 +46,8 @@ private:
     lyrics::LyricSource currentSource_ = lyrics::LyricSource::Local;
     std::wstring currentKeyword_;
     std::wstring lastShownText_;
+    int lastHighlightPercent_ = -1;
+    int lastHighlightLine_ = -1;
 };
 
 }

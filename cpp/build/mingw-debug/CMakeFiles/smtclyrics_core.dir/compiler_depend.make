@@ -2499,6 +2499,7 @@ CMakeFiles/smtclyrics_core.dir/src/lyrics/OnlineLyrics.cpp.obj: D:/programming/S
   D:/programming/SMTCLyrics/cpp/src/lyrics/OnlineLyrics.h \
   D:/programming/SMTCLyrics/cpp/src/util/Base64.h \
   D:/programming/SMTCLyrics/cpp/src/util/Encoding.h \
+  D:/programming/SMTCLyrics/cpp/src/util/Inflate.h \
   D:/programming/SMTCLyrics/e-packager-master/thirdparty/json.hpp
 
 CMakeFiles/smtclyrics_core.dir/src/smtc/SmtcProvider.cpp.obj: D:/programming/SMTCLyrics/cpp/src/smtc/SmtcProvider.cpp \
@@ -2931,6 +2932,8 @@ CMakeFiles/smtclyrics_core.dir/src/smtc/SmtcProvider.cpp.obj: D:/programming/SMT
 CMakeFiles/smtclyrics_core.dir/src/ui/ControlWindow.cpp.obj: D:/programming/SMTCLyrics/cpp/src/ui/ControlWindow.cpp \
   D:/mingw64/include/c++/15.2.0/algorithm \
   D:/mingw64/include/c++/15.2.0/array \
+  D:/mingw64/include/c++/15.2.0/atomic \
+  D:/mingw64/include/c++/15.2.0/backward/auto_ptr.h \
   D:/mingw64/include/c++/15.2.0/backward/binders.h \
   D:/mingw64/include/c++/15.2.0/bit \
   D:/mingw64/include/c++/15.2.0/bits/algorithmfwd.h \
@@ -2938,6 +2941,10 @@ CMakeFiles/smtclyrics_core.dir/src/ui/ControlWindow.cpp.obj: D:/programming/SMTC
   D:/mingw64/include/c++/15.2.0/bits/alloc_traits.h \
   D:/mingw64/include/c++/15.2.0/bits/allocated_ptr.h \
   D:/mingw64/include/c++/15.2.0/bits/allocator.h \
+  D:/mingw64/include/c++/15.2.0/bits/atomic_base.h \
+  D:/mingw64/include/c++/15.2.0/bits/atomic_lockfree_defines.h \
+  D:/mingw64/include/c++/15.2.0/bits/atomic_timed_wait.h \
+  D:/mingw64/include/c++/15.2.0/bits/atomic_wait.h \
   D:/mingw64/include/c++/15.2.0/bits/basic_ios.h \
   D:/mingw64/include/c++/15.2.0/bits/basic_ios.tcc \
   D:/mingw64/include/c++/15.2.0/bits/basic_string.h \
@@ -2996,14 +3003,19 @@ CMakeFiles/smtclyrics_core.dir/src/ui/ControlWindow.cpp.obj: D:/programming/SMTC
   D:/mingw64/include/c++/15.2.0/bits/ranges_algobase.h \
   D:/mingw64/include/c++/15.2.0/bits/ranges_base.h \
   D:/mingw64/include/c++/15.2.0/bits/ranges_cmp.h \
+  D:/mingw64/include/c++/15.2.0/bits/ranges_uninitialized.h \
   D:/mingw64/include/c++/15.2.0/bits/ranges_util.h \
   D:/mingw64/include/c++/15.2.0/bits/refwrap.h \
   D:/mingw64/include/c++/15.2.0/bits/requires_hosted.h \
+  D:/mingw64/include/c++/15.2.0/bits/semaphore_base.h \
   D:/mingw64/include/c++/15.2.0/bits/shared_ptr.h \
+  D:/mingw64/include/c++/15.2.0/bits/shared_ptr_atomic.h \
   D:/mingw64/include/c++/15.2.0/bits/shared_ptr_base.h \
   D:/mingw64/include/c++/15.2.0/bits/sstream.tcc \
   D:/mingw64/include/c++/15.2.0/bits/std_abs.h \
   D:/mingw64/include/c++/15.2.0/bits/std_function.h \
+  D:/mingw64/include/c++/15.2.0/bits/std_mutex.h \
+  D:/mingw64/include/c++/15.2.0/bits/std_thread.h \
   D:/mingw64/include/c++/15.2.0/bits/stl_algo.h \
   D:/mingw64/include/c++/15.2.0/bits/stl_algobase.h \
   D:/mingw64/include/c++/15.2.0/bits/stl_bvector.h \
@@ -3014,6 +3026,7 @@ CMakeFiles/smtclyrics_core.dir/src/ui/ControlWindow.cpp.obj: D:/programming/SMTC
   D:/mingw64/include/c++/15.2.0/bits/stl_iterator_base_funcs.h \
   D:/mingw64/include/c++/15.2.0/bits/stl_iterator_base_types.h \
   D:/mingw64/include/c++/15.2.0/bits/stl_pair.h \
+  D:/mingw64/include/c++/15.2.0/bits/stl_raw_storage_iter.h \
   D:/mingw64/include/c++/15.2.0/bits/stl_relops.h \
   D:/mingw64/include/c++/15.2.0/bits/stl_tempbuf.h \
   D:/mingw64/include/c++/15.2.0/bits/stl_uninitialized.h \
@@ -3022,6 +3035,7 @@ CMakeFiles/smtclyrics_core.dir/src/ui/ControlWindow.cpp.obj: D:/programming/SMTC
   D:/mingw64/include/c++/15.2.0/bits/streambuf_iterator.h \
   D:/mingw64/include/c++/15.2.0/bits/string_view.tcc \
   D:/mingw64/include/c++/15.2.0/bits/stringfwd.h \
+  D:/mingw64/include/c++/15.2.0/bits/this_thread_sleep.h \
   D:/mingw64/include/c++/15.2.0/bits/uniform_int_dist.h \
   D:/mingw64/include/c++/15.2.0/bits/unique_ptr.h \
   D:/mingw64/include/c++/15.2.0/bits/unordered_map.h \
@@ -3062,20 +3076,25 @@ CMakeFiles/smtclyrics_core.dir/src/ui/ControlWindow.cpp.obj: D:/programming/SMTC
   D:/mingw64/include/c++/15.2.0/istream \
   D:/mingw64/include/c++/15.2.0/limits \
   D:/mingw64/include/c++/15.2.0/locale \
+  D:/mingw64/include/c++/15.2.0/memory \
   D:/mingw64/include/c++/15.2.0/new \
   D:/mingw64/include/c++/15.2.0/numbers \
   D:/mingw64/include/c++/15.2.0/ostream \
   D:/mingw64/include/c++/15.2.0/pstl/execution_defs.h \
   D:/mingw64/include/c++/15.2.0/pstl/glue_algorithm_defs.h \
+  D:/mingw64/include/c++/15.2.0/pstl/glue_memory_defs.h \
   D:/mingw64/include/c++/15.2.0/pstl/pstl_config.h \
   D:/mingw64/include/c++/15.2.0/ratio \
+  D:/mingw64/include/c++/15.2.0/semaphore \
   D:/mingw64/include/c++/15.2.0/sstream \
   D:/mingw64/include/c++/15.2.0/stdexcept \
   D:/mingw64/include/c++/15.2.0/stdlib.h \
+  D:/mingw64/include/c++/15.2.0/stop_token \
   D:/mingw64/include/c++/15.2.0/streambuf \
   D:/mingw64/include/c++/15.2.0/string \
   D:/mingw64/include/c++/15.2.0/string_view \
   D:/mingw64/include/c++/15.2.0/system_error \
+  D:/mingw64/include/c++/15.2.0/thread \
   D:/mingw64/include/c++/15.2.0/tuple \
   D:/mingw64/include/c++/15.2.0/type_traits \
   D:/mingw64/include/c++/15.2.0/typeinfo \
@@ -3230,6 +3249,7 @@ CMakeFiles/smtclyrics_core.dir/src/ui/ControlWindow.cpp.obj: D:/programming/SMTC
   D:/mingw64/x86_64-w64-mingw32/include/apisetcconv.h \
   D:/mingw64/x86_64-w64-mingw32/include/basetsd.h \
   D:/mingw64/x86_64-w64-mingw32/include/bemapiset.h \
+  D:/mingw64/x86_64-w64-mingw32/include/commdlg.h \
   D:/mingw64/x86_64-w64-mingw32/include/concurrencysal.h \
   D:/mingw64/x86_64-w64-mingw32/include/consoleapi.h \
   D:/mingw64/x86_64-w64-mingw32/include/consoleapi2.h \
@@ -3274,6 +3294,7 @@ CMakeFiles/smtclyrics_core.dir/src/ui/ControlWindow.cpp.obj: D:/programming/SMTC
   D:/mingw64/x86_64-w64-mingw32/include/processthreadsapi.h \
   D:/mingw64/x86_64-w64-mingw32/include/processtopologyapi.h \
   D:/mingw64/x86_64-w64-mingw32/include/profileapi.h \
+  D:/mingw64/x86_64-w64-mingw32/include/prsht.h \
   D:/mingw64/x86_64-w64-mingw32/include/psdk_inc/intrin-impl.h \
   D:/mingw64/x86_64-w64-mingw32/include/pshpack1.h \
   D:/mingw64/x86_64-w64-mingw32/include/pshpack2.h \
@@ -3298,6 +3319,7 @@ CMakeFiles/smtclyrics_core.dir/src/ui/ControlWindow.cpp.obj: D:/programming/SMTC
   D:/mingw64/x86_64-w64-mingw32/include/sec_api/wchar_s.h \
   D:/mingw64/x86_64-w64-mingw32/include/securityappcontainer.h \
   D:/mingw64/x86_64-w64-mingw32/include/securitybaseapi.h \
+  D:/mingw64/x86_64-w64-mingw32/include/semaphore.h \
   D:/mingw64/x86_64-w64-mingw32/include/signal.h \
   D:/mingw64/x86_64-w64-mingw32/include/specstrings.h \
   D:/mingw64/x86_64-w64-mingw32/include/stdarg.h \
@@ -3347,6 +3369,7 @@ CMakeFiles/smtclyrics_core.dir/src/ui/ControlWindow.cpp.obj: D:/programming/SMTC
 
 CMakeFiles/smtclyrics_core.dir/src/ui/DesktopLyricsWindow.cpp.obj: D:/programming/SMTCLyrics/cpp/src/ui/DesktopLyricsWindow.cpp \
   D:/mingw64/include/c++/15.2.0/algorithm \
+  D:/mingw64/include/c++/15.2.0/array \
   D:/mingw64/include/c++/15.2.0/backward/auto_ptr.h \
   D:/mingw64/include/c++/15.2.0/backward/binders.h \
   D:/mingw64/include/c++/15.2.0/bit \
@@ -3370,6 +3393,8 @@ CMakeFiles/smtclyrics_core.dir/src/ui/DesktopLyricsWindow.cpp.obj: D:/programmin
   D:/mingw64/include/c++/15.2.0/bits/cpp_type_traits.h \
   D:/mingw64/include/c++/15.2.0/bits/cxxabi_forced.h \
   D:/mingw64/include/c++/15.2.0/bits/cxxabi_init_exception.h \
+  D:/mingw64/include/c++/15.2.0/bits/enable_special_members.h \
+  D:/mingw64/include/c++/15.2.0/bits/erase_if.h \
   D:/mingw64/include/c++/15.2.0/bits/exception.h \
   D:/mingw64/include/c++/15.2.0/bits/exception_defines.h \
   D:/mingw64/include/c++/15.2.0/bits/exception_ptr.h \
@@ -3380,6 +3405,8 @@ CMakeFiles/smtclyrics_core.dir/src/ui/DesktopLyricsWindow.cpp.obj: D:/programmin
   D:/mingw64/include/c++/15.2.0/bits/functexcept.h \
   D:/mingw64/include/c++/15.2.0/bits/functional_hash.h \
   D:/mingw64/include/c++/15.2.0/bits/hash_bytes.h \
+  D:/mingw64/include/c++/15.2.0/bits/hashtable.h \
+  D:/mingw64/include/c++/15.2.0/bits/hashtable_policy.h \
   D:/mingw64/include/c++/15.2.0/bits/invoke.h \
   D:/mingw64/include/c++/15.2.0/bits/ios_base.h \
   D:/mingw64/include/c++/15.2.0/bits/istream.tcc \
@@ -3398,6 +3425,7 @@ CMakeFiles/smtclyrics_core.dir/src/ui/DesktopLyricsWindow.cpp.obj: D:/programmin
   D:/mingw64/include/c++/15.2.0/bits/move.h \
   D:/mingw64/include/c++/15.2.0/bits/nested_exception.h \
   D:/mingw64/include/c++/15.2.0/bits/new_allocator.h \
+  D:/mingw64/include/c++/15.2.0/bits/node_handle.h \
   D:/mingw64/include/c++/15.2.0/bits/ostream.h \
   D:/mingw64/include/c++/15.2.0/bits/ostream.tcc \
   D:/mingw64/include/c++/15.2.0/bits/ostream_insert.h \
@@ -3421,6 +3449,7 @@ CMakeFiles/smtclyrics_core.dir/src/ui/DesktopLyricsWindow.cpp.obj: D:/programmin
   D:/mingw64/include/c++/15.2.0/bits/specfun.h \
   D:/mingw64/include/c++/15.2.0/bits/sstream.tcc \
   D:/mingw64/include/c++/15.2.0/bits/std_abs.h \
+  D:/mingw64/include/c++/15.2.0/bits/std_function.h \
   D:/mingw64/include/c++/15.2.0/bits/std_mutex.h \
   D:/mingw64/include/c++/15.2.0/bits/stl_algo.h \
   D:/mingw64/include/c++/15.2.0/bits/stl_algobase.h \
@@ -3442,6 +3471,7 @@ CMakeFiles/smtclyrics_core.dir/src/ui/DesktopLyricsWindow.cpp.obj: D:/programmin
   D:/mingw64/include/c++/15.2.0/bits/stringfwd.h \
   D:/mingw64/include/c++/15.2.0/bits/uniform_int_dist.h \
   D:/mingw64/include/c++/15.2.0/bits/unique_ptr.h \
+  D:/mingw64/include/c++/15.2.0/bits/unordered_map.h \
   D:/mingw64/include/c++/15.2.0/bits/uses_allocator.h \
   D:/mingw64/include/c++/15.2.0/bits/uses_allocator_args.h \
   D:/mingw64/include/c++/15.2.0/bits/utility.h \
@@ -3473,6 +3503,7 @@ CMakeFiles/smtclyrics_core.dir/src/ui/DesktopLyricsWindow.cpp.obj: D:/programmin
   D:/mingw64/include/c++/15.2.0/ext/string_conversions.h \
   D:/mingw64/include/c++/15.2.0/ext/type_traits.h \
   D:/mingw64/include/c++/15.2.0/filesystem \
+  D:/mingw64/include/c++/15.2.0/functional \
   D:/mingw64/include/c++/15.2.0/initializer_list \
   D:/mingw64/include/c++/15.2.0/iomanip \
   D:/mingw64/include/c++/15.2.0/ios \
@@ -3512,6 +3543,7 @@ CMakeFiles/smtclyrics_core.dir/src/ui/DesktopLyricsWindow.cpp.obj: D:/programmin
   D:/mingw64/include/c++/15.2.0/tuple \
   D:/mingw64/include/c++/15.2.0/type_traits \
   D:/mingw64/include/c++/15.2.0/typeinfo \
+  D:/mingw64/include/c++/15.2.0/unordered_map \
   D:/mingw64/include/c++/15.2.0/vector \
   D:/mingw64/include/c++/15.2.0/x86_64-w64-mingw32/bits/atomic_word.h \
   D:/mingw64/include/c++/15.2.0/x86_64-w64-mingw32/bits/c++allocator.h \
@@ -4356,6 +4388,140 @@ CMakeFiles/smtclyrics_core.dir/src/util/Encoding.cpp.obj: D:/programming/SMTCLyr
   D:/mingw64/x86_64-w64-mingw32/include/wow64apiset.h \
   D:/programming/SMTCLyrics/cpp/src/util/Encoding.h
 
+CMakeFiles/smtclyrics_core.dir/src/util/Inflate.cpp.obj: D:/programming/SMTCLyrics/cpp/src/util/Inflate.cpp \
+  D:/mingw64/include/c++/15.2.0/algorithm \
+  D:/mingw64/include/c++/15.2.0/backward/binders.h \
+  D:/mingw64/include/c++/15.2.0/bit \
+  D:/mingw64/include/c++/15.2.0/bits/algorithmfwd.h \
+  D:/mingw64/include/c++/15.2.0/bits/alloc_traits.h \
+  D:/mingw64/include/c++/15.2.0/bits/allocator.h \
+  D:/mingw64/include/c++/15.2.0/bits/basic_string.h \
+  D:/mingw64/include/c++/15.2.0/bits/basic_string.tcc \
+  D:/mingw64/include/c++/15.2.0/bits/char_traits.h \
+  D:/mingw64/include/c++/15.2.0/bits/charconv.h \
+  D:/mingw64/include/c++/15.2.0/bits/concept_check.h \
+  D:/mingw64/include/c++/15.2.0/bits/cpp_type_traits.h \
+  D:/mingw64/include/c++/15.2.0/bits/cxxabi_forced.h \
+  D:/mingw64/include/c++/15.2.0/bits/cxxabi_init_exception.h \
+  D:/mingw64/include/c++/15.2.0/bits/exception.h \
+  D:/mingw64/include/c++/15.2.0/bits/exception_defines.h \
+  D:/mingw64/include/c++/15.2.0/bits/exception_ptr.h \
+  D:/mingw64/include/c++/15.2.0/bits/functexcept.h \
+  D:/mingw64/include/c++/15.2.0/bits/functional_hash.h \
+  D:/mingw64/include/c++/15.2.0/bits/hash_bytes.h \
+  D:/mingw64/include/c++/15.2.0/bits/invoke.h \
+  D:/mingw64/include/c++/15.2.0/bits/iterator_concepts.h \
+  D:/mingw64/include/c++/15.2.0/bits/localefwd.h \
+  D:/mingw64/include/c++/15.2.0/bits/max_size_type.h \
+  D:/mingw64/include/c++/15.2.0/bits/memory_resource.h \
+  D:/mingw64/include/c++/15.2.0/bits/memoryfwd.h \
+  D:/mingw64/include/c++/15.2.0/bits/move.h \
+  D:/mingw64/include/c++/15.2.0/bits/nested_exception.h \
+  D:/mingw64/include/c++/15.2.0/bits/new_allocator.h \
+  D:/mingw64/include/c++/15.2.0/bits/ostream_insert.h \
+  D:/mingw64/include/c++/15.2.0/bits/postypes.h \
+  D:/mingw64/include/c++/15.2.0/bits/predefined_ops.h \
+  D:/mingw64/include/c++/15.2.0/bits/ptr_traits.h \
+  D:/mingw64/include/c++/15.2.0/bits/range_access.h \
+  D:/mingw64/include/c++/15.2.0/bits/ranges_algo.h \
+  D:/mingw64/include/c++/15.2.0/bits/ranges_algobase.h \
+  D:/mingw64/include/c++/15.2.0/bits/ranges_base.h \
+  D:/mingw64/include/c++/15.2.0/bits/ranges_cmp.h \
+  D:/mingw64/include/c++/15.2.0/bits/ranges_util.h \
+  D:/mingw64/include/c++/15.2.0/bits/refwrap.h \
+  D:/mingw64/include/c++/15.2.0/bits/requires_hosted.h \
+  D:/mingw64/include/c++/15.2.0/bits/std_abs.h \
+  D:/mingw64/include/c++/15.2.0/bits/stl_algo.h \
+  D:/mingw64/include/c++/15.2.0/bits/stl_algobase.h \
+  D:/mingw64/include/c++/15.2.0/bits/stl_bvector.h \
+  D:/mingw64/include/c++/15.2.0/bits/stl_construct.h \
+  D:/mingw64/include/c++/15.2.0/bits/stl_function.h \
+  D:/mingw64/include/c++/15.2.0/bits/stl_heap.h \
+  D:/mingw64/include/c++/15.2.0/bits/stl_iterator.h \
+  D:/mingw64/include/c++/15.2.0/bits/stl_iterator_base_funcs.h \
+  D:/mingw64/include/c++/15.2.0/bits/stl_iterator_base_types.h \
+  D:/mingw64/include/c++/15.2.0/bits/stl_pair.h \
+  D:/mingw64/include/c++/15.2.0/bits/stl_tempbuf.h \
+  D:/mingw64/include/c++/15.2.0/bits/stl_uninitialized.h \
+  D:/mingw64/include/c++/15.2.0/bits/stl_vector.h \
+  D:/mingw64/include/c++/15.2.0/bits/string_view.tcc \
+  D:/mingw64/include/c++/15.2.0/bits/stringfwd.h \
+  D:/mingw64/include/c++/15.2.0/bits/uniform_int_dist.h \
+  D:/mingw64/include/c++/15.2.0/bits/uses_allocator.h \
+  D:/mingw64/include/c++/15.2.0/bits/uses_allocator_args.h \
+  D:/mingw64/include/c++/15.2.0/bits/utility.h \
+  D:/mingw64/include/c++/15.2.0/bits/vector.tcc \
+  D:/mingw64/include/c++/15.2.0/bits/version.h \
+  D:/mingw64/include/c++/15.2.0/cctype \
+  D:/mingw64/include/c++/15.2.0/cerrno \
+  D:/mingw64/include/c++/15.2.0/clocale \
+  D:/mingw64/include/c++/15.2.0/compare \
+  D:/mingw64/include/c++/15.2.0/concepts \
+  D:/mingw64/include/c++/15.2.0/cstddef \
+  D:/mingw64/include/c++/15.2.0/cstdint \
+  D:/mingw64/include/c++/15.2.0/cstdio \
+  D:/mingw64/include/c++/15.2.0/cstdlib \
+  D:/mingw64/include/c++/15.2.0/cwchar \
+  D:/mingw64/include/c++/15.2.0/debug/assertions.h \
+  D:/mingw64/include/c++/15.2.0/debug/debug.h \
+  D:/mingw64/include/c++/15.2.0/exception \
+  D:/mingw64/include/c++/15.2.0/ext/alloc_traits.h \
+  D:/mingw64/include/c++/15.2.0/ext/numeric_traits.h \
+  D:/mingw64/include/c++/15.2.0/ext/string_conversions.h \
+  D:/mingw64/include/c++/15.2.0/ext/type_traits.h \
+  D:/mingw64/include/c++/15.2.0/initializer_list \
+  D:/mingw64/include/c++/15.2.0/iosfwd \
+  D:/mingw64/include/c++/15.2.0/new \
+  D:/mingw64/include/c++/15.2.0/numbers \
+  D:/mingw64/include/c++/15.2.0/pstl/execution_defs.h \
+  D:/mingw64/include/c++/15.2.0/pstl/glue_algorithm_defs.h \
+  D:/mingw64/include/c++/15.2.0/pstl/pstl_config.h \
+  D:/mingw64/include/c++/15.2.0/stdexcept \
+  D:/mingw64/include/c++/15.2.0/stdlib.h \
+  D:/mingw64/include/c++/15.2.0/string \
+  D:/mingw64/include/c++/15.2.0/string_view \
+  D:/mingw64/include/c++/15.2.0/tuple \
+  D:/mingw64/include/c++/15.2.0/type_traits \
+  D:/mingw64/include/c++/15.2.0/typeinfo \
+  D:/mingw64/include/c++/15.2.0/vector \
+  D:/mingw64/include/c++/15.2.0/x86_64-w64-mingw32/bits/c++allocator.h \
+  D:/mingw64/include/c++/15.2.0/x86_64-w64-mingw32/bits/c++config.h \
+  D:/mingw64/include/c++/15.2.0/x86_64-w64-mingw32/bits/c++locale.h \
+  D:/mingw64/include/c++/15.2.0/x86_64-w64-mingw32/bits/cpu_defines.h \
+  D:/mingw64/include/c++/15.2.0/x86_64-w64-mingw32/bits/os_defines.h \
+  D:/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/limits.h \
+  D:/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/mm_malloc.h \
+  D:/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/stddef.h \
+  D:/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/stdint.h \
+  D:/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/syslimits.h \
+  D:/mingw64/x86_64-w64-mingw32/include/_mingw.h \
+  D:/mingw64/x86_64-w64-mingw32/include/_mingw_mac.h \
+  D:/mingw64/x86_64-w64-mingw32/include/_mingw_off_t.h \
+  D:/mingw64/x86_64-w64-mingw32/include/_mingw_secapi.h \
+  D:/mingw64/x86_64-w64-mingw32/include/_mingw_stat64.h \
+  D:/mingw64/x86_64-w64-mingw32/include/corecrt.h \
+  D:/mingw64/x86_64-w64-mingw32/include/corecrt_stdio_config.h \
+  D:/mingw64/x86_64-w64-mingw32/include/corecrt_wctype.h \
+  D:/mingw64/x86_64-w64-mingw32/include/corecrt_wstdlib.h \
+  D:/mingw64/x86_64-w64-mingw32/include/crtdefs.h \
+  D:/mingw64/x86_64-w64-mingw32/include/ctype.h \
+  D:/mingw64/x86_64-w64-mingw32/include/errno.h \
+  D:/mingw64/x86_64-w64-mingw32/include/limits.h \
+  D:/mingw64/x86_64-w64-mingw32/include/locale.h \
+  D:/mingw64/x86_64-w64-mingw32/include/malloc.h \
+  D:/mingw64/x86_64-w64-mingw32/include/sdks/_mingw_ddk.h \
+  D:/mingw64/x86_64-w64-mingw32/include/sec_api/stdio_s.h \
+  D:/mingw64/x86_64-w64-mingw32/include/sec_api/stdlib_s.h \
+  D:/mingw64/x86_64-w64-mingw32/include/sec_api/wchar_s.h \
+  D:/mingw64/x86_64-w64-mingw32/include/stddef.h \
+  D:/mingw64/x86_64-w64-mingw32/include/stdint.h \
+  D:/mingw64/x86_64-w64-mingw32/include/stdio.h \
+  D:/mingw64/x86_64-w64-mingw32/include/stdlib.h \
+  D:/mingw64/x86_64-w64-mingw32/include/swprintf.inl \
+  D:/mingw64/x86_64-w64-mingw32/include/vadefs.h \
+  D:/mingw64/x86_64-w64-mingw32/include/wchar.h \
+  D:/programming/SMTCLyrics/cpp/src/util/Inflate.h
+
 CMakeFiles/smtclyrics_core.dir/src/util/Path.cpp.obj: D:/programming/SMTCLyrics/cpp/src/util/Path.cpp \
   D:/mingw64/include/c++/15.2.0/backward/binders.h \
   D:/mingw64/include/c++/15.2.0/bit \
@@ -4758,6 +4924,8 @@ D:/programming/SMTCLyrics/cpp/src/util/Encoding.cpp:
 
 D:/programming/SMTCLyrics/cpp/src/ui/DesktopLyricsWindow.cpp:
 
+D:/mingw64/x86_64-w64-mingw32/include/commdlg.h:
+
 D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.System.RemoteSystems.1.h:
 
 D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.System.RemoteSystems.0.h:
@@ -4769,6 +4937,8 @@ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.System.0.h:
 D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Storage.Streams.2.h:
 
 D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Storage.Streams.1.h:
+
+D:/mingw64/x86_64-w64-mingw32/include/prsht.h:
 
 D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Storage.Streams.0.h:
 
@@ -4833,6 +5003,8 @@ D:/mingw64/include/c++/15.2.0/bits/semaphore_base.h:
 D:/mingw64/include/c++/15.2.0/bits/atomic_timed_wait.h:
 
 D:/mingw64/include/c++/15.2.0/atomic:
+
+D:/programming/SMTCLyrics/cpp/src/util/Inflate.h:
 
 D:/mingw64/include/c++/15.2.0/x86_64-w64-mingw32/bits/opt_random.h:
 
@@ -5657,6 +5829,8 @@ D:/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/waitpkgintrin.h:
 D:/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/wmmintrin.h:
 
 D:/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/x86intrin.h:
+
+D:/programming/SMTCLyrics/cpp/src/util/Inflate.cpp:
 
 D:/mingw64/x86_64-w64-mingw32/include/debugapi.h:
 

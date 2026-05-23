@@ -1,1 +1,1 @@
- libsmtclyrics_core.a -lgdiplus -lwinhttp -lcrypt32 -lshlwapi -lruntimeobject -lwindowsapp -lole32 -lshell32 -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 
+ libsmtclyrics_core.a -lgdiplus -lwinhttp -lcrypt32 -lshlwapi -lruntimeobject -lwindowsapp -lole32 -lshell32 -lcomdlg32 -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 

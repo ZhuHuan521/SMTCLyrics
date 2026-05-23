@@ -43,21 +43,21 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "SMTCLyrics::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-SMTCLyrics-Debug-94fd2dec4c36b4440883.json",
+					"jsonFile" : "target-SMTCLyrics-Debug-b37e57433b394c8a412d.json",
 					"name" : "SMTCLyrics",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "SMTCLyricsTests::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-SMTCLyricsTests-Debug-8efc900fee3c703a5aad.json",
+					"jsonFile" : "target-SMTCLyricsTests-Debug-00d0aa74c0308f01e5a1.json",
 					"name" : "SMTCLyricsTests",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "smtclyrics_core::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-smtclyrics_core-Debug-0a2a1707e56e5623d0d5.json",
+					"jsonFile" : "target-smtclyrics_core-Debug-5bfc1b256746fcbfbece.json",
 					"name" : "smtclyrics_core",
 					"projectIndex" : 0
 				}

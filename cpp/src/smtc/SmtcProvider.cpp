@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
 
 namespace smtc::smtc_provider {
 namespace {
@@ -13,8 +14,8 @@ namespace {
 using winrt::Windows::Media::Control::GlobalSystemMediaTransportControlsSessionManager;
 using winrt::Windows::Media::Control::GlobalSystemMediaTransportControlsSessionPlaybackStatus;
 
-int secondsFromTimeSpan(winrt::Windows::Foundation::TimeSpan value) {
-    return static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(value).count());
+std::int64_t millisecondsFromTimeSpan(winrt::Windows::Foundation::TimeSpan value) {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(value).count();
 }
 
 std::wstring hstringToWide(const winrt::hstring& text) {
@@ -54,31 +55,31 @@ MediaState SmtcProvider::readState(int mode) {
             state.artist = hstringToWide(mediaProperties.Artist());
         }
         state.title = hstringToWide(mediaProperties.Title());
-        state.durationSeconds = secondsFromTimeSpan(timeline.MaxSeekTime());
-        const int rawPositionSeconds = secondsFromTimeSpan(timeline.Position());
+        state.durationMs = millisecondsFromTimeSpan(timeline.MaxSeekTime());
+        const auto rawPositionMs = millisecondsFromTimeSpan(timeline.Position());
         state.playing = playback.PlaybackStatus() == GlobalSystemMediaTransportControlsSessionPlaybackStatus::Playing;
 
         const auto now = std::chrono::steady_clock::now();
-        if (lastObserved_ == std::chrono::steady_clock::time_point{} || state.title != lastTitle_ || rawPositionSeconds != lastRawPositionSeconds_) {
+        if (lastObserved_ == std::chrono::steady_clock::time_point{} || state.title != lastTitle_ || rawPositionMs != lastRawPositionMs_) {
             lastObserved_ = now;
             lastTitle_ = state.title;
-            lastRawPositionSeconds_ = rawPositionSeconds;
+            lastRawPositionMs_ = rawPositionMs;
         }
 
         if (mode == 2 && state.playing) {
-            const auto elapsed = static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(now - lastObserved_).count());
-            state.positionSeconds = rawPositionSeconds + elapsed;
+            const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastObserved_).count();
+            state.positionMs = rawPositionMs + elapsed;
         } else {
-            state.positionSeconds = rawPositionSeconds;
+            state.positionMs = rawPositionMs;
         }
 
         if (!state.playing) {
             lastObserved_ = now;
-            lastRawPositionSeconds_ = rawPositionSeconds;
+            lastRawPositionMs_ = rawPositionMs;
         }
 
-        if (state.durationSeconds > 0) {
-            state.positionSeconds = std::clamp(state.positionSeconds, 0, state.durationSeconds);
+        if (state.durationMs > 0) {
+            state.positionMs = std::clamp(state.positionMs, std::int64_t{0}, state.durationMs);
         }
         state.valid = !state.title.empty();
     } catch (...) {

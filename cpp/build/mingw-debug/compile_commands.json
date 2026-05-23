@@ -73,6 +73,12 @@
 },
 {
   "directory": "D:/programming/SMTCLyrics/cpp/build/mingw-debug",
+  "command": "D:\\mingw64\\bin\\c++.exe -DNOMINMAX -DUNICODE -DWIN32_LEAN_AND_MEAN -D_UNICODE -D_WIN32_WINNT=0x0A00 @CMakeFiles/smtclyrics_core.dir/includes_CXX.rsp -g -std=c++20 -o CMakeFiles\\smtclyrics_core.dir\\src\\util\\Inflate.cpp.obj -c D:\\programming\\SMTCLyrics\\cpp\\src\\util\\Inflate.cpp",
+  "file": "D:/programming/SMTCLyrics/cpp/src/util/Inflate.cpp",
+  "output": "CMakeFiles/smtclyrics_core.dir/src/util/Inflate.cpp.obj"
+},
+{
+  "directory": "D:/programming/SMTCLyrics/cpp/build/mingw-debug",
   "command": "D:\\mingw64\\bin\\c++.exe -DNOMINMAX -DUNICODE -DWIN32_LEAN_AND_MEAN -D_UNICODE -D_WIN32_WINNT=0x0A00 @CMakeFiles/smtclyrics_core.dir/includes_CXX.rsp -g -std=c++20 -o CMakeFiles\\smtclyrics_core.dir\\src\\util\\Path.cpp.obj -c D:\\programming\\SMTCLyrics\\cpp\\src\\util\\Path.cpp",
   "file": "D:/programming/SMTCLyrics/cpp/src/util/Path.cpp",
   "output": "CMakeFiles/smtclyrics_core.dir/src/util/Path.cpp.obj"

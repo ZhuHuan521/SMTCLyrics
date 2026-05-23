@@ -23,6 +23,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/smtclyrics_core.dir/src/util/Base64.cpp.obj.d"
   "CMakeFiles/smtclyrics_core.dir/src/util/Encoding.cpp.obj"
   "CMakeFiles/smtclyrics_core.dir/src/util/Encoding.cpp.obj.d"
+  "CMakeFiles/smtclyrics_core.dir/src/util/Inflate.cpp.obj"
+  "CMakeFiles/smtclyrics_core.dir/src/util/Inflate.cpp.obj.d"
   "CMakeFiles/smtclyrics_core.dir/src/util/Path.cpp.obj"
   "CMakeFiles/smtclyrics_core.dir/src/util/Path.cpp.obj.d"
   "libsmtclyrics_core.a"

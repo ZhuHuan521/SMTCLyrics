@@ -27,6 +27,7 @@ set(SMTCLYRICS_SOURCES
     src/ui/DesktopLyricsWindow.cpp
     src/util/Base64.cpp
     src/util/Encoding.cpp
+    src/util/Inflate.cpp
     src/util/Path.cpp
 )
 
@@ -36,7 +37,7 @@ target_include_directories(smtclyrics_core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/generated
     ${CMAKE_CURRENT_SOURCE_DIR}/../e-packager-master/thirdparty
 )
-target_link_libraries(smtclyrics_core PUBLIC gdiplus winhttp crypt32 shlwapi runtimeobject windowsapp ole32 shell32)
+target_link_libraries(smtclyrics_core PUBLIC gdiplus winhttp crypt32 shlwapi runtimeobject windowsapp ole32 shell32 comdlg32)
 
 add_executable(SMTCLyrics WIN32 src/main.cpp)
 target_link_libraries(SMTCLyrics PRIVATE smtclyrics_core)

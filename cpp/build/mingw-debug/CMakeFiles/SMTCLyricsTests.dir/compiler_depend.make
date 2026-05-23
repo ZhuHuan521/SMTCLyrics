@@ -404,6 +404,7 @@ CMakeFiles/SMTCLyricsTests.dir/tests/core_tests.cpp.obj: D:/programming/SMTCLyri
   D:/programming/SMTCLyrics/cpp/src/lyrics/LyricRepository.h \
   D:/programming/SMTCLyrics/cpp/src/lyrics/OnlineLyrics.h \
   D:/programming/SMTCLyrics/cpp/src/util/Encoding.h \
+  D:/programming/SMTCLyrics/cpp/src/util/Inflate.h \
   D:/programming/SMTCLyrics/cpp/src/util/Path.h
 
 
@@ -906,6 +907,8 @@ D:/mingw64/include/c++/15.2.0/bits/cxxabi_init_exception.h:
 D:/mingw64/include/c++/15.2.0/bits/locale_facets_nonio.h:
 
 D:/mingw64/include/c++/15.2.0/pstl/pstl_config.h:
+
+D:/programming/SMTCLyrics/cpp/src/util/Inflate.h:
 
 D:/mingw64/include/c++/15.2.0/locale:
 

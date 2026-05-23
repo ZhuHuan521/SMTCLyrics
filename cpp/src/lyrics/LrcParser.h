@@ -7,14 +7,29 @@
 
 namespace smtc::lyrics {
 
+struct LyricSegment {
+    std::int64_t offsetMs = 0;
+    std::int64_t durationMs = 0;
+    std::size_t textStart = 0;
+    std::size_t textEnd = 0;
+};
+
 struct LrcLine {
     std::int64_t timeMs = 0;
+    std::int64_t durationMs = 0;
     std::wstring text;
+    std::vector<LyricSegment> segments;
 };
 
 struct LyricFrame {
     std::wstring text;
     int highlightPercent = 0;
+    int highlightLine = 0;
+};
+
+struct VisibleLyricLine {
+    int index = -1;
+    std::wstring text;
 };
 
 class LrcParser {
@@ -27,8 +42,10 @@ public:
 
 private:
     static std::optional<std::int64_t> parseTimestamp(std::wstring_view token);
+    static bool parseKrcLine(std::wstring_view rawLine, LrcLine& out);
     int findCurrentIndex(std::int64_t positionMs) const;
-    std::optional<std::wstring> lineTextNear(int index, int direction, int maxDistance) const;
+    int highlightPercentForLine(int index, std::int64_t positionMs) const;
+    std::optional<VisibleLyricLine> visibleLineNear(int index, int direction, int maxDistance, std::wstring_view excludedText = {}) const;
 
     std::vector<LrcLine> lines_;
 };

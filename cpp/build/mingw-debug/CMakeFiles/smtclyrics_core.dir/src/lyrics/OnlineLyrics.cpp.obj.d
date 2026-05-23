@@ -272,6 +272,7 @@ CMakeFiles/smtclyrics_core.dir/src/lyrics/OnlineLyrics.cpp.obj: \
  D:/mingw64/include/c++/15.2.0/any \
  D:/programming/SMTCLyrics/cpp/src/util/Base64.h \
  D:/programming/SMTCLyrics/cpp/src/util/Encoding.h \
+ D:/programming/SMTCLyrics/cpp/src/util/Inflate.h \
  D:/mingw64/include/c++/15.2.0/random \
  D:/mingw64/include/c++/15.2.0/bits/random.h \
  D:/mingw64/include/c++/15.2.0/x86_64-w64-mingw32/bits/opt_random.h \

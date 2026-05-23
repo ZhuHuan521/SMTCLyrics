@@ -394,6 +394,7 @@ CMakeFiles/smtclyrics_core.dir/src/ui/ControlWindow.cpp.obj: \
  D:/mingw64/include/c++/15.2.0/bits/stl_vector.h \
  D:/mingw64/include/c++/15.2.0/bits/stl_bvector.h \
  D:/mingw64/include/c++/15.2.0/bits/vector.tcc \
+ D:/mingw64/include/c++/15.2.0/array \
  D:/mingw64/include/c++/15.2.0/functional \
  D:/mingw64/include/c++/15.2.0/bits/std_function.h \
  D:/mingw64/include/c++/15.2.0/unordered_map \
@@ -403,8 +404,9 @@ CMakeFiles/smtclyrics_core.dir/src/ui/ControlWindow.cpp.obj: \
  D:/mingw64/include/c++/15.2.0/bits/enable_special_members.h \
  D:/mingw64/include/c++/15.2.0/bits/node_handle.h \
  D:/mingw64/include/c++/15.2.0/bits/erase_if.h \
- D:/mingw64/include/c++/15.2.0/array \
  D:/programming/SMTCLyrics/cpp/src/util/Encoding.h \
+ D:/mingw64/x86_64-w64-mingw32/include/commdlg.h \
+ D:/mingw64/x86_64-w64-mingw32/include/prsht.h \
  D:/mingw64/include/c++/15.2.0/algorithm \
  D:/mingw64/include/c++/15.2.0/bits/stl_algo.h \
  D:/mingw64/include/c++/15.2.0/bits/algorithmfwd.h \
@@ -415,5 +417,24 @@ CMakeFiles/smtclyrics_core.dir/src/ui/ControlWindow.cpp.obj: \
  D:/mingw64/include/c++/15.2.0/bits/ranges_algobase.h \
  D:/mingw64/include/c++/15.2.0/pstl/glue_algorithm_defs.h \
  D:/mingw64/include/c++/15.2.0/pstl/execution_defs.h \
+ D:/mingw64/include/c++/15.2.0/memory \
+ D:/mingw64/include/c++/15.2.0/bits/stl_raw_storage_iter.h \
+ D:/mingw64/include/c++/15.2.0/bits/shared_ptr_atomic.h \
+ D:/mingw64/include/c++/15.2.0/bits/atomic_base.h \
+ D:/mingw64/include/c++/15.2.0/bits/atomic_lockfree_defines.h \
+ D:/mingw64/include/c++/15.2.0/bits/atomic_wait.h \
+ D:/mingw64/include/c++/15.2.0/bits/std_mutex.h \
+ D:/mingw64/include/c++/15.2.0/backward/auto_ptr.h \
+ D:/mingw64/include/c++/15.2.0/bits/ranges_uninitialized.h \
+ D:/mingw64/include/c++/15.2.0/pstl/glue_memory_defs.h \
+ D:/mingw64/include/c++/15.2.0/thread \
+ D:/mingw64/include/c++/15.2.0/stop_token \
+ D:/mingw64/include/c++/15.2.0/atomic \
+ D:/mingw64/include/c++/15.2.0/bits/std_thread.h \
+ D:/mingw64/include/c++/15.2.0/semaphore \
+ D:/mingw64/include/c++/15.2.0/bits/semaphore_base.h \
+ D:/mingw64/include/c++/15.2.0/bits/atomic_timed_wait.h \
+ D:/mingw64/include/c++/15.2.0/bits/this_thread_sleep.h \
+ D:/mingw64/x86_64-w64-mingw32/include/semaphore.h \
  D:/mingw64/include/c++/15.2.0/utility \
  D:/mingw64/include/c++/15.2.0/bits/stl_relops.h

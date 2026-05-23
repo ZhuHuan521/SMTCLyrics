@@ -251,11 +251,26 @@ CMakeFiles/smtclyrics_core.dir/src/util/Encoding.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/smtclyrics_core.dir/src/util/Encoding.cpp.s"
 	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:\programming\SMTCLyrics\cpp\src\util\Encoding.cpp -o CMakeFiles\smtclyrics_core.dir\src\util\Encoding.cpp.s
 
+CMakeFiles/smtclyrics_core.dir/src/util/Inflate.cpp.obj: CMakeFiles/smtclyrics_core.dir/flags.make
+CMakeFiles/smtclyrics_core.dir/src/util/Inflate.cpp.obj: CMakeFiles/smtclyrics_core.dir/includes_CXX.rsp
+CMakeFiles/smtclyrics_core.dir/src/util/Inflate.cpp.obj: D:/programming/SMTCLyrics/cpp/src/util/Inflate.cpp
+CMakeFiles/smtclyrics_core.dir/src/util/Inflate.cpp.obj: CMakeFiles/smtclyrics_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\programming\SMTCLyrics\cpp\build\mingw-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/smtclyrics_core.dir/src/util/Inflate.cpp.obj"
+	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/smtclyrics_core.dir/src/util/Inflate.cpp.obj -MF CMakeFiles\smtclyrics_core.dir\src\util\Inflate.cpp.obj.d -o CMakeFiles\smtclyrics_core.dir\src\util\Inflate.cpp.obj -c D:\programming\SMTCLyrics\cpp\src\util\Inflate.cpp
+
+CMakeFiles/smtclyrics_core.dir/src/util/Inflate.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/smtclyrics_core.dir/src/util/Inflate.cpp.i"
+	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\programming\SMTCLyrics\cpp\src\util\Inflate.cpp > CMakeFiles\smtclyrics_core.dir\src\util\Inflate.cpp.i
+
+CMakeFiles/smtclyrics_core.dir/src/util/Inflate.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/smtclyrics_core.dir/src/util/Inflate.cpp.s"
+	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:\programming\SMTCLyrics\cpp\src\util\Inflate.cpp -o CMakeFiles\smtclyrics_core.dir\src\util\Inflate.cpp.s
+
 CMakeFiles/smtclyrics_core.dir/src/util/Path.cpp.obj: CMakeFiles/smtclyrics_core.dir/flags.make
 CMakeFiles/smtclyrics_core.dir/src/util/Path.cpp.obj: CMakeFiles/smtclyrics_core.dir/includes_CXX.rsp
 CMakeFiles/smtclyrics_core.dir/src/util/Path.cpp.obj: D:/programming/SMTCLyrics/cpp/src/util/Path.cpp
 CMakeFiles/smtclyrics_core.dir/src/util/Path.cpp.obj: CMakeFiles/smtclyrics_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\programming\SMTCLyrics\cpp\build\mingw-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/smtclyrics_core.dir/src/util/Path.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\programming\SMTCLyrics\cpp\build\mingw-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/smtclyrics_core.dir/src/util/Path.cpp.obj"
 	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/smtclyrics_core.dir/src/util/Path.cpp.obj -MF CMakeFiles\smtclyrics_core.dir\src\util\Path.cpp.obj.d -o CMakeFiles\smtclyrics_core.dir\src\util\Path.cpp.obj -c D:\programming\SMTCLyrics\cpp\src\util\Path.cpp
 
 CMakeFiles/smtclyrics_core.dir/src/util/Path.cpp.i: cmake_force
@@ -280,6 +295,7 @@ smtclyrics_core_OBJECTS = \
 "CMakeFiles/smtclyrics_core.dir/src/ui/DesktopLyricsWindow.cpp.obj" \
 "CMakeFiles/smtclyrics_core.dir/src/util/Base64.cpp.obj" \
 "CMakeFiles/smtclyrics_core.dir/src/util/Encoding.cpp.obj" \
+"CMakeFiles/smtclyrics_core.dir/src/util/Inflate.cpp.obj" \
 "CMakeFiles/smtclyrics_core.dir/src/util/Path.cpp.obj"
 
 # External object files for target smtclyrics_core
@@ -297,10 +313,11 @@ libsmtclyrics_core.a: CMakeFiles/smtclyrics_core.dir/src/ui/ControlWindow.cpp.ob
 libsmtclyrics_core.a: CMakeFiles/smtclyrics_core.dir/src/ui/DesktopLyricsWindow.cpp.obj
 libsmtclyrics_core.a: CMakeFiles/smtclyrics_core.dir/src/util/Base64.cpp.obj
 libsmtclyrics_core.a: CMakeFiles/smtclyrics_core.dir/src/util/Encoding.cpp.obj
+libsmtclyrics_core.a: CMakeFiles/smtclyrics_core.dir/src/util/Inflate.cpp.obj
 libsmtclyrics_core.a: CMakeFiles/smtclyrics_core.dir/src/util/Path.cpp.obj
 libsmtclyrics_core.a: CMakeFiles/smtclyrics_core.dir/build.make
 libsmtclyrics_core.a: CMakeFiles/smtclyrics_core.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=D:\programming\SMTCLyrics\cpp\build\mingw-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Linking CXX static library libsmtclyrics_core.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=D:\programming\SMTCLyrics\cpp\build\mingw-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Linking CXX static library libsmtclyrics_core.a"
 	$(CMAKE_COMMAND) -P CMakeFiles\smtclyrics_core.dir\cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\smtclyrics_core.dir\link.txt --verbose=$(VERBOSE)
 

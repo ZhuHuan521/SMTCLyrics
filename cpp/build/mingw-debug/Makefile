@@ -466,6 +466,30 @@ src/util/Encoding.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\smtclyrics_core.dir\build.make CMakeFiles/smtclyrics_core.dir/src/util/Encoding.cpp.s
 .PHONY : src/util/Encoding.cpp.s
 
+src/util/Inflate.obj: src/util/Inflate.cpp.obj
+.PHONY : src/util/Inflate.obj
+
+# target to build an object file
+src/util/Inflate.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\smtclyrics_core.dir\build.make CMakeFiles/smtclyrics_core.dir/src/util/Inflate.cpp.obj
+.PHONY : src/util/Inflate.cpp.obj
+
+src/util/Inflate.i: src/util/Inflate.cpp.i
+.PHONY : src/util/Inflate.i
+
+# target to preprocess a source file
+src/util/Inflate.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\smtclyrics_core.dir\build.make CMakeFiles/smtclyrics_core.dir/src/util/Inflate.cpp.i
+.PHONY : src/util/Inflate.cpp.i
+
+src/util/Inflate.s: src/util/Inflate.cpp.s
+.PHONY : src/util/Inflate.s
+
+# target to generate assembly for a file
+src/util/Inflate.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\smtclyrics_core.dir\build.make CMakeFiles/smtclyrics_core.dir/src/util/Inflate.cpp.s
+.PHONY : src/util/Inflate.cpp.s
+
 src/util/Path.obj: src/util/Path.cpp.obj
 .PHONY : src/util/Path.obj
 
@@ -564,6 +588,9 @@ help:
 	@echo ... src/util/Encoding.obj
 	@echo ... src/util/Encoding.i
 	@echo ... src/util/Encoding.s
+	@echo ... src/util/Inflate.obj
+	@echo ... src/util/Inflate.i
+	@echo ... src/util/Inflate.s
 	@echo ... src/util/Path.obj
 	@echo ... src/util/Path.i
 	@echo ... src/util/Path.s
