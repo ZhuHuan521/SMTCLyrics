@@ -60,7 +60,6 @@ LyricLoadResult LyricRepository::loadForKeyword(std::wstring_view keyword, const
             result.lrcBytes = std::move(bytes);
             result.source = *source;
             cache_.setSource(keywordUtf8, sourceIndex);
-            cache_.save();
             return result;
         }
     }

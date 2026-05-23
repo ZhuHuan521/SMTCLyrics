@@ -281,6 +281,7 @@ void Application::reloadLyrics(bool ignoreCache) {
         return;
     }
     loadLyricsForCurrentTrack(state, ignoreCache);
+    if (ignoreCache) cache_.save();
 }
 
 void Application::switchLyricsSource() {
@@ -292,6 +293,7 @@ void Application::switchLyricsSource() {
     auto config = config_;
     config.sourcePriority = sourcePriorityAfter(config_.sourcePriority, currentSource_);
     loadLyricsForCurrentTrack(state, true, &config);
+    cache_.save();
     controlWindow_.setStatusText(L"已尝试切换歌词源");
 }
 
