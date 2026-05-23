@@ -330,6 +330,30 @@ src/lyrics/OnlineLyrics.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\smtclyrics_core.dir\build.make CMakeFiles/smtclyrics_core.dir/src/lyrics/OnlineLyrics.cpp.s
 .PHONY : src/lyrics/OnlineLyrics.cpp.s
 
+src/lyrics/QrcDecrypter.obj: src/lyrics/QrcDecrypter.cpp.obj
+.PHONY : src/lyrics/QrcDecrypter.obj
+
+# target to build an object file
+src/lyrics/QrcDecrypter.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\smtclyrics_core.dir\build.make CMakeFiles/smtclyrics_core.dir/src/lyrics/QrcDecrypter.cpp.obj
+.PHONY : src/lyrics/QrcDecrypter.cpp.obj
+
+src/lyrics/QrcDecrypter.i: src/lyrics/QrcDecrypter.cpp.i
+.PHONY : src/lyrics/QrcDecrypter.i
+
+# target to preprocess a source file
+src/lyrics/QrcDecrypter.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\smtclyrics_core.dir\build.make CMakeFiles/smtclyrics_core.dir/src/lyrics/QrcDecrypter.cpp.i
+.PHONY : src/lyrics/QrcDecrypter.cpp.i
+
+src/lyrics/QrcDecrypter.s: src/lyrics/QrcDecrypter.cpp.s
+.PHONY : src/lyrics/QrcDecrypter.s
+
+# target to generate assembly for a file
+src/lyrics/QrcDecrypter.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\smtclyrics_core.dir\build.make CMakeFiles/smtclyrics_core.dir/src/lyrics/QrcDecrypter.cpp.s
+.PHONY : src/lyrics/QrcDecrypter.cpp.s
+
 src/main.obj: src/main.cpp.obj
 .PHONY : src/main.obj
 
@@ -579,6 +603,9 @@ help:
 	@echo ... src/lyrics/OnlineLyrics.obj
 	@echo ... src/lyrics/OnlineLyrics.i
 	@echo ... src/lyrics/OnlineLyrics.s
+	@echo ... src/lyrics/QrcDecrypter.obj
+	@echo ... src/lyrics/QrcDecrypter.i
+	@echo ... src/lyrics/QrcDecrypter.s
 	@echo ... src/main.obj
 	@echo ... src/main.i
 	@echo ... src/main.s

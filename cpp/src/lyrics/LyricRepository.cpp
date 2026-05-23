@@ -29,27 +29,26 @@ LyricLoadResult LyricRepository::loadForKeyword(std::wstring_view keyword, const
     LyricLoadResult result;
     const auto keywordUtf8 = util::wideToUtf8(keyword);
 
-    if (!ignoreCache) {
-        if (auto cached = cache_.sourceFor(keywordUtf8)) {
-            if (auto source = sourceFromIndex(*cached)) {
-                if (*source == LyricSource::Local) {
-                    result.lrcBytes = loadLocal(keyword, &result.localPath);
-                } else {
-                    result.lrcBytes = fetchOnline(*source, keyword, config);
-                }
-                if (usefulLyrics(result.lrcBytes)) {
-                    result.source = *source;
-                    result.fromCache = true;
-                    return result;
-                }
-            }
-        }
-    }
-
     result.lrcBytes = loadLocal(keyword, &result.localPath);
     result.source = LyricSource::Local;
     if (usefulLyrics(result.lrcBytes)) {
         return result;
+    }
+    result.localPath.clear();
+
+    if (!ignoreCache) {
+        if (auto cached = cache_.sourceFor(keywordUtf8)) {
+            if (auto source = sourceFromIndex(*cached)) {
+                if (*source != LyricSource::Local) {
+                    result.lrcBytes = fetchOnline(*source, keyword, config);
+                    if (usefulLyrics(result.lrcBytes)) {
+                        result.source = *source;
+                        result.fromCache = true;
+                        return result;
+                    }
+                }
+            }
+        }
     }
 
     for (const auto sourceIndex : config.sourcePriority) {

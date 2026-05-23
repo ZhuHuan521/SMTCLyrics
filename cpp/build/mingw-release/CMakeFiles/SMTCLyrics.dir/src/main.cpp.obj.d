@@ -419,15 +419,109 @@ CMakeFiles/SMTCLyrics.dir/src/main.cpp.obj: \
  D:/mingw64/include/c++/15.2.0/bits/ranges_algobase.h \
  D:/mingw64/include/c++/15.2.0/bits/unicode.h \
  D:/mingw64/include/c++/15.2.0/bits/unicode-data.h \
- D:/programming/SMTCLyrics/cpp/src/ui/ControlWindow.h \
- D:/mingw64/include/c++/15.2.0/functional \
- D:/mingw64/include/c++/15.2.0/bits/std_function.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/Windows.Media.Control.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/base.h \
+ D:/mingw64/x86_64-w64-mingw32/include/intrin.h \
+ D:/mingw64/x86_64-w64-mingw32/include/setjmp.h \
+ D:/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/cpuid.h \
+ D:/mingw64/include/c++/15.2.0/algorithm \
+ D:/mingw64/include/c++/15.2.0/bits/ranges_algo.h \
+ D:/mingw64/include/c++/15.2.0/pstl/glue_algorithm_defs.h \
+ D:/mingw64/include/c++/15.2.0/pstl/execution_defs.h \
+ D:/mingw64/include/c++/15.2.0/atomic \
+ D:/mingw64/include/c++/15.2.0/bits/atomic_base.h \
+ D:/mingw64/include/c++/15.2.0/bits/atomic_lockfree_defines.h \
+ D:/mingw64/include/c++/15.2.0/bits/atomic_wait.h \
+ D:/mingw64/include/c++/15.2.0/bits/std_mutex.h \
+ D:/mingw64/include/c++/15.2.0/cstring \
+ D:/mingw64/include/c++/15.2.0/iterator \
+ D:/mingw64/include/c++/15.2.0/bits/stream_iterator.h \
+ D:/mingw64/include/c++/15.2.0/map \
+ D:/mingw64/include/c++/15.2.0/bits/stl_tree.h \
+ D:/mingw64/include/c++/15.2.0/bits/node_handle.h \
+ D:/mingw64/include/c++/15.2.0/bits/stl_map.h \
+ D:/mingw64/include/c++/15.2.0/bits/stl_multimap.h \
+ D:/mingw64/include/c++/15.2.0/bits/erase_if.h \
+ D:/mingw64/include/c++/15.2.0/memory \
+ D:/mingw64/include/c++/15.2.0/bits/stl_raw_storage_iter.h \
+ D:/mingw64/include/c++/15.2.0/bits/shared_ptr_atomic.h \
+ D:/mingw64/include/c++/15.2.0/backward/auto_ptr.h \
+ D:/mingw64/include/c++/15.2.0/bits/ranges_uninitialized.h \
+ D:/mingw64/include/c++/15.2.0/pstl/glue_memory_defs.h \
+ D:/mingw64/include/c++/15.2.0/thread \
+ D:/mingw64/include/c++/15.2.0/stop_token \
+ D:/mingw64/include/c++/15.2.0/bits/std_thread.h \
+ D:/mingw64/include/c++/15.2.0/semaphore \
+ D:/mingw64/include/c++/15.2.0/bits/semaphore_base.h \
+ D:/mingw64/include/c++/15.2.0/bits/atomic_timed_wait.h \
+ D:/mingw64/include/c++/15.2.0/bits/this_thread_sleep.h \
+ D:/mingw64/x86_64-w64-mingw32/include/semaphore.h \
  D:/mingw64/include/c++/15.2.0/unordered_map \
  D:/mingw64/include/c++/15.2.0/bits/unordered_map.h \
  D:/mingw64/include/c++/15.2.0/bits/hashtable.h \
  D:/mingw64/include/c++/15.2.0/bits/hashtable_policy.h \
- D:/mingw64/include/c++/15.2.0/bits/node_handle.h \
- D:/mingw64/include/c++/15.2.0/bits/erase_if.h \
+ D:/mingw64/include/c++/15.2.0/version \
+ D:/mingw64/include/c++/15.2.0/source_location \
+ D:/mingw64/include/c++/15.2.0/coroutine \
+ D:/mingw64/x86_64-w64-mingw32/include/directxmath.h \
+ D:/mingw64/x86_64-w64-mingw32/include/windowsnumerics.impl.h \
+ D:/mingw64/include/c++/15.2.0/cmath \
+ D:/mingw64/x86_64-w64-mingw32/include/math.h \
+ D:/mingw64/include/c++/15.2.0/bits/specfun.h \
+ D:/mingw64/include/c++/15.2.0/tr1/gamma.tcc \
+ D:/mingw64/include/c++/15.2.0/tr1/special_function_util.h \
+ D:/mingw64/include/c++/15.2.0/tr1/bessel_function.tcc \
+ D:/mingw64/include/c++/15.2.0/tr1/beta_function.tcc \
+ D:/mingw64/include/c++/15.2.0/tr1/ell_integral.tcc \
+ D:/mingw64/include/c++/15.2.0/tr1/exp_integral.tcc \
+ D:/mingw64/include/c++/15.2.0/tr1/hypergeometric.tcc \
+ D:/mingw64/include/c++/15.2.0/tr1/legendre_function.tcc \
+ D:/mingw64/include/c++/15.2.0/tr1/modified_bessel_func.tcc \
+ D:/mingw64/include/c++/15.2.0/tr1/poly_hermite.tcc \
+ D:/mingw64/include/c++/15.2.0/tr1/poly_laguerre.tcc \
+ D:/mingw64/include/c++/15.2.0/tr1/riemann_zeta.tcc \
+ D:/mingw64/x86_64-w64-mingw32/include/directxmath.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/base_macros.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/Windows.Media.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.ApplicationModel.AppService.2.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Foundation.1.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Foundation.Collections.0.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Foundation.0.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Foundation.Collections.1.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.System.RemoteSystems.1.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.System.RemoteSystems.0.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.ApplicationModel.AppService.1.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.ApplicationModel.AppService.0.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Foundation.2.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Foundation.Collections.2.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Graphics.DirectX.2.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Graphics.DirectX.1.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Graphics.DirectX.0.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Graphics.DirectX.Direct3D11.2.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Graphics.DirectX.Direct3D11.1.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Graphics.DirectX.Direct3D11.0.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Graphics.Imaging.2.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Storage.Streams.1.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Storage.Streams.0.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Graphics.Imaging.1.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Graphics.Imaging.0.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Storage.2.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Storage.Search.1.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Storage.Search.0.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.System.1.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.System.0.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Storage.1.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Storage.0.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Storage.Streams.2.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Media.2.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Media.1.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Media.0.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Media.Control.2.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Media.Control.1.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Media.Control.0.h \
+ D:/programming/SMTCLyrics/cpp/src/ui/ControlWindow.h \
+ D:/mingw64/include/c++/15.2.0/functional \
+ D:/mingw64/include/c++/15.2.0/bits/std_function.h \
  D:/programming/SMTCLyrics/cpp/src/ui/DesktopLyricsWindow.h \
  D:/mingw64/x86_64-w64-mingw32/include/propidl.h \
  D:/mingw64/x86_64-w64-mingw32/include/rpc.h \
@@ -457,21 +551,7 @@ CMakeFiles/SMTCLyrics.dir/src/main.cpp.obj: \
  D:/mingw64/x86_64-w64-mingw32/include/oleauto.h \
  D:/mingw64/x86_64-w64-mingw32/include/gdiplus.h \
  D:/mingw64/x86_64-w64-mingw32/include/gdiplus/gdiplus.h \
- D:/mingw64/include/c++/15.2.0/math.h D:/mingw64/include/c++/15.2.0/cmath \
- D:/mingw64/x86_64-w64-mingw32/include/math.h \
- D:/mingw64/include/c++/15.2.0/bits/specfun.h \
- D:/mingw64/include/c++/15.2.0/tr1/gamma.tcc \
- D:/mingw64/include/c++/15.2.0/tr1/special_function_util.h \
- D:/mingw64/include/c++/15.2.0/tr1/bessel_function.tcc \
- D:/mingw64/include/c++/15.2.0/tr1/beta_function.tcc \
- D:/mingw64/include/c++/15.2.0/tr1/ell_integral.tcc \
- D:/mingw64/include/c++/15.2.0/tr1/exp_integral.tcc \
- D:/mingw64/include/c++/15.2.0/tr1/hypergeometric.tcc \
- D:/mingw64/include/c++/15.2.0/tr1/legendre_function.tcc \
- D:/mingw64/include/c++/15.2.0/tr1/modified_bessel_func.tcc \
- D:/mingw64/include/c++/15.2.0/tr1/poly_hermite.tcc \
- D:/mingw64/include/c++/15.2.0/tr1/poly_laguerre.tcc \
- D:/mingw64/include/c++/15.2.0/tr1/riemann_zeta.tcc \
+ D:/mingw64/include/c++/15.2.0/math.h \
  D:/mingw64/x86_64-w64-mingw32/include/basetyps.h \
  D:/mingw64/x86_64-w64-mingw32/include/gdiplus/gdiplusenums.h \
  D:/mingw64/x86_64-w64-mingw32/include/gdiplus/gdiplustypes.h \

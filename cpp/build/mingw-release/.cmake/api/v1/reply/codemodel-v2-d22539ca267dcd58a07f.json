@@ -1,0 +1,78 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Release-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.22"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"name" : "Release",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "SMTCLyricsCpp",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "SMTCLyrics::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-SMTCLyrics-Release-d7eb5e2101d6419d666a.json",
+					"name" : "SMTCLyrics",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "SMTCLyricsTests::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-SMTCLyricsTests-Release-a780b15b4900bd91595d.json",
+					"name" : "SMTCLyricsTests",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "smtclyrics_core::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-smtclyrics_core-Release-b2bc15b20b157daf6f25.json",
+					"name" : "smtclyrics_core",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "D:/programming/SMTCLyrics/cpp/build/mingw-release",
+		"source" : "D:/programming/SMTCLyrics/cpp"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 8
+	}
+}

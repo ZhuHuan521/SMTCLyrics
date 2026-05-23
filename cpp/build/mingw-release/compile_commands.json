@@ -1,0 +1,104 @@
+[
+{
+  "directory": "D:/programming/SMTCLyrics/cpp/build/mingw-release",
+  "command": "D:\\mingw64\\bin\\c++.exe -DNOMINMAX -DUNICODE -DWIN32_LEAN_AND_MEAN -D_UNICODE -D_WIN32_WINNT=0x0A00 @CMakeFiles/smtclyrics_core.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++20 -o CMakeFiles\\smtclyrics_core.dir\\src\\app\\Application.cpp.obj -c D:\\programming\\SMTCLyrics\\cpp\\src\\app\\Application.cpp",
+  "file": "D:/programming/SMTCLyrics/cpp/src/app/Application.cpp",
+  "output": "CMakeFiles/smtclyrics_core.dir/src/app/Application.cpp.obj"
+},
+{
+  "directory": "D:/programming/SMTCLyrics/cpp/build/mingw-release",
+  "command": "D:\\mingw64\\bin\\c++.exe -DNOMINMAX -DUNICODE -DWIN32_LEAN_AND_MEAN -D_UNICODE -D_WIN32_WINNT=0x0A00 @CMakeFiles/smtclyrics_core.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++20 -o CMakeFiles\\smtclyrics_core.dir\\src\\cache\\Cache.cpp.obj -c D:\\programming\\SMTCLyrics\\cpp\\src\\cache\\Cache.cpp",
+  "file": "D:/programming/SMTCLyrics/cpp/src/cache/Cache.cpp",
+  "output": "CMakeFiles/smtclyrics_core.dir/src/cache/Cache.cpp.obj"
+},
+{
+  "directory": "D:/programming/SMTCLyrics/cpp/build/mingw-release",
+  "command": "D:\\mingw64\\bin\\c++.exe -DNOMINMAX -DUNICODE -DWIN32_LEAN_AND_MEAN -D_UNICODE -D_WIN32_WINNT=0x0A00 @CMakeFiles/smtclyrics_core.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++20 -o CMakeFiles\\smtclyrics_core.dir\\src\\config\\Config.cpp.obj -c D:\\programming\\SMTCLyrics\\cpp\\src\\config\\Config.cpp",
+  "file": "D:/programming/SMTCLyrics/cpp/src/config/Config.cpp",
+  "output": "CMakeFiles/smtclyrics_core.dir/src/config/Config.cpp.obj"
+},
+{
+  "directory": "D:/programming/SMTCLyrics/cpp/build/mingw-release",
+  "command": "D:\\mingw64\\bin\\c++.exe -DNOMINMAX -DUNICODE -DWIN32_LEAN_AND_MEAN -D_UNICODE -D_WIN32_WINNT=0x0A00 @CMakeFiles/smtclyrics_core.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++20 -o CMakeFiles\\smtclyrics_core.dir\\src\\http\\HttpClient.cpp.obj -c D:\\programming\\SMTCLyrics\\cpp\\src\\http\\HttpClient.cpp",
+  "file": "D:/programming/SMTCLyrics/cpp/src/http/HttpClient.cpp",
+  "output": "CMakeFiles/smtclyrics_core.dir/src/http/HttpClient.cpp.obj"
+},
+{
+  "directory": "D:/programming/SMTCLyrics/cpp/build/mingw-release",
+  "command": "D:\\mingw64\\bin\\c++.exe -DNOMINMAX -DUNICODE -DWIN32_LEAN_AND_MEAN -D_UNICODE -D_WIN32_WINNT=0x0A00 @CMakeFiles/smtclyrics_core.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++20 -o CMakeFiles\\smtclyrics_core.dir\\src\\lyrics\\LrcParser.cpp.obj -c D:\\programming\\SMTCLyrics\\cpp\\src\\lyrics\\LrcParser.cpp",
+  "file": "D:/programming/SMTCLyrics/cpp/src/lyrics/LrcParser.cpp",
+  "output": "CMakeFiles/smtclyrics_core.dir/src/lyrics/LrcParser.cpp.obj"
+},
+{
+  "directory": "D:/programming/SMTCLyrics/cpp/build/mingw-release",
+  "command": "D:\\mingw64\\bin\\c++.exe -DNOMINMAX -DUNICODE -DWIN32_LEAN_AND_MEAN -D_UNICODE -D_WIN32_WINNT=0x0A00 @CMakeFiles/smtclyrics_core.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++20 -o CMakeFiles\\smtclyrics_core.dir\\src\\lyrics\\LyricRepository.cpp.obj -c D:\\programming\\SMTCLyrics\\cpp\\src\\lyrics\\LyricRepository.cpp",
+  "file": "D:/programming/SMTCLyrics/cpp/src/lyrics/LyricRepository.cpp",
+  "output": "CMakeFiles/smtclyrics_core.dir/src/lyrics/LyricRepository.cpp.obj"
+},
+{
+  "directory": "D:/programming/SMTCLyrics/cpp/build/mingw-release",
+  "command": "D:\\mingw64\\bin\\c++.exe -DNOMINMAX -DUNICODE -DWIN32_LEAN_AND_MEAN -D_UNICODE -D_WIN32_WINNT=0x0A00 @CMakeFiles/smtclyrics_core.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++20 -o CMakeFiles\\smtclyrics_core.dir\\src\\lyrics\\OnlineLyrics.cpp.obj -c D:\\programming\\SMTCLyrics\\cpp\\src\\lyrics\\OnlineLyrics.cpp",
+  "file": "D:/programming/SMTCLyrics/cpp/src/lyrics/OnlineLyrics.cpp",
+  "output": "CMakeFiles/smtclyrics_core.dir/src/lyrics/OnlineLyrics.cpp.obj"
+},
+{
+  "directory": "D:/programming/SMTCLyrics/cpp/build/mingw-release",
+  "command": "D:\\mingw64\\bin\\c++.exe -DNOMINMAX -DUNICODE -DWIN32_LEAN_AND_MEAN -D_UNICODE -D_WIN32_WINNT=0x0A00 @CMakeFiles/smtclyrics_core.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++20 -o CMakeFiles\\smtclyrics_core.dir\\src\\lyrics\\QrcDecrypter.cpp.obj -c D:\\programming\\SMTCLyrics\\cpp\\src\\lyrics\\QrcDecrypter.cpp",
+  "file": "D:/programming/SMTCLyrics/cpp/src/lyrics/QrcDecrypter.cpp",
+  "output": "CMakeFiles/smtclyrics_core.dir/src/lyrics/QrcDecrypter.cpp.obj"
+},
+{
+  "directory": "D:/programming/SMTCLyrics/cpp/build/mingw-release",
+  "command": "D:\\mingw64\\bin\\c++.exe -DNOMINMAX -DUNICODE -DWIN32_LEAN_AND_MEAN -D_UNICODE -D_WIN32_WINNT=0x0A00 @CMakeFiles/smtclyrics_core.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++20 -o CMakeFiles\\smtclyrics_core.dir\\src\\smtc\\SmtcProvider.cpp.obj -c D:\\programming\\SMTCLyrics\\cpp\\src\\smtc\\SmtcProvider.cpp",
+  "file": "D:/programming/SMTCLyrics/cpp/src/smtc/SmtcProvider.cpp",
+  "output": "CMakeFiles/smtclyrics_core.dir/src/smtc/SmtcProvider.cpp.obj"
+},
+{
+  "directory": "D:/programming/SMTCLyrics/cpp/build/mingw-release",
+  "command": "D:\\mingw64\\bin\\c++.exe -DNOMINMAX -DUNICODE -DWIN32_LEAN_AND_MEAN -D_UNICODE -D_WIN32_WINNT=0x0A00 @CMakeFiles/smtclyrics_core.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++20 -o CMakeFiles\\smtclyrics_core.dir\\src\\ui\\ControlWindow.cpp.obj -c D:\\programming\\SMTCLyrics\\cpp\\src\\ui\\ControlWindow.cpp",
+  "file": "D:/programming/SMTCLyrics/cpp/src/ui/ControlWindow.cpp",
+  "output": "CMakeFiles/smtclyrics_core.dir/src/ui/ControlWindow.cpp.obj"
+},
+{
+  "directory": "D:/programming/SMTCLyrics/cpp/build/mingw-release",
+  "command": "D:\\mingw64\\bin\\c++.exe -DNOMINMAX -DUNICODE -DWIN32_LEAN_AND_MEAN -D_UNICODE -D_WIN32_WINNT=0x0A00 @CMakeFiles/smtclyrics_core.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++20 -o CMakeFiles\\smtclyrics_core.dir\\src\\ui\\DesktopLyricsWindow.cpp.obj -c D:\\programming\\SMTCLyrics\\cpp\\src\\ui\\DesktopLyricsWindow.cpp",
+  "file": "D:/programming/SMTCLyrics/cpp/src/ui/DesktopLyricsWindow.cpp",
+  "output": "CMakeFiles/smtclyrics_core.dir/src/ui/DesktopLyricsWindow.cpp.obj"
+},
+{
+  "directory": "D:/programming/SMTCLyrics/cpp/build/mingw-release",
+  "command": "D:\\mingw64\\bin\\c++.exe -DNOMINMAX -DUNICODE -DWIN32_LEAN_AND_MEAN -D_UNICODE -D_WIN32_WINNT=0x0A00 @CMakeFiles/smtclyrics_core.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++20 -o CMakeFiles\\smtclyrics_core.dir\\src\\util\\Base64.cpp.obj -c D:\\programming\\SMTCLyrics\\cpp\\src\\util\\Base64.cpp",
+  "file": "D:/programming/SMTCLyrics/cpp/src/util/Base64.cpp",
+  "output": "CMakeFiles/smtclyrics_core.dir/src/util/Base64.cpp.obj"
+},
+{
+  "directory": "D:/programming/SMTCLyrics/cpp/build/mingw-release",
+  "command": "D:\\mingw64\\bin\\c++.exe -DNOMINMAX -DUNICODE -DWIN32_LEAN_AND_MEAN -D_UNICODE -D_WIN32_WINNT=0x0A00 @CMakeFiles/smtclyrics_core.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++20 -o CMakeFiles\\smtclyrics_core.dir\\src\\util\\Encoding.cpp.obj -c D:\\programming\\SMTCLyrics\\cpp\\src\\util\\Encoding.cpp",
+  "file": "D:/programming/SMTCLyrics/cpp/src/util/Encoding.cpp",
+  "output": "CMakeFiles/smtclyrics_core.dir/src/util/Encoding.cpp.obj"
+},
+{
+  "directory": "D:/programming/SMTCLyrics/cpp/build/mingw-release",
+  "command": "D:\\mingw64\\bin\\c++.exe -DNOMINMAX -DUNICODE -DWIN32_LEAN_AND_MEAN -D_UNICODE -D_WIN32_WINNT=0x0A00 @CMakeFiles/smtclyrics_core.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++20 -o CMakeFiles\\smtclyrics_core.dir\\src\\util\\Inflate.cpp.obj -c D:\\programming\\SMTCLyrics\\cpp\\src\\util\\Inflate.cpp",
+  "file": "D:/programming/SMTCLyrics/cpp/src/util/Inflate.cpp",
+  "output": "CMakeFiles/smtclyrics_core.dir/src/util/Inflate.cpp.obj"
+},
+{
+  "directory": "D:/programming/SMTCLyrics/cpp/build/mingw-release",
+  "command": "D:\\mingw64\\bin\\c++.exe -DNOMINMAX -DUNICODE -DWIN32_LEAN_AND_MEAN -D_UNICODE -D_WIN32_WINNT=0x0A00 @CMakeFiles/smtclyrics_core.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++20 -o CMakeFiles\\smtclyrics_core.dir\\src\\util\\Path.cpp.obj -c D:\\programming\\SMTCLyrics\\cpp\\src\\util\\Path.cpp",
+  "file": "D:/programming/SMTCLyrics/cpp/src/util/Path.cpp",
+  "output": "CMakeFiles/smtclyrics_core.dir/src/util/Path.cpp.obj"
+},
+{
+  "directory": "D:/programming/SMTCLyrics/cpp/build/mingw-release",
+  "command": "D:\\mingw64\\bin\\c++.exe -DNOMINMAX -DUNICODE -DWIN32_LEAN_AND_MEAN -D_UNICODE -D_WIN32_WINNT=0x0A00 @CMakeFiles/SMTCLyrics.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++20 -o CMakeFiles\\SMTCLyrics.dir\\src\\main.cpp.obj -c D:\\programming\\SMTCLyrics\\cpp\\src\\main.cpp",
+  "file": "D:/programming/SMTCLyrics/cpp/src/main.cpp",
+  "output": "CMakeFiles/SMTCLyrics.dir/src/main.cpp.obj"
+},
+{
+  "directory": "D:/programming/SMTCLyrics/cpp/build/mingw-release",
+  "command": "D:\\mingw64\\bin\\c++.exe -DNOMINMAX -DUNICODE -DWIN32_LEAN_AND_MEAN -D_UNICODE -D_WIN32_WINNT=0x0A00 @CMakeFiles/SMTCLyricsTests.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++20 -o CMakeFiles\\SMTCLyricsTests.dir\\tests\\core_tests.cpp.obj -c D:\\programming\\SMTCLyrics\\cpp\\tests\\core_tests.cpp",
+  "file": "D:/programming/SMTCLyrics/cpp/tests/core_tests.cpp",
+  "output": "CMakeFiles/SMTCLyricsTests.dir/tests/core_tests.cpp.obj"
+}
+]

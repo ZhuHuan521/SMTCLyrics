@@ -13,6 +13,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/smtclyrics_core.dir/src/lyrics/LyricRepository.cpp.obj.d"
   "CMakeFiles/smtclyrics_core.dir/src/lyrics/OnlineLyrics.cpp.obj"
   "CMakeFiles/smtclyrics_core.dir/src/lyrics/OnlineLyrics.cpp.obj.d"
+  "CMakeFiles/smtclyrics_core.dir/src/lyrics/QrcDecrypter.cpp.obj"
+  "CMakeFiles/smtclyrics_core.dir/src/lyrics/QrcDecrypter.cpp.obj.d"
   "CMakeFiles/smtclyrics_core.dir/src/smtc/SmtcProvider.cpp.obj"
   "CMakeFiles/smtclyrics_core.dir/src/smtc/SmtcProvider.cpp.obj.d"
   "CMakeFiles/smtclyrics_core.dir/src/ui/ControlWindow.cpp.obj"
