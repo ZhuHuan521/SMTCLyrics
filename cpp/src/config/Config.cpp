@@ -87,7 +87,12 @@ AppConfig ConfigStore::load() const {
     config.highlight.border = readColorAny(L"Lyrics", L"highlightBorderColor", L"字体", L"高亮文字边框颜色", config.highlight.border);
     config.highlight.gradientMode = std::clamp(readIntAny(L"Lyrics", L"highlightGradientMode", L"字体", L"高亮文字渐变模式", config.highlight.gradientMode), 0, 2);
 
-    config.lyricOffsetSeconds = readIntAny(L"Lyrics", L"offsetSeconds", L"歌词", L"微调", 0);
+    config.highlight2.color1 = readColorAny(L"Lyrics", L"highlight2Color1", L"字体", L"高亮文字颜色1_2", config.highlight2.color1);
+    config.highlight2.color2 = readColorAny(L"Lyrics", L"highlight2Color2", L"字体", L"高亮文字颜色2_2", config.highlight2.color2);
+    config.highlight2.border = readColorAny(L"Lyrics", L"highlight2BorderColor", L"字体", L"高亮文字边框颜色_2", config.highlight2.border);
+    config.highlight2.gradientMode = std::clamp(readIntAny(L"Lyrics", L"highlight2GradientMode", L"字体", L"高亮文字渐变模式_2", config.highlight2.gradientMode), 0, 2);
+
+    config.lyricOffsetMs = readIntAny(L"Lyrics", L"offsetMs", L"歌词", L"微调", 0);
     config.smtcMode = std::clamp(readIntAny(L"SMTC", L"mode", L"SMTC", L"SMTC", 1), 1, 2);
     config.smtcPollIntervalMs = clampSmtcPollIntervalMs(readInt(L"SMTC", L"pollIntervalMs", config.smtcPollIntervalMs));
     config.displayMode = std::clamp(readIntAny(L"Display", L"mode", L"显示方式", L"显示方式", 1), 1, 3);
@@ -126,7 +131,7 @@ void ConfigStore::save(const AppConfig& config) const {
     writeString(L"Font", L"bold", config.font.bold ? L"true" : L"false");
     writeString(L"Font", L"italic", config.font.italic ? L"true" : L"false");
     writeString(L"Font", L"underline", config.font.underline ? L"true" : L"false");
-    writeString(L"Lyrics", L"offsetSeconds", std::to_wstring(config.lyricOffsetSeconds));
+    writeString(L"Lyrics", L"offsetMs", std::to_wstring(config.lyricOffsetMs));
     writeString(L"Lyrics", L"normalColor1", colorText(config.normal.color1));
     writeString(L"Lyrics", L"normalColor2", colorText(config.normal.color2));
     writeString(L"Lyrics", L"normalBorderColor", colorText(config.normal.border));
@@ -135,6 +140,10 @@ void ConfigStore::save(const AppConfig& config) const {
     writeString(L"Lyrics", L"highlightColor2", colorText(config.highlight.color2));
     writeString(L"Lyrics", L"highlightBorderColor", colorText(config.highlight.border));
     writeString(L"Lyrics", L"highlightGradientMode", std::to_wstring(std::clamp(config.highlight.gradientMode, 0, 2)));
+    writeString(L"Lyrics", L"highlight2Color1", colorText(config.highlight2.color1));
+    writeString(L"Lyrics", L"highlight2Color2", colorText(config.highlight2.color2));
+    writeString(L"Lyrics", L"highlight2BorderColor", colorText(config.highlight2.border));
+    writeString(L"Lyrics", L"highlight2GradientMode", std::to_wstring(std::clamp(config.highlight2.gradientMode, 0, 2)));
     for (std::size_t i = 0; i < config.sourcePriority.size() && i < 4; ++i) {
         writeString(L"Sources", L"priority" + std::to_wstring(i + 1), std::to_wstring(std::clamp(config.sourcePriority[i], 1, 4)));
     }

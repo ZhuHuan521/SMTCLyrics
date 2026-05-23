@@ -39,7 +39,7 @@ target_include_directories(smtclyrics_core PUBLIC
 )
 target_link_libraries(smtclyrics_core PUBLIC gdiplus winhttp crypt32 shlwapi runtimeobject windowsapp ole32 shell32 comdlg32)
 
-add_executable(SMTCLyrics WIN32 src/main.cpp)
+add_executable(SMTCLyrics WIN32 src/main.cpp resource.rc)
 target_link_libraries(SMTCLyrics PRIVATE smtclyrics_core)
 
 add_executable(SMTCLyricsTests tests/core_tests.cpp)

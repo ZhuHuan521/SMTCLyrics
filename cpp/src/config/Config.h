@@ -35,8 +35,9 @@ struct AppConfig {
     FontConfig font;
     TextStyle normal;
     TextStyle highlight{RGB(0, 128, 255), RGB(0, 255, 255), RGB(0, 0, 0), 1};
+    TextStyle highlight2{RGB(128, 128, 128), RGB(192, 192, 192), RGB(0, 0, 0), 1};  // second line color
     WindowConfig window;
-    int lyricOffsetSeconds = 0;
+    int lyricOffsetMs = 0;
     std::vector<int> sourcePriority{1, 2, 3, 4};
     int smtcMode = 1;
     int smtcPollIntervalMs = 100;

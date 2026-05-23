@@ -443,6 +443,8 @@ CMakeFiles/SMTCLyrics.dir/src/main.cpp.obj
  D:/mingw64/x86_64-w64-mingw32/include/securityappcontainer.h
  D:/mingw64/x86_64-w64-mingw32/include/securitybaseapi.h
  D:/mingw64/x86_64-w64-mingw32/include/servprov.h
+ D:/mingw64/x86_64-w64-mingw32/include/shellscalingapi.h
+ D:/mingw64/x86_64-w64-mingw32/include/shtypes.h
  D:/mingw64/x86_64-w64-mingw32/include/signal.h
  D:/mingw64/x86_64-w64-mingw32/include/specstrings.h
  D:/mingw64/x86_64-w64-mingw32/include/stdarg.h

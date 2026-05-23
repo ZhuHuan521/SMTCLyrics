@@ -20,6 +20,7 @@ struct ControlWindowCallbacks {
     std::function<void()> clearCache;
     std::function<void()> openLocalLyric;
     std::function<std::array<bool, 4>()> checkLyricSources;
+    std::function<void(int)> saveSongOffset;
 };
 
 class ControlWindow {
@@ -30,6 +31,7 @@ public:
     bool create(const config::AppConfig& config, ControlWindowCallbacks callbacks);
     void show(int command = SW_SHOW);
     void setConfig(const config::AppConfig& config);
+    void setSongOffset(int offsetMs);
     void syncLyricGeometry(const config::WindowConfig& window);
     void setStatusText(std::wstring text);
     HWND hwnd() const { return hwnd_; }
@@ -41,6 +43,7 @@ private:
     void createControls();
     void populateControls();
     void applyFontAndLyricsSettings();
+    void applySongOffset();
     void applyColorSettings();
     void applySmtcSettings();
     void applyDisplaySettings();

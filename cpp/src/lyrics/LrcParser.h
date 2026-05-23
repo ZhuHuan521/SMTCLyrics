@@ -36,7 +36,7 @@ class LrcParser {
 public:
     bool parseUtf8(std::string_view lrcUtf8);
     bool parseBytes(const std::vector<std::uint8_t>& bytes);
-    LyricFrame frameAt(std::int64_t positionMs, int displayMode, int offsetSeconds) const;
+    LyricFrame frameAt(std::int64_t positionMs, int displayMode) const;
     bool empty() const { return lines_.empty(); }
     const std::vector<LrcLine>& lines() const { return lines_; }
 

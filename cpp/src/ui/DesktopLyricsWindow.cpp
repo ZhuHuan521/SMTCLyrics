@@ -80,7 +80,7 @@ bool DesktopLyricsWindow::create(const config::WindowConfig& windowConfig) {
     hwnd_ = CreateWindowExW(
         WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW,
         kClassName,
-        kClassName,
+        L"SMTC歌词 By:柱环",
         WS_POPUP | WS_VISIBLE,
         left,
         top,
@@ -233,6 +233,13 @@ void DesktopLyricsWindow::redraw() {
                 const float y = startY + static_cast<float>(i) * lineHeight;
                 Gdiplus::RectF layout(0.0f, y, static_cast<Gdiplus::REAL>(width_), lineHeight);
 
+                // Determine which style to use for this line
+                // In two-line mode: line 0 (active) uses highlight, line 1 (inactive) uses highlight2
+                const bool isActiveLine = (static_cast<int>(i) == activeLine);
+                const bool isSecondLine = (lines.size() > 1 && i == 1 && activeLine == 0);
+                const auto& lineNormalStyle = isSecondLine ? config_.highlight2 : config_.normal;
+                const auto& lineBorderStyle = isSecondLine ? config_.highlight2.border : config_.normal.border;
+
                 Gdiplus::GraphicsPath shadowPath;
                 Gdiplus::RectF shadowLayout(2.0f, y + 2.0f, static_cast<Gdiplus::REAL>(width_), lineHeight);
                 shadowPath.AddString(lines[i].c_str(), -1, family.get(), style, fontSize, shadowLayout, &format);
@@ -243,12 +250,12 @@ void DesktopLyricsWindow::redraw() {
                 textPath.AddString(lines[i].c_str(), -1, family.get(), style, fontSize, layout, &format);
                 Gdiplus::RectF bounds;
                 textPath.GetBounds(&bounds);
-                Gdiplus::Pen outline(colorFromColorRef(config_.normal.border), 1.0f);
+                Gdiplus::Pen outline(colorFromColorRef(lineBorderStyle), 1.0f);
                 graphics.DrawPath(&outline, &textPath);
-                auto brush = makeBrush(config_.normal, bounds);
+                auto brush = makeBrush(lineNormalStyle, bounds);
                 graphics.FillPath(brush.get(), &textPath);
 
-                if (highlightPercent_ > 0 && static_cast<int>(i) == activeLine) {
+                if (highlightPercent_ > 0 && isActiveLine) {
                     Gdiplus::GraphicsState state = graphics.Save();
                     Gdiplus::RectF clip(bounds.X, bounds.Y, bounds.Width * highlightPercent_ / 100.0f, bounds.Height);
                     graphics.SetClip(clip);

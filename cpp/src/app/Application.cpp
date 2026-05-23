@@ -1,5 +1,6 @@
 #include "app/Application.h"
 
+#include "resource.h"
 #include "util/Encoding.h"
 #include "util/Path.h"
 
@@ -8,6 +9,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <iterator>
 #include <utility>
 #include <vector>
@@ -15,11 +17,10 @@
 namespace smtc::app {
 namespace {
 
-constexpr UINT_PTR kTimerId = 1;
-constexpr int kMinSmtcPollIntervalMs = 30;
+constexpr int kMinSmtcPollIntervalMs = 50;
 constexpr int kMaxSmtcPollIntervalMs = 2000;
 
-UINT timerIntervalMs(const config::AppConfig& config) {
+UINT smtcPollIntervalMs(const config::AppConfig& config) {
     return static_cast<UINT>(std::clamp(config.smtcPollIntervalMs, kMinSmtcPollIntervalMs, kMaxSmtcPollIntervalMs));
 }
 
@@ -72,9 +73,15 @@ int Application::run() {
 
     MSG message{};
     while (GetMessageW(&message, nullptr, 0, 0) > 0) {
-        if (message.message == WM_TIMER && message.hwnd == window_.hwnd() && message.wParam == kTimerId) {
-            tick();
-            continue;
+        if (message.message == WM_TIMER) {
+            if (message.wParam == kSmtcTimerId) {
+                smtcTick();
+                continue;
+            }
+            if (message.wParam == kRenderTimerId) {
+                renderTick();
+                continue;
+            }
         }
         TranslateMessage(&message);
         DispatchMessageW(&message);
@@ -110,6 +117,7 @@ void Application::initialize() {
     callbacks.clearCache = [this] { clearLyricCache(); };
     callbacks.openLocalLyric = [this] { openLocalLyric(); };
     callbacks.checkLyricSources = [] { return checkLyricSources(); };
+    callbacks.saveSongOffset = [this](int ms) { saveSongOffset(ms); };
     if (!controlWindow_.create(config_, std::move(callbacks))) {
         MessageBoxW(nullptr, L"控制窗口创建失败", L"SMTCLyrics", MB_ICONERROR | MB_OK);
         PostQuitMessage(1);
@@ -117,17 +125,24 @@ void Application::initialize() {
     }
     controlWindow_.show();
 
+    // Set window icon from embedded resource
+    if (auto hIcon = LoadIconW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(IDI_APP_ICON))) {
+        SendMessageW(window_.hwnd(), WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
+        SendMessageW(controlWindow_.hwnd(), WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
+    }
+
     showTextOnce(L"等待 SMTC 媒体会话...");
-    restartTimer();
+    restartTimers();
 }
 
-void Application::tick() {
+void Application::smtcTick() {
     try {
         const auto state = smtc_.readState(config_.smtcMode);
         if (!state.valid) {
             currentKeyword_.clear();
             currentSource_ = lyrics::LyricSource::Local;
             parser_ = lyrics::LrcParser{};
+            isPlaying_ = false;
             showTextOnce(L"未检测到正在播放的 SMTC 媒体");
             return;
         }
@@ -136,13 +151,52 @@ void Application::tick() {
         if (keyword.empty()) {
             return;
         }
+
         if (keyword != currentKeyword_) {
             currentKeyword_ = keyword;
+            lastSmtcPositionMs_ = state.positionMs;
+            lastAcceptedPositionMs_ = state.positionMs + totalOffsetMs();
+            lastSmtcTimestampMs_ = currentTimeMs();
             loadLyricsForCurrentTrack(state);
         }
 
+        isPlaying_ = state.playing;
+
+        if (config_.smtcMode == 1) {
+            // SMTC1: updates ~1000ms, use local extrapolation + ±1500ms calibration
+            // Use raw SMTC position for delta calculation
+            const long long now = currentTimeMs();
+            const long long localEstimate = lastSmtcPositionMs_ + (now - lastSmtcTimestampMs_);
+            const long long delta = state.positionMs - localEstimate;
+
+            if (state.playing) {
+                if (std::abs(delta) > 1500) {
+                    lastSmtcPositionMs_ = state.positionMs;
+                    lastAcceptedPositionMs_ = state.positionMs + totalOffsetMs();
+                    lastSmtcTimestampMs_ = now;
+                }
+            } else {
+                lastSmtcPositionMs_ = state.positionMs;
+                lastAcceptedPositionMs_ = state.positionMs + totalOffsetMs();
+                lastSmtcTimestampMs_ = now;
+            }
+        } else {
+            // SMTC2: only updates on play/pause/seek, no updates during playback
+            // Calibrate when raw SMTC position changes (seek detected)
+            if (state.positionMs != lastSmtcPositionMs_) {
+                lastSmtcPositionMs_ = state.positionMs;
+                lastAcceptedPositionMs_ = state.positionMs + totalOffsetMs();
+                lastSmtcTimestampMs_ = currentTimeMs();
+            }
+        }
+
+        // Render
         if (!parser_.empty()) {
-            const auto frame = parser_.frameAt(state.positionMs, config_.displayMode, config_.lyricOffsetSeconds);
+            const long long now = currentTimeMs();
+            const long long renderPos = isPlaying_ ?
+                (lastAcceptedPositionMs_ + (now - lastSmtcTimestampMs_)) :
+                lastAcceptedPositionMs_;
+            const auto frame = parser_.frameAt(renderPos, config_.displayMode);
             if (!frame.text.empty() && (frame.text != lastShownText_ || frame.highlightPercent != lastHighlightPercent_ || frame.highlightLine != lastHighlightLine_)) {
                 window_.updateLyrics(frame.text, frame.highlightPercent, frame.highlightLine);
                 lastShownText_ = frame.text;
@@ -154,21 +208,47 @@ void Application::tick() {
     }
 }
 
+void Application::renderTick() {
+    // Both modes need render tick for smooth extrapolation when playing
+    if (!isPlaying_ || parser_.empty()) return;
+
+    try {
+        // Estimate current position by extrapolating from last accepted position
+        const long long elapsed = currentTimeMs() - lastSmtcTimestampMs_;
+        const long long estimatedPositionMs = lastAcceptedPositionMs_ + elapsed;
+
+        const auto frame = parser_.frameAt(estimatedPositionMs, config_.displayMode);
+        if (!frame.text.empty() && (frame.text != lastShownText_ || frame.highlightPercent != lastHighlightPercent_ || frame.highlightLine != lastHighlightLine_)) {
+            window_.updateLyrics(frame.text, frame.highlightPercent, frame.highlightLine);
+            lastShownText_ = frame.text;
+            lastHighlightPercent_ = frame.highlightPercent;
+            lastHighlightLine_ = frame.highlightLine;
+        }
+    } catch (...) {
+    }
+}
+
 void Application::applyConfig(const config::AppConfig& config) {
     config_ = config;
     configStore_.save(config_);
+    // Recalculate render position with new offset
+    lastAcceptedPositionMs_ = lastSmtcPositionMs_ + totalOffsetMs();
     window_.applyConfig(config_);
-    restartTimer();
+    restartTimers();
     lastShownText_.clear();
     lastHighlightPercent_ = -1;
     lastHighlightLine_ = -1;
     controlWindow_.setConfig(config_);
 }
 
-void Application::restartTimer() {
+void Application::restartTimers() {
     if (!window_.hwnd()) return;
-    KillTimer(window_.hwnd(), kTimerId);
-    SetTimer(window_.hwnd(), kTimerId, timerIntervalMs(config_), nullptr);
+    KillTimer(window_.hwnd(), kSmtcTimerId);
+    KillTimer(window_.hwnd(), kRenderTimerId);
+    // SMTC polling at lower frequency to save CPU
+    SetTimer(window_.hwnd(), kSmtcTimerId, smtcPollIntervalMs(config_), nullptr);
+    // Render timer at ~60fps for smooth animation
+    SetTimer(window_.hwnd(), kRenderTimerId, kRenderIntervalMs, nullptr);
 }
 
 void Application::loadLyricsForCurrentTrack(const smtc_provider::MediaState& state, bool ignoreCache, const config::AppConfig* configOverride) {
@@ -179,6 +259,9 @@ void Application::loadLyricsForCurrentTrack(const smtc_provider::MediaState& sta
     currentSource_ = lyrics::LyricSource::Local;
     const auto keyword = lyrics::makeKeyword(state.artist, state.title);
     currentKeyword_ = keyword;
+    const auto keywordUtf8 = util::wideToUtf8(keyword);
+    currentSongOffsetMs_ = cache_.offsetFor(keywordUtf8).value_or(0);
+    controlWindow_.setSongOffset(currentSongOffsetMs_);
     const auto& activeConfig = configOverride ? *configOverride : config_;
     const auto result = repository_.loadForKeyword(keyword, activeConfig, ignoreCache);
     if (result.lrcBytes.empty() || !parser_.parseBytes(result.lrcBytes)) {
@@ -215,7 +298,21 @@ void Application::switchLyricsSource() {
 void Application::clearLyricCache() {
     cache_.clear();
     cache_.save();
-    controlWindow_.setStatusText(L"歌词缓存已清除");
+    controlWindow_.setStatusText(L"歌词源和微调记忆已清除");
+}
+
+void Application::saveSongOffset(int offsetMs) {
+    currentSongOffsetMs_ = offsetMs;
+    if (!currentKeyword_.empty()) {
+        const auto keywordUtf8 = util::wideToUtf8(currentKeyword_);
+        cache_.setOffset(keywordUtf8, offsetMs);
+        cache_.save();
+    }
+    // Recalculate render position with new total offset
+    lastAcceptedPositionMs_ = lastSmtcPositionMs_ + totalOffsetMs();
+    lastShownText_.clear();
+    lastHighlightPercent_ = -1;
+    lastHighlightLine_ = -1;
 }
 
 void Application::openLocalLyric() {
@@ -273,6 +370,13 @@ void Application::showTextOnce(const std::wstring& text) {
         lastHighlightPercent_ = 0;
         lastHighlightLine_ = 0;
     }
+}
+
+long long Application::currentTimeMs() const {
+    LARGE_INTEGER freq, counter;
+    QueryPerformanceFrequency(&freq);
+    QueryPerformanceCounter(&counter);
+    return (counter.QuadPart * 1000) / freq.QuadPart;
 }
 
 }

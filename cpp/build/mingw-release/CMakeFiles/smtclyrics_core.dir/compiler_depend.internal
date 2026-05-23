@@ -505,6 +505,7 @@ CMakeFiles/smtclyrics_core.dir/src/app/Application.cpp.obj
  D:/programming/SMTCLyrics/cpp/src/lyrics/LrcParser.h
  D:/programming/SMTCLyrics/cpp/src/lyrics/LyricRepository.h
  D:/programming/SMTCLyrics/cpp/src/lyrics/OnlineLyrics.h
+ D:/programming/SMTCLyrics/cpp/src/resource.h
  D:/programming/SMTCLyrics/cpp/src/smtc/SmtcProvider.h
  D:/programming/SMTCLyrics/cpp/src/ui/ControlWindow.h
  D:/programming/SMTCLyrics/cpp/src/ui/DesktopLyricsWindow.h

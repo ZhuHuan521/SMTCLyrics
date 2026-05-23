@@ -38,31 +38,31 @@ void testLrcParser() {
 
     smtc::lyrics::LrcParser parser;
     require(parser.parseBytes(bytes), "sample lrc should parse");
-    auto frame = parser.frameAt(21'280, 1, 0);
+    auto frame = parser.frameAt(21'280, 1);
     require(frame.text.find(L"皇后大道西") != std::wstring::npos, "single-line lyric should match timestamp");
-    frame = parser.frameAt(21'280, 2, 0);
+    frame = parser.frameAt(21'280, 2);
     require(frame.text.find(L"\n") != std::wstring::npos, "two-line-down mode should include next line");
-    frame = parser.frameAt(24'760, 3, 0);
+    frame = parser.frameAt(24'760, 3);
     require(frame.text.find(L"\n") != std::wstring::npos, "two-line-up mode should include previous line");
 
     smtc::lyrics::LrcParser blankLineParser;
     require(blankLineParser.parseUtf8("[00:01.000]\n[00:02.000]first\n[00:03.000]second\n"), "blank-line lrc should parse");
-    frame = blankLineParser.frameAt(1'000, 2, 0);
+    frame = blankLineParser.frameAt(1'000, 2);
     require(frame.text == L"first\nsecond", "two-line-down mode should not repeat the resolved current line after a blank timestamp");
 
     smtc::lyrics::LrcParser duplicateLineParser;
     require(duplicateLineParser.parseUtf8("[00:01.000]same\n[00:02.000]same\n[00:03.000]next\n"), "duplicate-line lrc should parse");
-    frame = duplicateLineParser.frameAt(1'000, 2, 0);
+    frame = duplicateLineParser.frameAt(1'000, 2);
     require(frame.text == L"same\nnext", "two-line-down mode should skip an adjacent duplicate line when possible");
 
     smtc::lyrics::LrcParser krcParser;
     require(krcParser.parseUtf8("[1000,4000]<0,1000,0>A<1000,1000,0>B<2000,1000,0>C<3000,1000,0>D\n[6000,1000]<0,1000,0>E\n"), "krc lyric should parse");
-    frame = krcParser.frameAt(2'500, 1, 0);
+    frame = krcParser.frameAt(2'500, 1);
     require(frame.text == L"ABCD", "krc tags should be stripped from displayed text");
     require(frame.highlightPercent >= 35 && frame.highlightPercent <= 40, "krc per-word progress should map to highlight percent");
-    frame = krcParser.frameAt(2'500, 2, 0);
+    frame = krcParser.frameAt(2'500, 2);
     require(frame.text == L"ABCD\nE" && frame.highlightLine == 0, "krc two-line-down mode should highlight the current first line");
-    frame = krcParser.frameAt(6'500, 3, 0);
+    frame = krcParser.frameAt(6'500, 3);
     require(frame.text == L"ABCD\nE" && frame.highlightLine == 1, "krc two-line-up mode should highlight the current second line");
 }
 
@@ -92,7 +92,7 @@ void testEnglishConfigRoundTrip() {
     config.font.bold = false;
     config.font.italic = true;
     config.font.underline = true;
-    config.lyricOffsetSeconds = -2;
+    config.lyricOffsetMs = -2;
     config.normal.color1 = RGB(12, 34, 56);
     config.normal.color2 = RGB(222, 111, 1);
     config.normal.border = RGB(1, 2, 3);
@@ -112,7 +112,7 @@ void testEnglishConfigRoundTrip() {
     require(loaded.font.name == config.font.name, "english font name should round-trip");
     require(loaded.font.size == 42, "english font size should round-trip");
     require(!loaded.font.bold && loaded.font.italic && loaded.font.underline, "english font styles should round-trip");
-    require(loaded.lyricOffsetSeconds == -2, "english offset should round-trip");
+    require(loaded.lyricOffsetMs == -2, "english offset should round-trip");
     require(loaded.normal.color1 == RGB(12, 34, 56), "hex color should round-trip");
     require(loaded.highlight.border == RGB(10, 11, 12), "highlight border color should round-trip");
     require(loaded.sourcePriority == std::vector<int>({4, 3, 2, 1}), "source priority should save as one-based indexes");

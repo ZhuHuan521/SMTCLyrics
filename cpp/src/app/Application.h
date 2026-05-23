@@ -8,6 +8,8 @@
 #include "ui/ControlWindow.h"
 #include "ui/DesktopLyricsWindow.h"
 
+#include <windows.h>
+
 #include <array>
 #include <filesystem>
 #include <string>
@@ -21,17 +23,21 @@ public:
 
 private:
     void initialize();
-    void tick();
+    void smtcTick();
+    void renderTick();
     void applyConfig(const config::AppConfig& config);
-    void restartTimer();
+    void restartTimers();
     void loadLyricsForCurrentTrack(const smtc_provider::MediaState& state, bool ignoreCache = false, const config::AppConfig* configOverride = nullptr);
     void reloadLyrics(bool ignoreCache);
     void switchLyricsSource();
     void clearLyricCache();
     void openLocalLyric();
+    void saveSongOffset(int offsetMs);
     void rememberLyricWindow(const config::WindowConfig& window);
     static std::array<bool, 4> checkLyricSources();
     void showTextOnce(const std::wstring& text);
+    long long currentTimeMs() const;
+    int totalOffsetMs() const { return config_.lyricOffsetMs + currentSongOffsetMs_; }
 
     std::filesystem::path exeDir_;
     std::filesystem::path lyricsDir_;
@@ -45,9 +51,21 @@ private:
     lyrics::LrcParser parser_;
     lyrics::LyricSource currentSource_ = lyrics::LyricSource::Local;
     std::wstring currentKeyword_;
+    int currentSongOffsetMs_ = 0;
     std::wstring lastShownText_;
     int lastHighlightPercent_ = -1;
     int lastHighlightLine_ = -1;
+
+    // Interpolation state for smooth rendering between SMTC polls
+    long long lastSmtcPositionMs_ = 0;
+    long long lastSmtcTimestampMs_ = 0;
+    long long lastAcceptedPositionMs_ = 0;  // last position we accepted (no going back)
+    bool isPlaying_ = false;
+
+    static constexpr UINT_PTR kSmtcTimerId = 1;
+    static constexpr UINT_PTR kRenderTimerId = 2;
+    static constexpr int kRenderIntervalMs = 16;  // ~60fps for animation
+    static constexpr long long kMaxPositionJumpMs = 500;  // max allowed backward jump
 };
 
 }

@@ -97,11 +97,11 @@ bool LrcParser::parseBytes(const std::vector<std::uint8_t>& bytes) {
     return parseUtf8(text);
 }
 
-LyricFrame LrcParser::frameAt(std::int64_t positionMs, int displayMode, int offsetSeconds) const {
+LyricFrame LrcParser::frameAt(std::int64_t positionMs, int displayMode) const {
     LyricFrame frame;
     if (lines_.empty()) return frame;
 
-    const auto adjusted = positionMs + static_cast<std::int64_t>(offsetSeconds) * 1000;
+    const auto adjusted = positionMs;
     const int index = findCurrentIndex(adjusted);
     if (index < 0) return frame;
 

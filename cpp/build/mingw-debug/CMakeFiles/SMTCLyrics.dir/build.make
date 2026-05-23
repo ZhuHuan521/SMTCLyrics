@@ -86,20 +86,27 @@ CMakeFiles/SMTCLyrics.dir/src/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/SMTCLyrics.dir/src/main.cpp.s"
 	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:\programming\SMTCLyrics\cpp\src\main.cpp -o CMakeFiles\SMTCLyrics.dir\src\main.cpp.s
 
+CMakeFiles/SMTCLyrics.dir/resource.rc.obj: CMakeFiles/SMTCLyrics.dir/flags.make
+CMakeFiles/SMTCLyrics.dir/resource.rc.obj: D:/programming/SMTCLyrics/cpp/resource.rc
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\programming\SMTCLyrics\cpp\build\mingw-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building RC object CMakeFiles/SMTCLyrics.dir/resource.rc.obj"
+	D:\mingw64\bin\windres.exe -O coff $(RC_DEFINES) $(RC_INCLUDES) $(RC_FLAGS) D:\programming\SMTCLyrics\cpp\resource.rc CMakeFiles\SMTCLyrics.dir\resource.rc.obj
+
 # Object files for target SMTCLyrics
 SMTCLyrics_OBJECTS = \
-"CMakeFiles/SMTCLyrics.dir/src/main.cpp.obj"
+"CMakeFiles/SMTCLyrics.dir/src/main.cpp.obj" \
+"CMakeFiles/SMTCLyrics.dir/resource.rc.obj"
 
 # External object files for target SMTCLyrics
 SMTCLyrics_EXTERNAL_OBJECTS =
 
 SMTCLyrics.exe: CMakeFiles/SMTCLyrics.dir/src/main.cpp.obj
+SMTCLyrics.exe: CMakeFiles/SMTCLyrics.dir/resource.rc.obj
 SMTCLyrics.exe: CMakeFiles/SMTCLyrics.dir/build.make
 SMTCLyrics.exe: libsmtclyrics_core.a
 SMTCLyrics.exe: CMakeFiles/SMTCLyrics.dir/linkLibs.rsp
 SMTCLyrics.exe: CMakeFiles/SMTCLyrics.dir/objects1.rsp
 SMTCLyrics.exe: CMakeFiles/SMTCLyrics.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=D:\programming\SMTCLyrics\cpp\build\mingw-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable SMTCLyrics.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=D:\programming\SMTCLyrics\cpp\build\mingw-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable SMTCLyrics.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\SMTCLyrics.dir\link.txt --verbose=$(VERBOSE)
 	D:\mingw64\bin\cmake.exe -E copy_if_different D:/programming/SMTCLyrics/cpp/../e/config.ini D:/programming/SMTCLyrics/cpp/build/mingw-debug/config.ini
 	D:\mingw64\bin\cmake.exe -E copy_if_different D:/programming/SMTCLyrics/cpp/../e/cache.json D:/programming/SMTCLyrics/cpp/build/mingw-debug/cache.json

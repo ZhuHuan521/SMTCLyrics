@@ -25,6 +25,8 @@ enum ControlId {
     IdFontItalic,
     IdFontUnderline,
     IdOffset,
+    IdSongOffset,
+    IdSaveSongOffset,
     IdApplyFont,
 
     IdNormalColor1 = 201,
@@ -35,6 +37,10 @@ enum ControlId {
     IdHighlightColor2,
     IdHighlightBorder,
     IdHighlightGradient,
+    IdHighlight2Color1,
+    IdHighlight2Color2,
+    IdHighlight2Border,
+    IdHighlight2Gradient,
     IdApplyColor,
 
     IdSmtc1 = 301,
@@ -113,7 +119,8 @@ const wchar_t* gradientLabel(int index) {
 
 bool isColorButtonId(int id) {
     return id == IdNormalColor1 || id == IdNormalColor2 || id == IdNormalBorder ||
-           id == IdHighlightColor1 || id == IdHighlightColor2 || id == IdHighlightBorder;
+           id == IdHighlightColor1 || id == IdHighlightColor2 || id == IdHighlightBorder ||
+           id == IdHighlight2Color1 || id == IdHighlight2Color2 || id == IdHighlight2Border;
 }
 
 int sourceStatusId(int index) {
@@ -165,18 +172,19 @@ bool ControlWindow::create(const config::AppConfig& config, ControlWindowCallbac
     hwnd_ = CreateWindowExW(
         WS_EX_APPWINDOW,
         kClassName,
-        L"桌面歌词 with SMTC",
+        L"SMTC歌词 By:柱环",
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
-        780,
-        690,
+        820,
+        790,
         nullptr,
         nullptr,
         GetModuleHandleW(nullptr),
         this);
 
     if (!hwnd_) return false;
+    SetWindowTextW(hwnd_, L"SMTC歌词 By:柱环");
     createControls();
     populateControls();
     updateLockControls();
@@ -228,6 +236,7 @@ LRESULT ControlWindow::handleMessage(UINT message, WPARAM wParam, LPARAM lParam)
     case WM_COMMAND:
         switch (LOWORD(wParam)) {
         case IdApplyFont: applyFontAndLyricsSettings(); return 0;
+        case IdSaveSongOffset: applySongOffset(); return 0;
         case IdApplyColor: applyColorSettings(); return 0;
         case IdSaveSmtc: applySmtcSettings(); return 0;
         case IdSaveDisplay: applyDisplaySettings(); return 0;
@@ -269,94 +278,113 @@ LRESULT ControlWindow::handleMessage(UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 void ControlWindow::createControls() {
-    addControl(L"BUTTON", L"基础设置", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 14, 12, 360, 220, 0);
+    // 基础设置
+    addControl(L"BUTTON", L"基础设置", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 14, 12, 390, 252, 0);
     addLabel(L"字体", 30, 44, 54, 24);
-    addEdit(L"", 86, 38, 164, 28, IdFontName);
-    addLabel(L"大小", 262, 44, 42, 24);
-    addEdit(L"", 306, 38, 44, 28, IdFontSize);
+    addEdit(L"", 86, 38, 180, 28, IdFontName);
+    addLabel(L"大小", 278, 44, 42, 24);
+    addEdit(L"", 322, 38, 44, 28, IdFontSize);
     addCheckBox(L"加粗", 86, 78, 70, 26, IdFontBold);
     addCheckBox(L"倾斜", 160, 78, 70, 26, IdFontItalic);
     addCheckBox(L"下划线", 234, 78, 88, 26, IdFontUnderline);
-    addLabel(L"歌词微调", 30, 120, 72, 24);
+    addLabel(L"微调(ms)", 30, 120, 72, 24);
     addEdit(L"", 110, 114, 64, 28, IdOffset);
     addButton(L"保存基础设置", 210, 112, 124, 34, IdApplyFont);
-    addLabel(L"监视", 30, 164, 54, 24);
-    addRadio(L"SMTC1", 86, 160, 60, 26, IdSmtc1, true);
-    addRadio(L"SMTC2", 146, 160, 60, 26, IdSmtc2);
-    addLabel(L"轮询(ms)", 210, 164, 64, 24);
-    addEdit(L"", 274, 158, 44, 28, IdSmtcInterval);
-    addButton(L"保存", 324, 156, 48, 32, IdSaveSmtc);
-    addLabel(L"显示", 30, 196, 54, 24);
-    addRadio(L"一句", 86, 192, 64, 26, IdDisplay1, true);
-    addRadio(L"两句", 150, 192, 64, 26, IdDisplay2);
-    addRadio(L"两句向前", 214, 192, 92, 26, IdDisplay3);
-    addButton(L"保存", 306, 190, 48, 30, IdSaveDisplay);
+    addLabel(L"歌曲微调(ms)", 30, 154, 96, 24);
+    addEdit(L"", 130, 148, 64, 28, IdSongOffset);
+    addButton(L"保存歌曲微调", 210, 146, 124, 34, IdSaveSongOffset);
+    addLabel(L"监视", 30, 194, 54, 24);
+    addRadio(L"SMTC1", 86, 190, 70, 26, IdSmtc1, true);
+    addRadio(L"SMTC2", 160, 190, 70, 26, IdSmtc2);
+    addLabel(L"轮询(ms)", 240, 194, 64, 24);
+    addEdit(L"", 306, 188, 50, 28, IdSmtcInterval);
+    addButton(L"保存", 360, 186, 48, 32, IdSaveSmtc);
+    addLabel(L"显示", 30, 226, 54, 24);
+    addRadio(L"一句", 86, 222, 64, 26, IdDisplay1, true);
+    addRadio(L"两句", 154, 222, 64, 26, IdDisplay2);
+    addRadio(L"两句向前", 222, 222, 92, 26, IdDisplay3);
+    addButton(L"保存", 318, 220, 48, 30, IdSaveDisplay);
 
-    addControl(L"BUTTON", L"歌词窗口", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 390, 12, 360, 220, 0);
-    addLabel(L"当前状态", 408, 44, 72, 24);
-    addValueLabel(L"", 486, 40, 96, 28, IdLockStatus);
-    addButton(L"解锁歌词窗口", 600, 36, 126, 34, IdLock);
-    addLabel(L"左边", 408, 94, 44, 24);
-    addEdit(L"", 454, 88, 72, 28, IdWinLeft);
-    addLabel(L"顶边", 548, 94, 44, 24);
-    addEdit(L"", 594, 88, 72, 28, IdWinTop);
-    addLabel(L"宽度", 408, 134, 44, 24);
-    addEdit(L"", 454, 128, 72, 28, IdWinWidth);
-    addLabel(L"高度", 548, 134, 44, 24);
-    addEdit(L"", 594, 128, 72, 28, IdWinHeight);
-    addButton(L"应用位置", 600, 174, 126, 34, IdSaveWinPos);
+    // 歌词窗口
+    addControl(L"BUTTON", L"歌词窗口", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 420, 12, 380, 252, 0);
+    addLabel(L"当前状态", 438, 44, 72, 24);
+    addValueLabel(L"", 516, 40, 96, 28, IdLockStatus);
+    addButton(L"解锁歌词窗口", 630, 36, 140, 34, IdLock);
+    addLabel(L"左边", 438, 94, 44, 24);
+    addEdit(L"", 484, 88, 80, 28, IdWinLeft);
+    addLabel(L"顶边", 580, 94, 44, 24);
+    addEdit(L"", 626, 88, 80, 28, IdWinTop);
+    addLabel(L"宽度", 438, 134, 44, 24);
+    addEdit(L"", 484, 128, 80, 28, IdWinWidth);
+    addLabel(L"高度", 580, 134, 44, 24);
+    addEdit(L"", 626, 128, 80, 28, IdWinHeight);
+    addButton(L"应用位置", 630, 174, 140, 34, IdSaveWinPos);
 
-    addControl(L"BUTTON", L"颜色", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 14, 246, 736, 156, 0);
-    addLabel(L"普通歌词", 30, 282, 76, 24);
-    addLabel(L"起始", 118, 282, 42, 24);
-    addColorButton(160, 278, 34, 28, IdNormalColor1);
-    addLabel(L"结束", 206, 282, 42, 24);
-    addColorButton(248, 278, 34, 28, IdNormalColor2);
-    addLabel(L"描边", 294, 282, 42, 24);
-    addColorButton(336, 278, 34, 28, IdNormalBorder);
-    addLabel(L"渐变", 390, 282, 42, 24);
-    addCombo(438, 276, 150, 160, IdNormalGradient);
+    // 颜色
+    addControl(L"BUTTON", L"颜色", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 14, 278, 786, 200, 0);
+    addLabel(L"普通歌词", 30, 306, 76, 24);
+    addLabel(L"起始", 118, 306, 42, 24);
+    addColorButton(160, 302, 34, 28, IdNormalColor1);
+    addLabel(L"结束", 206, 306, 42, 24);
+    addColorButton(248, 302, 34, 28, IdNormalColor2);
+    addLabel(L"描边", 294, 306, 42, 24);
+    addColorButton(336, 302, 34, 28, IdNormalBorder);
+    addLabel(L"渐变", 390, 306, 42, 24);
+    addCombo(438, 300, 160, 160, IdNormalGradient);
 
-    addLabel(L"高亮歌词", 30, 334, 76, 24);
-    addLabel(L"起始", 118, 334, 42, 24);
-    addColorButton(160, 330, 34, 28, IdHighlightColor1);
-    addLabel(L"结束", 206, 334, 42, 24);
-    addColorButton(248, 330, 34, 28, IdHighlightColor2);
-    addLabel(L"描边", 294, 334, 42, 24);
-    addColorButton(336, 330, 34, 28, IdHighlightBorder);
-    addLabel(L"渐变", 390, 334, 42, 24);
-    addCombo(438, 328, 150, 160, IdHighlightGradient);
-    addButton(L"保存颜色", 618, 304, 104, 36, IdApplyColor);
+    addLabel(L"高亮歌词", 30, 346, 76, 24);
+    addLabel(L"起始", 118, 346, 42, 24);
+    addColorButton(160, 342, 34, 28, IdHighlightColor1);
+    addLabel(L"结束", 206, 346, 42, 24);
+    addColorButton(248, 342, 34, 28, IdHighlightColor2);
+    addLabel(L"描边", 294, 346, 42, 24);
+    addColorButton(336, 342, 34, 28, IdHighlightBorder);
+    addLabel(L"渐变", 390, 346, 42, 24);
+    addCombo(438, 340, 160, 160, IdHighlightGradient);
 
-    addControl(L"BUTTON", L"歌词源优先级", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 14, 416, 360, 188, 0);
-    addLabel(L"优先级 1", 30, 454, 70, 24);
-    addCombo(112, 448, 132, 150, IdSource1);
-    addLabel(L"优先级 2", 30, 494, 70, 24);
-    addCombo(112, 488, 132, 150, IdSource2);
-    addLabel(L"优先级 3", 30, 534, 70, 24);
-    addCombo(112, 528, 132, 150, IdSource3);
-    addLabel(L"优先级 4", 30, 574, 70, 24);
-    addCombo(112, 568, 132, 150, IdSource4);
-    addButton(L"保存优先级", 260, 526, 96, 36, IdSaveSource);
+    addLabel(L"第二句", 30, 386, 76, 24);
+    addLabel(L"起始", 118, 386, 42, 24);
+    addColorButton(160, 382, 34, 28, IdHighlight2Color1);
+    addLabel(L"结束", 206, 386, 42, 24);
+    addColorButton(248, 382, 34, 28, IdHighlight2Color2);
+    addLabel(L"描边", 294, 386, 42, 24);
+    addColorButton(336, 382, 34, 28, IdHighlight2Border);
+    addLabel(L"渐变", 390, 386, 42, 24);
+    addCombo(438, 380, 160, 160, IdHighlight2Gradient);
+    addButton(L"保存颜色", 660, 342, 104, 36, IdApplyColor);
 
-    addControl(L"BUTTON", L"操作与检测", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 390, 416, 360, 188, 0);
-    addLabel(L"QQ 音乐", 408, 454, 64, 24);
-    addValueLabel(L"待检测", 474, 450, 70, 28, IdQqStatus);
-    addLabel(L"酷狗", 558, 454, 46, 24);
-    addValueLabel(L"待检测", 606, 450, 70, 28, IdKgStatus);
-    addLabel(L"酷我", 408, 492, 46, 24);
-    addValueLabel(L"待检测", 474, 488, 70, 28, IdKuwoStatus);
-    addLabel(L"网易云", 558, 492, 56, 24);
-    addValueLabel(L"待检测", 606, 488, 70, 28, IdWyStatus);
-    addButton(L"检测歌词源", 408, 532, 104, 34, IdCheckSources);
-    addButton(L"重新获取", 522, 532, 92, 34, IdReload);
-    addButton(L"换源", 624, 532, 70, 34, IdSwitchSource);
-    addButton(L"本地歌词", 408, 572, 104, 34, IdLocalLyric);
-    addButton(L"清除缓存", 522, 572, 92, 34, IdClearCache);
+    // 歌词源优先级
+    addControl(L"BUTTON", L"歌词源优先级", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 14, 492, 390, 188, 0);
+    addLabel(L"优先级 1", 30, 530, 70, 24);
+    addCombo(112, 524, 140, 150, IdSource1);
+    addLabel(L"优先级 2", 30, 570, 70, 24);
+    addCombo(112, 564, 140, 150, IdSource2);
+    addLabel(L"优先级 3", 30, 610, 70, 24);
+    addCombo(112, 604, 140, 150, IdSource3);
+    addLabel(L"优先级 4", 30, 650, 70, 24);
+    addCombo(112, 644, 140, 150, IdSource4);
+    addButton(L"保存优先级", 270, 602, 100, 36, IdSaveSource);
 
-    addValueLabel(L"", 14, 620, 736, 28, IdStatusText);
+    // 操作与检测
+    addControl(L"BUTTON", L"操作与检测", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 420, 492, 380, 188, 0);
+    addLabel(L"QQ 音乐", 438, 530, 64, 24);
+    addValueLabel(L"待检测", 504, 526, 70, 28, IdQqStatus);
+    addLabel(L"酷狗", 590, 530, 46, 24);
+    addValueLabel(L"待检测", 638, 526, 70, 28, IdKgStatus);
+    addLabel(L"酷我", 438, 568, 46, 24);
+    addValueLabel(L"待检测", 504, 564, 70, 28, IdKuwoStatus);
+    addLabel(L"网易云", 590, 568, 56, 24);
+    addValueLabel(L"待检测", 638, 564, 70, 28, IdWyStatus);
+    addButton(L"检测歌词源", 438, 608, 110, 34, IdCheckSources);
+    addButton(L"重新获取", 558, 608, 92, 34, IdReload);
+    addButton(L"换源", 660, 608, 70, 34, IdSwitchSource);
+    addButton(L"本地歌词", 438, 648, 110, 34, IdLocalLyric);
+    addButton(L"清除缓存", 558, 648, 92, 34, IdClearCache);
 
-    for (int comboId : {IdNormalGradient, IdHighlightGradient}) {
+    // 状态栏
+    addValueLabel(L"", 14, 696, 786, 28, IdStatusText);
+
+    for (int comboId : {IdNormalGradient, IdHighlightGradient, IdHighlight2Gradient}) {
         for (int i = 0; i < 3; ++i) SendMessageW(GetDlgItem(hwnd_, comboId), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(gradientLabel(i)));
     }
     for (int comboId : {IdSource1, IdSource2, IdSource3, IdSource4}) {
@@ -370,9 +398,10 @@ void ControlWindow::populateControls() {
     setChecked(IdFontBold, config_.font.bold);
     setChecked(IdFontItalic, config_.font.italic);
     setChecked(IdFontUnderline, config_.font.underline);
-    setText(IdOffset, intText(config_.lyricOffsetSeconds));
+    setText(IdOffset, intText(config_.lyricOffsetMs));
     setComboSelection(IdNormalGradient, config_.normal.gradientMode);
     setComboSelection(IdHighlightGradient, config_.highlight.gradientMode);
+    setComboSelection(IdHighlight2Gradient, config_.highlight2.gradientMode);
     CheckRadioButton(hwnd_, IdSmtc1, IdSmtc2, config_.smtcMode == 2 ? IdSmtc2 : IdSmtc1);
     setText(IdSmtcInterval, intText(config_.smtcPollIntervalMs));
     CheckRadioButton(hwnd_, IdDisplay1, IdDisplay3, IdDisplay1 + std::clamp(config_.displayMode, 1, 3) - 1);
@@ -388,6 +417,16 @@ void ControlWindow::applyFontAndLyricsSettings() {
     config_ = readConfigFromControls();
     if (callbacks_.applyConfig) callbacks_.applyConfig(config_);
     setStatusText(L"基础设置已保存");
+}
+
+void ControlWindow::applySongOffset() {
+    const int offset = getInt(IdSongOffset, 0);
+    if (callbacks_.saveSongOffset) callbacks_.saveSongOffset(offset);
+    setStatusText(L"歌曲微调已保存");
+}
+
+void ControlWindow::setSongOffset(int offsetMs) {
+    setText(IdSongOffset, intText(offsetMs));
 }
 
 void ControlWindow::applyColorSettings() {
@@ -484,7 +523,8 @@ void ControlWindow::updateLockControls() {
 }
 
 void ControlWindow::updateColorSwatches() const {
-    for (int id : {IdNormalColor1, IdNormalColor2, IdNormalBorder, IdHighlightColor1, IdHighlightColor2, IdHighlightBorder}) {
+    for (int id : {IdNormalColor1, IdNormalColor2, IdNormalBorder, IdHighlightColor1, IdHighlightColor2, IdHighlightBorder,
+                   IdHighlight2Color1, IdHighlight2Color2, IdHighlight2Border}) {
         if (HWND child = GetDlgItem(hwnd_, id)) InvalidateRect(child, nullptr, TRUE);
     }
 }
@@ -515,9 +555,10 @@ config::AppConfig ControlWindow::readConfigFromControls() const {
     config.font.bold = isChecked(IdFontBold);
     config.font.italic = isChecked(IdFontItalic);
     config.font.underline = isChecked(IdFontUnderline);
-    config.lyricOffsetSeconds = getInt(IdOffset, config.lyricOffsetSeconds);
+    config.lyricOffsetMs = getInt(IdOffset, config.lyricOffsetMs);
     config.normal.gradientMode = comboSelection(IdNormalGradient);
     config.highlight.gradientMode = comboSelection(IdHighlightGradient);
+    config.highlight2.gradientMode = comboSelection(IdHighlight2Gradient);
     config.smtcMode = isChecked(IdSmtc2) ? 2 : 1;
     config.smtcPollIntervalMs = clampSmtcPollIntervalMs(getInt(IdSmtcInterval, config.smtcPollIntervalMs));
     if (isChecked(IdDisplay2)) config.displayMode = 2;
@@ -622,6 +663,9 @@ COLORREF ControlWindow::colorForButton(int id) const {
     case IdHighlightColor1: return config_.highlight.color1;
     case IdHighlightColor2: return config_.highlight.color2;
     case IdHighlightBorder: return config_.highlight.border;
+    case IdHighlight2Color1: return config_.highlight2.color1;
+    case IdHighlight2Color2: return config_.highlight2.color2;
+    case IdHighlight2Border: return config_.highlight2.border;
     default: return RGB(0, 0, 0);
     }
 }
@@ -634,6 +678,9 @@ void ControlWindow::setColorForButton(int id, COLORREF color) {
     case IdHighlightColor1: config_.highlight.color1 = color; break;
     case IdHighlightColor2: config_.highlight.color2 = color; break;
     case IdHighlightBorder: config_.highlight.border = color; break;
+    case IdHighlight2Color1: config_.highlight2.color1 = color; break;
+    case IdHighlight2Color2: config_.highlight2.color2 = color; break;
+    case IdHighlight2Border: config_.highlight2.border = color; break;
     default: break;
     }
 }

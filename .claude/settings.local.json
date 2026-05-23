@@ -15,7 +15,11 @@
       "Bash(WindowsSDKDir='D:\\\\Windows Kits\\\\10\\\\' WindowsSDKVersion='10.0.26100.0\\\\' D:/programming/vcpkg/vcpkg.exe install *)",
       "Bash(\"D:/programming/SMTCLyrics/cpp/packages/Microsoft.Windows.CppWinRT.3.0.260520.1/bin/cppwinrt.exe\" -input \"D:/Windows Kits/10/UnionMetadata/10.0.26100.0/Windows.winmd\" -output \"D:/programming/SMTCLyrics/cpp/generated\" -verbose)",
       "Bash(tasklist *)",
-      "Bash(cmake *)"
+      "Bash(cmake *)",
+      "Bash(./build/mingw-release/SMTCLyricsTests.exe)",
+      "Bash(./SMTCLyricsTests.exe)",
+      "Bash(gdb -batch -ex run -ex bt ./SMTCLyricsTests.exe)",
+      "Bash(timeout 3 ./SMTCLyrics.exe)"
     ]
   }
 }

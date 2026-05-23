@@ -154,6 +154,14 @@ SMTCLyricsTests/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\SMTCLyricsTests.dir\build.make CMakeFiles/SMTCLyricsTests.dir/build
 .PHONY : SMTCLyricsTests/fast
 
+resource.obj: resource.rc.obj
+.PHONY : resource.obj
+
+# target to build an object file
+resource.rc.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SMTCLyrics.dir\build.make CMakeFiles/SMTCLyrics.dir/resource.rc.obj
+.PHONY : resource.rc.obj
+
 src/app/Application.obj: src/app/Application.cpp.obj
 .PHONY : src/app/Application.obj
 
@@ -549,6 +557,7 @@ help:
 	@echo ... SMTCLyrics
 	@echo ... SMTCLyricsTests
 	@echo ... smtclyrics_core
+	@echo ... resource.obj
 	@echo ... src/app/Application.obj
 	@echo ... src/app/Application.i
 	@echo ... src/app/Application.s
