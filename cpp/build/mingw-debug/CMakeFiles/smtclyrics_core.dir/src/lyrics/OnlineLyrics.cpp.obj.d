@@ -270,6 +270,7 @@ CMakeFiles/smtclyrics_core.dir/src/lyrics/OnlineLyrics.cpp.obj: \
  D:/mingw64/include/c++/15.2.0/bits/stl_numeric.h \
  D:/mingw64/include/c++/15.2.0/pstl/glue_numeric_defs.h \
  D:/mingw64/include/c++/15.2.0/any \
+ D:/programming/SMTCLyrics/cpp/src/lyrics/QrcDecrypter.h \
  D:/programming/SMTCLyrics/cpp/src/util/Base64.h \
  D:/programming/SMTCLyrics/cpp/src/util/Encoding.h \
  D:/programming/SMTCLyrics/cpp/src/util/Inflate.h \

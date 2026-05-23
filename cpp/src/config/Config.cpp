@@ -63,7 +63,7 @@ int clampLegacySourcePriority(int value, int fallback) {
 }
 
 int clampSmtcPollIntervalMs(int value) {
-    return std::clamp(value, 30, 2000);
+    return std::clamp(value, 500, 2000);
 }
 
 }

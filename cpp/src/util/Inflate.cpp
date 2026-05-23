@@ -221,13 +221,13 @@ std::vector<std::uint8_t> inflateDeflate(const std::uint8_t* data, std::size_t s
 
 std::vector<std::uint8_t> inflateZlib(const std::vector<std::uint8_t>& bytes) {
     try {
-        if (bytes.size() < 6) return {};
+        if (bytes.size() < 2) return {};
         const auto cmf = bytes[0];
         const auto flg = bytes[1];
         if ((cmf & 0x0F) != 8) return {};
         if ((((static_cast<int>(cmf) << 8) + flg) % 31) != 0) return {};
         if ((flg & 0x20) != 0) return {};
-        return inflateDeflate(bytes.data() + 2, bytes.size() - 6);
+        return inflateDeflate(bytes.data() + 2, bytes.size() - 2);
     } catch (...) {
         return {};
     }

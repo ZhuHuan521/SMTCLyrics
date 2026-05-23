@@ -95,7 +95,7 @@ int comboToSource(int selection) {
 }
 
 int clampSmtcPollIntervalMs(int value) {
-    return std::clamp(value, 30, 2000);
+    return std::clamp(value, 500, 2000);
 }
 
 const wchar_t* sourceLabel(int index) {

@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cwctype>
 #include <sstream>
+#include <utility>
 
 namespace smtc::lyrics {
 namespace {
@@ -31,7 +32,9 @@ std::optional<std::int64_t> parseInteger(std::wstring_view text) {
     const std::wstring valueText(trimmed);
     wchar_t* end = nullptr;
     const auto value = std::wcstoll(valueText.c_str(), &end, 10);
-    return end == valueText.c_str() ? std::nullopt : std::optional<std::int64_t>{value};
+    if (end == valueText.c_str()) return std::nullopt;
+    while (end && *end && std::iswspace(*end)) ++end;
+    return end && *end ? std::nullopt : std::optional<std::int64_t>{value};
 }
 
 std::vector<std::wstring_view> splitView(std::wstring_view text, wchar_t delimiter) {
@@ -49,11 +52,121 @@ std::vector<std::wstring_view> splitView(std::wstring_view text, wchar_t delimit
     return parts;
 }
 
+std::wstring_view trimLineBreaks(std::wstring_view text) {
+    while (!text.empty() && (text.front() == L'\r' || text.front() == L'\n')) {
+        text.remove_prefix(1);
+    }
+    while (!text.empty() && (text.back() == L'\r' || text.back() == L'\n')) {
+        text.remove_suffix(1);
+    }
+    return text;
+}
+
+std::int64_t qrcWordOffset(std::int64_t lineStartMs, std::int64_t lineDurationMs, std::int64_t wordStartMs) {
+    const auto lineEndMs = lineStartMs + std::max<std::int64_t>(0, lineDurationMs);
+    if (wordStartMs >= lineStartMs - 100 && wordStartMs <= lineEndMs + 1000) {
+        return std::max<std::int64_t>(0, wordStartMs - lineStartMs);
+    }
+    return std::max<std::int64_t>(0, wordStartMs);
+}
+
+struct QrcLineTag {
+    std::size_t begin = 0;
+    std::size_t end = 0;
+    std::int64_t startMs = 0;
+    std::int64_t durationMs = 0;
+};
+
+std::vector<QrcLineTag> findQrcLineTags(std::wstring_view text) {
+    std::vector<QrcLineTag> tags;
+    std::size_t pos = 0;
+    while (pos < text.size()) {
+        const auto open = text.find(L'[', pos);
+        if (open == std::wstring_view::npos) break;
+        const auto close = text.find(L']', open + 1);
+        if (close == std::wstring_view::npos) break;
+
+        const auto token = text.substr(open + 1, close - open - 1);
+        const auto parts = splitView(token, L',');
+        if (parts.size() == 2) {
+            const auto startMs = parseInteger(parts[0]);
+            const auto durationMs = parseInteger(parts[1]);
+            if (startMs && durationMs) {
+                tags.push_back({open, close + 1, *startMs, *durationMs});
+            }
+        }
+
+        pos = close + 1;
+    }
+    return tags;
+}
+
+bool parseQrcLineBody(std::int64_t lineStartMs, std::int64_t lineDurationMs, std::wstring_view rawBody, LrcLine& out) {
+    const auto body = trimLineBreaks(rawBody);
+    out = {};
+    out.timeMs = lineStartMs;
+    out.durationMs = std::max<std::int64_t>(0, lineDurationMs);
+
+    bool foundWordTiming = false;
+    std::size_t cursor = 0;
+    std::size_t search = 0;
+
+    while (search < body.size()) {
+        const auto open = body.find(L'(', search);
+        if (open == std::wstring_view::npos) break;
+        const auto close = body.find(L')', open + 1);
+        if (close == std::wstring_view::npos) break;
+
+        const auto timing = body.substr(open + 1, close - open - 1);
+        const auto parts = splitView(timing, L',');
+        if (parts.size() != 2) {
+            search = open + 1;
+            continue;
+        }
+
+        const auto wordStartMs = parseInteger(parts[0]);
+        const auto wordDurationMs = parseInteger(parts[1]);
+        if (!wordStartMs || !wordDurationMs || *wordDurationMs < 0) {
+            search = open + 1;
+            continue;
+        }
+
+        const auto wordText = body.substr(cursor, open - cursor);
+        const std::size_t textStart = out.text.size();
+        out.text.append(wordText.begin(), wordText.end());
+        const std::size_t textEnd = out.text.size();
+        if (textEnd > textStart) {
+            out.segments.push_back({
+                qrcWordOffset(lineStartMs, lineDurationMs, *wordStartMs),
+                std::max<std::int64_t>(0, *wordDurationMs),
+                textStart,
+                textEnd
+            });
+        }
+
+        foundWordTiming = true;
+        cursor = close + 1;
+        search = cursor;
+    }
+
+    if (cursor < body.size()) {
+        const auto tail = body.substr(cursor);
+        out.text.append(tail.begin(), tail.end());
+    }
+
+    return foundWordTiming && hasVisibleText(out.text);
+}
+
 }
 
 bool LrcParser::parseUtf8(std::string_view lrcUtf8) {
     lines_.clear();
     const auto text = util::utf8ToWide(lrcUtf8);
+    if (parseQrcContent(text, lines_)) {
+        std::stable_sort(lines_.begin(), lines_.end(), [](const LrcLine& a, const LrcLine& b) { return a.timeMs < b.timeMs; });
+        return true;
+    }
+
     for (const auto& rawLine : splitLines(text)) {
         LrcLine krcLine;
         if (parseKrcLine(rawLine, krcLine)) {
@@ -202,6 +315,30 @@ bool LrcParser::parseKrcLine(std::wstring_view rawLine, LrcLine& out) {
     }
 
     return hasVisibleText(out.text);
+}
+
+bool LrcParser::parseQrcContent(std::wstring_view text, std::vector<LrcLine>& out) {
+    const auto tags = findQrcLineTags(text);
+    if (tags.empty()) return false;
+
+    std::vector<LrcLine> parsed;
+    bool hasTimedWords = false;
+    for (std::size_t i = 0; i < tags.size(); ++i) {
+        const auto& tag = tags[i];
+        const auto bodyBegin = tag.end;
+        const auto bodyEnd = i + 1 < tags.size() ? tags[i + 1].begin : text.size();
+        if (bodyBegin >= bodyEnd) continue;
+
+        LrcLine line;
+        if (parseQrcLineBody(tag.startMs, tag.durationMs, text.substr(bodyBegin, bodyEnd - bodyBegin), line)) {
+            hasTimedWords = hasTimedWords || !line.segments.empty();
+            parsed.push_back(std::move(line));
+        }
+    }
+
+    if (!hasTimedWords) return false;
+    out = std::move(parsed);
+    return !out.empty();
 }
 
 int LrcParser::findCurrentIndex(std::int64_t positionMs) const {

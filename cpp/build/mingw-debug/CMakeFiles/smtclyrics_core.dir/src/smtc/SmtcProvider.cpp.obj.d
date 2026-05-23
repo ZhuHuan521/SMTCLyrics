@@ -199,6 +199,7 @@ CMakeFiles/smtclyrics_core.dir/src/smtc/SmtcProvider.cpp.obj: \
  D:/mingw64/include/c++/15.2.0/bits/ranges_algobase.h \
  D:/mingw64/include/c++/15.2.0/bits/unicode.h \
  D:/mingw64/include/c++/15.2.0/bits/unicode-data.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/Windows.Media.Control.h \
  D:/programming/SMTCLyrics/cpp/generated/winrt/base.h \
  D:/mingw64/x86_64-w64-mingw32/include/intrin.h \
  D:/mingw64/x86_64-w64-mingw32/include/setjmp.h \
@@ -383,20 +384,18 @@ CMakeFiles/smtclyrics_core.dir/src/smtc/SmtcProvider.cpp.obj: \
  D:/mingw64/include/c++/15.2.0/tr1/riemann_zeta.tcc \
  D:/mingw64/x86_64-w64-mingw32/include/directxmath.h \
  D:/programming/SMTCLyrics/cpp/generated/winrt/base_macros.h \
- D:/programming/SMTCLyrics/cpp/generated/winrt/Windows.Foundation.h \
- D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Foundation.Collections.2.h \
- D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Foundation.Collections.1.h \
- D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Foundation.Collections.0.h \
- D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Foundation.2.h \
- D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Foundation.1.h \
- D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Foundation.0.h \
- D:/programming/SMTCLyrics/cpp/generated/winrt/Windows.Media.Control.h \
  D:/programming/SMTCLyrics/cpp/generated/winrt/Windows.Media.h \
  D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.ApplicationModel.AppService.2.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Foundation.1.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Foundation.Collections.0.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Foundation.0.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Foundation.Collections.1.h \
  D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.System.RemoteSystems.1.h \
  D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.System.RemoteSystems.0.h \
  D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.ApplicationModel.AppService.1.h \
  D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.ApplicationModel.AppService.0.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Foundation.2.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Foundation.Collections.2.h \
  D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Graphics.DirectX.2.h \
  D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Graphics.DirectX.1.h \
  D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Graphics.DirectX.0.h \
@@ -421,4 +420,5 @@ CMakeFiles/smtclyrics_core.dir/src/smtc/SmtcProvider.cpp.obj: \
  D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Media.0.h \
  D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Media.Control.2.h \
  D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Media.Control.1.h \
- D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Media.Control.0.h
+ D:/programming/SMTCLyrics/cpp/generated/winrt/impl/Windows.Media.Control.0.h \
+ D:/programming/SMTCLyrics/cpp/generated/winrt/Windows.Foundation.h

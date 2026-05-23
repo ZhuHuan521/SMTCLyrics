@@ -2,10 +2,12 @@
 #include "config/Config.h"
 #include "lyrics/LrcParser.h"
 #include "lyrics/LyricRepository.h"
+#include "lyrics/QrcDecrypter.h"
 #include "util/Encoding.h"
 #include "util/Inflate.h"
 #include "util/Path.h"
 
+#include <cctype>
 #include <filesystem>
 #include <iostream>
 #include <stdexcept>
@@ -28,6 +30,41 @@ std::wstring readIniString(const std::filesystem::path& path, const wchar_t* sec
 
 void writeIniString(const std::filesystem::path& path, const wchar_t* section, const wchar_t* key, const wchar_t* value) {
     WritePrivateProfileStringW(section, key, value, path.c_str());
+}
+
+std::filesystem::path findQrcFixturePath() {
+    auto dir = std::filesystem::current_path();
+    for (int i = 0; i < 8; ++i) {
+        const auto candidate = dir / L"qrckit-master" / L"src" / L"test" / L"kotlin" / L"io" / L"github" / L"proify" / L"qrckit" / L"decrypt" / L"QrcDecrypterTest.kt";
+        if (std::filesystem::is_regular_file(candidate)) return candidate;
+        if (!dir.has_parent_path()) break;
+        const auto parent = dir.parent_path();
+        if (parent == dir) break;
+        dir = parent;
+    }
+    return {};
+}
+
+bool isUpperHex(char ch) {
+    return (ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'F');
+}
+
+std::string extractLongHexRun(std::string_view text) {
+    std::size_t runStart = std::string_view::npos;
+    std::size_t runLength = 0;
+    for (std::size_t i = 0; i <= text.size(); ++i) {
+        if (i < text.size() && isUpperHex(text[i])) {
+            if (runLength == 0) runStart = i;
+            ++runLength;
+            continue;
+        }
+        if (runLength > 1000 && runStart != std::string_view::npos) {
+            return std::string(text.substr(runStart, runLength));
+        }
+        runStart = std::string_view::npos;
+        runLength = 0;
+    }
+    return {};
 }
 
 void testLrcParser() {
@@ -64,6 +101,31 @@ void testLrcParser() {
     require(frame.text == L"ABCD\nE" && frame.highlightLine == 0, "krc two-line-down mode should highlight the current first line");
     frame = krcParser.frameAt(6'500, 3);
     require(frame.text == L"ABCD\nE" && frame.highlightLine == 1, "krc two-line-up mode should highlight the current second line");
+
+    smtc::lyrics::LrcParser qrcParser;
+    require(qrcParser.parseUtf8("[1000,2000]A(1000,500)B(1500,500)C(2000,1000)[4000,1000]D(4000,1000)\n"), "qrc lyric should parse");
+    frame = qrcParser.frameAt(1'750, 1);
+    require(frame.text == L"ABC", "qrc word timings should be stripped from displayed text");
+    require(frame.highlightPercent >= 45 && frame.highlightPercent <= 55, "qrc absolute word timing should map to highlight percent");
+    frame = qrcParser.frameAt(4'500, 3);
+    require(frame.text == L"ABC\nD" && frame.highlightLine == 1, "qrc two-line-up mode should highlight the current second line");
+
+    smtc::lyrics::LrcParser relativeQrcParser;
+    require(relativeQrcParser.parseUtf8("[10000,1000]A(0,500)B(500,500)\n"), "relative qrc lyric should parse");
+    frame = relativeQrcParser.frameAt(10'250, 1);
+    require(frame.text == L"AB" && frame.highlightPercent >= 20 && frame.highlightPercent <= 30, "qrc relative word timing should map to highlight percent");
+}
+
+void testQrcDecrypterFixture() {
+    const auto fixturePath = findQrcFixturePath();
+    if (fixturePath.empty()) return;
+
+    const auto fixture = smtc::util::readUtf8Auto(fixturePath);
+    const auto encrypted = extractLongHexRun(fixture);
+    if (encrypted.empty()) return;
+
+    const auto decrypted = smtc::lyrics::decryptQrc(encrypted);
+    require(decrypted.find("LyricContent") != std::string::npos, "qrc decrypter should decode the qrckit fixture");
 }
 
 void testInflateZlib() {
@@ -116,10 +178,10 @@ void testEnglishConfigRoundTrip() {
     require(loaded.normal.color1 == RGB(12, 34, 56), "hex color should round-trip");
     require(loaded.highlight.border == RGB(10, 11, 12), "highlight border color should round-trip");
     require(loaded.sourcePriority == std::vector<int>({4, 3, 2, 1}), "source priority should save as one-based indexes");
-    require(loaded.smtcPollIntervalMs == 75, "SMTC poll interval should round-trip");
+    require(loaded.smtcPollIntervalMs == 500, "SMTC poll interval should clamp to the safe minimum");
     require(loaded.window.hasPosition && loaded.window.left == 120 && loaded.window.top == 80, "window position should round-trip");
     require(readIniString(path, L"Lyrics", L"normalColor1") == L"#0C2238", "colors should be written as #RRGGBB");
-    require(readIniString(path, L"SMTC", L"pollIntervalMs") == L"75", "SMTC poll interval should be written in milliseconds");
+    require(readIniString(path, L"SMTC", L"pollIntervalMs") == L"500", "SMTC poll interval should be written with the safe minimum");
     require(readIniString(path, L"Account", L"cookie", L"missing") == L"missing", "cookie account section should not be written");
 
     std::filesystem::remove(path);
@@ -158,7 +220,7 @@ void testLegacyConfigMigration() {
     require(loaded.normal.color1 == RGB(255, 0, 0), "legacy decimal color should load");
     require(loaded.sourcePriority == std::vector<int>({1, 2, 3, 4}), "legacy zero-based source priority should migrate");
     require(loaded.smtcMode == 2 && loaded.displayMode == 2, "legacy modes should load");
-    require(loaded.smtcPollIntervalMs == 100, "missing SMTC poll interval should use the default");
+    require(loaded.smtcPollIntervalMs == 1000, "missing SMTC poll interval should use the default");
     require(loaded.window.hasPosition && loaded.window.left == 33 && loaded.window.top == 44, "legacy window position should load");
 
     store.save(loaded);
@@ -189,6 +251,7 @@ void testCache() {
 int main() {
     try {
         testLrcParser();
+        testQrcDecrypterFixture();
         testInflateZlib();
         testConfig();
         testEnglishConfigRoundTrip();

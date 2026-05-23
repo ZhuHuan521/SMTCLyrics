@@ -43,6 +43,7 @@ public:
 private:
     static std::optional<std::int64_t> parseTimestamp(std::wstring_view token);
     static bool parseKrcLine(std::wstring_view rawLine, LrcLine& out);
+    static bool parseQrcContent(std::wstring_view text, std::vector<LrcLine>& out);
     int findCurrentIndex(std::int64_t positionMs) const;
     int highlightPercentForLine(int index, std::int64_t positionMs) const;
     std::optional<VisibleLyricLine> visibleLineNear(int index, int direction, int maxDistance, std::wstring_view excludedText = {}) const;

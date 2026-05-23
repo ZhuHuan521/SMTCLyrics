@@ -17,7 +17,7 @@
 namespace smtc::app {
 namespace {
 
-constexpr int kMinSmtcPollIntervalMs = 50;
+constexpr int kMinSmtcPollIntervalMs = 500;
 constexpr int kMaxSmtcPollIntervalMs = 2000;
 
 UINT smtcPollIntervalMs(const config::AppConfig& config) {

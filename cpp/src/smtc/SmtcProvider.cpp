@@ -14,6 +14,9 @@ namespace {
 using winrt::Windows::Media::Control::GlobalSystemMediaTransportControlsSessionManager;
 using winrt::Windows::Media::Control::GlobalSystemMediaTransportControlsSessionPlaybackStatus;
 
+constexpr auto kManagerRetryInterval = std::chrono::seconds(5);
+constexpr auto kMediaPropertiesRefreshInterval = std::chrono::seconds(1);
+
 std::int64_t millisecondsFromTimeSpan(winrt::Windows::Foundation::TimeSpan value) {
     return std::chrono::duration_cast<std::chrono::milliseconds>(value).count();
 }
@@ -42,27 +45,54 @@ MediaState SmtcProvider::readState(int mode) {
     if (!apartmentInitialized_) return state;
 
     try {
-        const auto manager = GlobalSystemMediaTransportControlsSessionManager::RequestAsync().get();
-        const auto session = manager.GetCurrentSession();
-        if (!session) return state;
+        if (!ensureManager()) return state;
 
-        const auto mediaProperties = session.TryGetMediaPropertiesAsync().get();
-        const auto timeline = session.GetTimelineProperties();
-        const auto playback = session.GetPlaybackInfo();
-
-        state.artist = hstringToWide(mediaProperties.AlbumArtist());
-        if (state.artist.empty()) {
-            state.artist = hstringToWide(mediaProperties.Artist());
+        const auto session = manager_.GetCurrentSession();
+        if (!session) {
+            clearCachedSession();
+            return state;
         }
-        state.title = hstringToWide(mediaProperties.Title());
-        state.durationMs = millisecondsFromTimeSpan(timeline.MaxSeekTime());
-        const auto rawPositionMs = millisecondsFromTimeSpan(timeline.Position());
-        state.playing = playback.PlaybackStatus() == GlobalSystemMediaTransportControlsSessionPlaybackStatus::Playing;
 
         const auto now = std::chrono::steady_clock::now();
-        if (lastObserved_ == std::chrono::steady_clock::time_point{} || state.title != lastTitle_ || rawPositionMs != lastRawPositionMs_) {
+        const auto sessionId = hstringToWide(session.SourceAppUserModelId());
+        const auto timeline = session.GetTimelineProperties();
+        const auto playback = session.GetPlaybackInfo();
+        const auto rawPositionMs = millisecondsFromTimeSpan(timeline.Position());
+
+        const bool sessionChanged = !session_ || sessionId != lastSessionId_;
+        const bool positionRestarted = lastRawPositionMs_ > 3000 && rawPositionMs < 1000;
+        const bool propertiesExpired = lastPropertiesRead_ == std::chrono::steady_clock::time_point{} ||
+            now - lastPropertiesRead_ >= kMediaPropertiesRefreshInterval;
+
+        if (sessionChanged) {
+            session_ = session;
+            lastSessionId_ = sessionId;
+            lastArtist_.clear();
+            lastTitle_.clear();
+            lastObserved_ = {};
+            lastPropertiesRead_ = {};
+        }
+
+        bool mediaPropertiesChanged = false;
+        if (sessionChanged || positionRestarted || lastTitle_.empty() || propertiesExpired) {
+            const auto previousTitle = lastTitle_;
+            const auto mediaProperties = session.TryGetMediaPropertiesAsync().get();
+            lastArtist_ = hstringToWide(mediaProperties.AlbumArtist());
+            if (lastArtist_.empty()) {
+                lastArtist_ = hstringToWide(mediaProperties.Artist());
+            }
+            lastTitle_ = hstringToWide(mediaProperties.Title());
+            lastPropertiesRead_ = now;
+            mediaPropertiesChanged = lastTitle_ != previousTitle;
+        }
+
+        state.artist = lastArtist_;
+        state.title = lastTitle_;
+        state.durationMs = millisecondsFromTimeSpan(timeline.MaxSeekTime());
+        state.playing = playback.PlaybackStatus() == GlobalSystemMediaTransportControlsSessionPlaybackStatus::Playing;
+
+        if (lastObserved_ == std::chrono::steady_clock::time_point{} || mediaPropertiesChanged || rawPositionMs != lastRawPositionMs_) {
             lastObserved_ = now;
-            lastTitle_ = state.title;
             lastRawPositionMs_ = rawPositionMs;
         }
 
@@ -83,6 +113,8 @@ MediaState SmtcProvider::readState(int mode) {
         }
         state.valid = !state.title.empty();
     } catch (...) {
+        clearCachedSession();
+        manager_ = nullptr;
         state = {};
     }
 
@@ -91,9 +123,35 @@ MediaState SmtcProvider::readState(int mode) {
 
 void SmtcProvider::shutdown() {
     if (apartmentInitialized_) {
+        clearCachedSession();
+        manager_ = nullptr;
         winrt::uninit_apartment();
         apartmentInitialized_ = false;
     }
+}
+
+bool SmtcProvider::ensureManager() {
+    if (manager_) return true;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (lastManagerRequest_ != std::chrono::steady_clock::time_point{} &&
+        now - lastManagerRequest_ < kManagerRetryInterval) {
+        return false;
+    }
+
+    lastManagerRequest_ = now;
+    manager_ = GlobalSystemMediaTransportControlsSessionManager::RequestAsync().get();
+    return manager_ != nullptr;
+}
+
+void SmtcProvider::clearCachedSession() {
+    session_ = nullptr;
+    lastSessionId_.clear();
+    lastArtist_.clear();
+    lastTitle_.clear();
+    lastRawPositionMs_ = -1;
+    lastObserved_ = {};
+    lastPropertiesRead_ = {};
 }
 
 }

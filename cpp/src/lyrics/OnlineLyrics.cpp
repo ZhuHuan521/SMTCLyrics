@@ -1,11 +1,13 @@
 #include "lyrics/OnlineLyrics.h"
 
 #include "json.hpp"
+#include "lyrics/QrcDecrypter.h"
 #include "util/Base64.h"
 #include "util/Encoding.h"
 #include "util/Inflate.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cstring>
 #include <iomanip>
 #include <random>
@@ -23,6 +25,12 @@ std::vector<http::HttpClient::Header> browserHeaders() {
 std::vector<http::HttpClient::Header> qqHeaders() {
     auto headers = browserHeaders();
     headers.emplace_back("Referer", "https://y.qq.com/");
+    return headers;
+}
+
+std::vector<http::HttpClient::Header> qqDownloadHeaders() {
+    auto headers = browserHeaders();
+    headers.emplace_back("Referer", "https://c.y.qq.com/");
     return headers;
 }
 
@@ -44,6 +52,70 @@ std::string jsonString(const nlohmann::json& value) {
 
 std::vector<std::uint8_t> toBytes(std::string_view text) {
     return {text.begin(), text.end()};
+}
+
+bool isXmlNameBoundary(char ch) {
+    return std::isspace(static_cast<unsigned char>(ch)) != 0 || ch == '>' || ch == '/';
+}
+
+std::size_t findXmlTag(std::string_view xml, std::string_view tagName, std::size_t start = 0) {
+    const auto needle = "<" + std::string(tagName);
+    std::size_t pos = start;
+    while ((pos = xml.find(needle, pos)) != std::string_view::npos) {
+        const auto boundary = pos + needle.size();
+        if (boundary < xml.size() && isXmlNameBoundary(xml[boundary])) {
+            return pos;
+        }
+        pos = boundary;
+    }
+    return std::string_view::npos;
+}
+
+std::string extractCData(std::string_view xml, std::string_view tagName) {
+    std::size_t pos = 0;
+    while ((pos = findXmlTag(xml, tagName, pos)) != std::string_view::npos) {
+        const auto tagEnd = xml.find('>', pos);
+        if (tagEnd == std::string_view::npos) return {};
+        const auto cdataBegin = xml.find("<![CDATA[", tagEnd + 1);
+        if (cdataBegin == std::string_view::npos) return {};
+        const auto nextTag = xml.find('<', tagEnd + 1);
+        if (nextTag != std::string_view::npos && nextTag != cdataBegin) {
+            pos = tagEnd + 1;
+            continue;
+        }
+        const auto valueBegin = cdataBegin + 9;
+        const auto valueEnd = xml.find("]]>", valueBegin);
+        if (valueEnd == std::string_view::npos) return {};
+        return std::string(xml.substr(valueBegin, valueEnd - valueBegin));
+    }
+    return {};
+}
+
+std::string extractXmlAttribute(std::string_view xml, std::string_view attributeName) {
+    std::size_t pos = 0;
+    while ((pos = xml.find(attributeName, pos)) != std::string_view::npos) {
+        const auto nameEnd = pos + attributeName.size();
+        std::size_t scan = nameEnd;
+        while (scan < xml.size() && std::isspace(static_cast<unsigned char>(xml[scan])) != 0) ++scan;
+        if (scan >= xml.size() || xml[scan] != '=') {
+            pos = nameEnd;
+            continue;
+        }
+        ++scan;
+        while (scan < xml.size() && std::isspace(static_cast<unsigned char>(xml[scan])) != 0) ++scan;
+        if (scan >= xml.size() || (xml[scan] != '"' && xml[scan] != '\'')) return {};
+        const char quote = xml[scan++];
+        const auto end = xml.find(quote, scan);
+        if (end == std::string_view::npos) return {};
+        return std::string(xml.substr(scan, end - scan));
+    }
+    return {};
+}
+
+std::string extractQrcContent(std::string_view decryptedXml) {
+    auto content = extractXmlAttribute(decryptedXml, "LyricContent");
+    if (content.empty()) return {};
+    return util::htmlDecodeUtf8(content);
 }
 
 std::vector<std::uint8_t> decryptKrc(const std::vector<std::uint8_t>& bytes) {
@@ -139,6 +211,24 @@ std::vector<std::uint8_t> OnlineLyrics::fetchQQ(std::string_view keywordUtf8) co
     if (songmid.empty() || songmid == "0") {
         songmid = jsonString(list[0]["mid"]);
     }
+
+    auto musicId = jsonString(list[0]["songid"]);
+    if (musicId.empty() || musicId == "0") {
+        musicId = jsonString(list[0]["id"]);
+    }
+    if (!musicId.empty() && musicId != "0") {
+        const auto body = "version=15&miniversion=100&lrctype=4&musicid=" + util::urlEncode(musicId);
+        const auto rawXml = client_.post("https://c.y.qq.com/qqmusic/fcgi-bin/lyric_download.fcg", body, qqDownloadHeaders()).text();
+        const auto encrypted = extractCData(rawXml, "content");
+        if (!encrypted.empty()) {
+            const auto decrypted = decryptQrc(encrypted);
+            const auto qrcContent = extractQrcContent(decrypted);
+            if (!qrcContent.empty()) {
+                return toBytes(qrcContent);
+            }
+        }
+    }
+
     if (songmid.empty() || songmid == "0") return {};
 
     std::random_device rd;

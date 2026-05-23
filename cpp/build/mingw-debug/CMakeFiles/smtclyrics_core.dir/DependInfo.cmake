@@ -15,6 +15,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "D:/programming/SMTCLyrics/cpp/src/lyrics/LrcParser.cpp" "CMakeFiles/smtclyrics_core.dir/src/lyrics/LrcParser.cpp.obj" "gcc" "CMakeFiles/smtclyrics_core.dir/src/lyrics/LrcParser.cpp.obj.d"
   "D:/programming/SMTCLyrics/cpp/src/lyrics/LyricRepository.cpp" "CMakeFiles/smtclyrics_core.dir/src/lyrics/LyricRepository.cpp.obj" "gcc" "CMakeFiles/smtclyrics_core.dir/src/lyrics/LyricRepository.cpp.obj.d"
   "D:/programming/SMTCLyrics/cpp/src/lyrics/OnlineLyrics.cpp" "CMakeFiles/smtclyrics_core.dir/src/lyrics/OnlineLyrics.cpp.obj" "gcc" "CMakeFiles/smtclyrics_core.dir/src/lyrics/OnlineLyrics.cpp.obj.d"
+  "D:/programming/SMTCLyrics/cpp/src/lyrics/QrcDecrypter.cpp" "CMakeFiles/smtclyrics_core.dir/src/lyrics/QrcDecrypter.cpp.obj" "gcc" "CMakeFiles/smtclyrics_core.dir/src/lyrics/QrcDecrypter.cpp.obj.d"
   "D:/programming/SMTCLyrics/cpp/src/smtc/SmtcProvider.cpp" "CMakeFiles/smtclyrics_core.dir/src/smtc/SmtcProvider.cpp.obj" "gcc" "CMakeFiles/smtclyrics_core.dir/src/smtc/SmtcProvider.cpp.obj.d"
   "D:/programming/SMTCLyrics/cpp/src/ui/ControlWindow.cpp" "CMakeFiles/smtclyrics_core.dir/src/ui/ControlWindow.cpp.obj" "gcc" "CMakeFiles/smtclyrics_core.dir/src/ui/ControlWindow.cpp.obj.d"
   "D:/programming/SMTCLyrics/cpp/src/ui/DesktopLyricsWindow.cpp" "CMakeFiles/smtclyrics_core.dir/src/ui/DesktopLyricsWindow.cpp.obj" "gcc" "CMakeFiles/smtclyrics_core.dir/src/ui/DesktopLyricsWindow.cpp.obj.d"

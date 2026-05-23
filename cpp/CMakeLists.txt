@@ -22,6 +22,7 @@ set(SMTCLYRICS_SOURCES
     src/lyrics/LrcParser.cpp
     src/lyrics/LyricRepository.cpp
     src/lyrics/OnlineLyrics.cpp
+    src/lyrics/QrcDecrypter.cpp
     src/smtc/SmtcProvider.cpp
     src/ui/ControlWindow.cpp
     src/ui/DesktopLyricsWindow.cpp

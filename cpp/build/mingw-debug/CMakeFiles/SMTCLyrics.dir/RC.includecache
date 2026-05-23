@@ -1,0 +1,14 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+D:/programming/SMTCLyrics/cpp/resource.rc
+src/resource.h
+D:/programming/SMTCLyrics/cpp/src/resource.h
+
+D:/programming/SMTCLyrics/cpp/src/resource.h
+

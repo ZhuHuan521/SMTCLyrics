@@ -201,4 +201,6 @@ CMakeFiles/smtclyrics_core.dir/src/lyrics/LrcParser.cpp.obj: \
  D:/mingw64/include/c++/15.2.0/bits/ranges_algo.h \
  D:/mingw64/include/c++/15.2.0/bits/ranges_algobase.h \
  D:/mingw64/include/c++/15.2.0/pstl/glue_algorithm_defs.h \
- D:/mingw64/include/c++/15.2.0/pstl/execution_defs.h
+ D:/mingw64/include/c++/15.2.0/pstl/execution_defs.h \
+ D:/mingw64/include/c++/15.2.0/utility \
+ D:/mingw64/include/c++/15.2.0/bits/stl_relops.h

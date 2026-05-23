@@ -40,7 +40,7 @@ struct AppConfig {
     int lyricOffsetMs = 0;
     std::vector<int> sourcePriority{1, 2, 3, 4};
     int smtcMode = 1;
-    int smtcPollIntervalMs = 100;
+    int smtcPollIntervalMs = 1000;
     int displayMode = 1;
 };
 
