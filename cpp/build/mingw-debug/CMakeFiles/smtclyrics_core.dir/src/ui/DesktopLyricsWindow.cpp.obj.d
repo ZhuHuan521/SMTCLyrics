@@ -472,19 +472,8 @@ CMakeFiles/smtclyrics_core.dir/src/ui/DesktopLyricsWindow.cpp.obj: \
  D:/mingw64/include/c++/15.2.0/bits/enable_special_members.h \
  D:/mingw64/include/c++/15.2.0/bits/node_handle.h \
  D:/mingw64/include/c++/15.2.0/bits/erase_if.h \
- D:/mingw64/include/c++/15.2.0/array \
- D:/mingw64/include/c++/15.2.0/algorithm \
- D:/mingw64/include/c++/15.2.0/bits/stl_algo.h \
- D:/mingw64/include/c++/15.2.0/bits/algorithmfwd.h \
- D:/mingw64/include/c++/15.2.0/bits/stl_heap.h \
- D:/mingw64/include/c++/15.2.0/bits/uniform_int_dist.h \
+ D:/mingw64/include/c++/15.2.0/array D:/mingw64/include/c++/15.2.0/memory \
  D:/mingw64/include/c++/15.2.0/bits/stl_tempbuf.h \
- D:/mingw64/include/c++/15.2.0/bits/ranges_algo.h \
- D:/mingw64/include/c++/15.2.0/bits/ranges_algobase.h \
- D:/mingw64/include/c++/15.2.0/pstl/glue_algorithm_defs.h \
- D:/mingw64/include/c++/15.2.0/pstl/execution_defs.h \
- D:/mingw64/include/c++/15.2.0/cstring \
- D:/mingw64/include/c++/15.2.0/memory \
  D:/mingw64/include/c++/15.2.0/bits/stl_raw_storage_iter.h \
  D:/mingw64/include/c++/15.2.0/bits/shared_ptr_atomic.h \
  D:/mingw64/include/c++/15.2.0/bits/atomic_base.h \
@@ -493,4 +482,14 @@ CMakeFiles/smtclyrics_core.dir/src/ui/DesktopLyricsWindow.cpp.obj: \
  D:/mingw64/include/c++/15.2.0/bits/std_mutex.h \
  D:/mingw64/include/c++/15.2.0/backward/auto_ptr.h \
  D:/mingw64/include/c++/15.2.0/bits/ranges_uninitialized.h \
- D:/mingw64/include/c++/15.2.0/pstl/glue_memory_defs.h
+ D:/mingw64/include/c++/15.2.0/bits/ranges_algobase.h \
+ D:/mingw64/include/c++/15.2.0/pstl/glue_memory_defs.h \
+ D:/mingw64/include/c++/15.2.0/pstl/execution_defs.h \
+ D:/mingw64/include/c++/15.2.0/algorithm \
+ D:/mingw64/include/c++/15.2.0/bits/stl_algo.h \
+ D:/mingw64/include/c++/15.2.0/bits/algorithmfwd.h \
+ D:/mingw64/include/c++/15.2.0/bits/stl_heap.h \
+ D:/mingw64/include/c++/15.2.0/bits/uniform_int_dist.h \
+ D:/mingw64/include/c++/15.2.0/bits/ranges_algo.h \
+ D:/mingw64/include/c++/15.2.0/pstl/glue_algorithm_defs.h \
+ D:/mingw64/include/c++/15.2.0/cstring

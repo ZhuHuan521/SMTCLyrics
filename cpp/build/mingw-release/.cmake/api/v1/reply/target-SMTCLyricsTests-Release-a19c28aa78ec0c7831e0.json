@@ -147,6 +147,11 @@
 			},
 			{
 				"backtrace" : 3,
+				"fragment" : "-lbcrypt",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
 				"fragment" : "-lcrypt32",
 				"role" : "libraries"
 			},

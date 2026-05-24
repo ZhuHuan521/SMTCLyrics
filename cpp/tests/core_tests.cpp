@@ -114,6 +114,12 @@ void testLrcParser() {
     require(relativeQrcParser.parseUtf8("[10000,1000]A(0,500)B(500,500)\n"), "relative qrc lyric should parse");
     frame = relativeQrcParser.frameAt(10'250, 1);
     require(frame.text == L"AB" && frame.highlightPercent >= 20 && frame.highlightPercent <= 30, "qrc relative word timing should map to highlight percent");
+
+    smtc::lyrics::LrcParser yrcParser;
+    require(yrcParser.parseUtf8("[1000,3000](1000,500,0)A(1500,500,0)B[2000,0](2000,1000,0)C\n"), "netease yrc lyric should parse");
+    frame = yrcParser.frameAt(1'750, 1);
+    require(frame.text == L"ABC", "yrc word timings should be stripped from displayed text");
+    require(frame.highlightPercent >= 45 && frame.highlightPercent <= 55, "yrc absolute word timing should map to highlight percent");
 }
 
 void testQrcDecrypterFixture() {

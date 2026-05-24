@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace smtc::lyrics {
@@ -29,7 +30,7 @@ struct LyricFrame {
 
 struct VisibleLyricLine {
     int index = -1;
-    std::wstring text;
+    std::wstring_view text;
 };
 
 class LrcParser {
@@ -43,6 +44,7 @@ public:
 private:
     static std::optional<std::int64_t> parseTimestamp(std::wstring_view token);
     static bool parseKrcLine(std::wstring_view rawLine, LrcLine& out);
+    static bool parseYrcContent(std::wstring_view text, std::vector<LrcLine>& out);
     static bool parseQrcContent(std::wstring_view text, std::vector<LrcLine>& out);
     int findCurrentIndex(std::int64_t positionMs) const;
     int highlightPercentForLine(int index, std::int64_t positionMs) const;

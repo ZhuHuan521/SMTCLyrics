@@ -65,6 +65,20 @@ bool parseIntegerPair(std::wstring_view text, std::int64_t& first, std::int64_t&
     return true;
 }
 
+bool parseIntegerTripleFirstTwo(std::wstring_view text, std::int64_t& first, std::int64_t& second) {
+    const auto firstComma = text.find(L',');
+    if (firstComma == std::wstring_view::npos) return false;
+    const auto secondComma = text.find(L',', firstComma + 1);
+    if (secondComma == std::wstring_view::npos) return false;
+    const auto parsedFirst = parseInteger(text.substr(0, firstComma));
+    const auto parsedSecond = parseInteger(text.substr(firstComma + 1, secondComma - firstComma - 1));
+    const auto parsedThird = parseInteger(text.substr(secondComma + 1));
+    if (!parsedFirst || !parsedSecond || !parsedThird) return false;
+    first = *parsedFirst;
+    second = *parsedSecond;
+    return true;
+}
+
 std::wstring_view trimLineBreaks(std::wstring_view text) {
     while (!text.empty() && (text.front() == L'\r' || text.front() == L'\n')) {
         text.remove_prefix(1);
@@ -81,6 +95,95 @@ std::int64_t qrcWordOffset(std::int64_t lineStartMs, std::int64_t lineDurationMs
         return std::max<std::int64_t>(0, wordStartMs - lineStartMs);
     }
     return std::max<std::int64_t>(0, wordStartMs);
+}
+
+bool findYrcWordTag(std::wstring_view text, std::size_t start, std::size_t& tagBegin, std::size_t& tagEnd, std::int64_t& wordStartMs, std::int64_t& wordDurationMs) {
+    std::size_t search = start;
+    while (search < text.size()) {
+        const auto open = text.find(L'(', search);
+        if (open == std::wstring_view::npos) return false;
+        const auto close = text.find(L')', open + 1);
+        if (close == std::wstring_view::npos) return false;
+        if (parseIntegerTripleFirstTwo(text.substr(open + 1, close - open - 1), wordStartMs, wordDurationMs) && wordDurationMs >= 0) {
+            tagBegin = open;
+            tagEnd = close + 1;
+            return true;
+        }
+        search = open + 1;
+    }
+    return false;
+}
+
+std::wstring_view removeTrailingYrcInlineTags(std::wstring_view text) {
+    for (;;) {
+        text = trimLineBreaks(text);
+        if (text.empty() || text.back() != L']') return text;
+        const auto open = text.rfind(L'[');
+        if (open == std::wstring_view::npos) return text;
+        std::int64_t startMs = 0;
+        std::int64_t durationMs = 0;
+        if (!parseIntegerPair(text.substr(open + 1, text.size() - open - 2), startMs, durationMs)) {
+            return text;
+        }
+        text = text.substr(0, open);
+    }
+}
+
+bool parseYrcLine(std::wstring_view rawLine, LrcLine& out) {
+    rawLine = trimLineBreaks(rawLine);
+    if (rawLine.empty() || rawLine.front() != L'[') return false;
+    const auto headerEnd = rawLine.find(L']');
+    if (headerEnd == std::wstring_view::npos) return false;
+
+    std::int64_t lineStartMs = 0;
+    std::int64_t lineDurationMs = 0;
+    if (!parseIntegerPair(rawLine.substr(1, headerEnd - 1), lineStartMs, lineDurationMs)) return false;
+
+    const auto body = rawLine.substr(headerEnd + 1);
+    out = {};
+    out.timeMs = lineStartMs;
+    out.durationMs = std::max<std::int64_t>(0, lineDurationMs);
+    out.text.reserve(body.size());
+
+    std::size_t tagBegin = 0;
+    std::size_t tagEnd = 0;
+    std::int64_t wordStartMs = 0;
+    std::int64_t wordDurationMs = 0;
+    if (!findYrcWordTag(body, 0, tagBegin, tagEnd, wordStartMs, wordDurationMs)) {
+        out.text.assign(body.begin(), body.end());
+        return hasVisibleText(out.text);
+    }
+
+    bool foundWordTiming = false;
+    for (;;) {
+        std::size_t nextBegin = body.size();
+        std::size_t nextEnd = body.size();
+        std::int64_t nextStartMs = 0;
+        std::int64_t nextDurationMs = 0;
+        const bool hasNext = findYrcWordTag(body, tagEnd, nextBegin, nextEnd, nextStartMs, nextDurationMs);
+
+        const auto wordText = removeTrailingYrcInlineTags(body.substr(tagEnd, nextBegin - tagEnd));
+        const std::size_t textStart = out.text.size();
+        out.text.append(wordText.begin(), wordText.end());
+        const std::size_t textEnd = out.text.size();
+        if (textEnd > textStart) {
+            out.segments.push_back({
+                qrcWordOffset(lineStartMs, lineDurationMs, wordStartMs),
+                std::max<std::int64_t>(0, wordDurationMs),
+                textStart,
+                textEnd
+            });
+        }
+        foundWordTiming = true;
+
+        if (!hasNext) break;
+        tagBegin = nextBegin;
+        tagEnd = nextEnd;
+        wordStartMs = nextStartMs;
+        wordDurationMs = nextDurationMs;
+    }
+
+    return foundWordTiming && hasVisibleText(out.text);
 }
 
 struct QrcLineTag {
@@ -169,6 +272,10 @@ bool LrcParser::parseUtf8(std::string_view lrcUtf8) {
     const auto text = util::utf8ToWide(lrcUtf8);
     const std::wstring_view textView(text);
     lines_.reserve(static_cast<std::size_t>(std::count(text.begin(), text.end(), L'\n') + 1));
+    if (parseYrcContent(textView, lines_)) {
+        std::stable_sort(lines_.begin(), lines_.end(), [](const LrcLine& a, const LrcLine& b) { return a.timeMs < b.timeMs; });
+        return true;
+    }
     if (parseQrcContent(textView, lines_)) {
         std::stable_sort(lines_.begin(), lines_.end(), [](const LrcLine& a, const LrcLine& b) { return a.timeMs < b.timeMs; });
         return true;
@@ -242,23 +349,23 @@ LyricFrame LrcParser::frameAt(std::int64_t positionMs, int displayMode) const {
     if (displayMode == 2) {
         if (auto next = visibleLineNear(current->index + 1, +1, 3, current->text)) {
             frame.text.reserve(current->text.size() + 1 + next->text.size());
-            frame.text.append(current->text).push_back(L'\n');
-            frame.text.append(next->text);
+            frame.text.append(current->text.begin(), current->text.end()).push_back(L'\n');
+            frame.text.append(next->text.begin(), next->text.end());
             frame.highlightLine = 0;
         } else {
-            frame.text = current->text;
+            frame.text.assign(current->text.begin(), current->text.end());
         }
     } else if (displayMode == 3) {
         if (auto previous = visibleLineNear(current->index - 1, -1, 3, current->text)) {
             frame.text.reserve(previous->text.size() + 1 + current->text.size());
-            frame.text.append(previous->text).push_back(L'\n');
-            frame.text.append(current->text);
+            frame.text.append(previous->text.begin(), previous->text.end()).push_back(L'\n');
+            frame.text.append(current->text.begin(), current->text.end());
             frame.highlightLine = 1;
         } else {
-            frame.text = current->text;
+            frame.text.assign(current->text.begin(), current->text.end());
         }
     } else {
-        frame.text = current->text;
+        frame.text.assign(current->text.begin(), current->text.end());
     }
     frame.highlightPercent = highlightPercentForLine(current->index, adjusted);
     return frame;
@@ -370,6 +477,32 @@ bool LrcParser::parseKrcLine(std::wstring_view rawLine, LrcLine& out) {
     return hasVisibleText(out.text);
 }
 
+bool LrcParser::parseYrcContent(std::wstring_view text, std::vector<LrcLine>& out) {
+    std::vector<LrcLine> parsed;
+    bool hasTimedWords = false;
+    std::size_t lineStart = 0;
+    while (lineStart <= text.size()) {
+        const auto lineEnd = text.find(L'\n', lineStart);
+        auto rawLine = text.substr(lineStart, lineEnd == std::wstring_view::npos ? std::wstring_view::npos : lineEnd - lineStart);
+        if (!rawLine.empty() && rawLine.back() == L'\r') {
+            rawLine.remove_suffix(1);
+        }
+
+        LrcLine line;
+        if (parseYrcLine(rawLine, line)) {
+            hasTimedWords = hasTimedWords || !line.segments.empty();
+            parsed.push_back(std::move(line));
+        }
+
+        if (lineEnd == std::wstring_view::npos) break;
+        lineStart = lineEnd + 1;
+    }
+
+    if (!hasTimedWords) return false;
+    out = std::move(parsed);
+    return !out.empty();
+}
+
 bool LrcParser::parseQrcContent(std::wstring_view text, std::vector<LrcLine>& out) {
     const auto tags = findQrcLineTags(text);
     if (tags.empty()) return false;
@@ -410,27 +543,24 @@ int LrcParser::highlightPercentForLine(int index, std::int64_t positionMs) const
         const auto localMs = positionMs - line.timeMs;
         if (localMs <= line.segments.front().offsetMs) return 0;
 
-        double coveredUnits = 0.0;
-        for (const auto& segment : line.segments) {
-            const auto segmentStart = segment.offsetMs;
-            const auto segmentEnd = segment.offsetMs + std::max<std::int64_t>(1, segment.durationMs);
-            const auto segmentUnits = static_cast<double>(segment.textEnd - segment.textStart);
-
-            if (localMs < segmentStart) {
-                break;
-            }
-            if (localMs >= segmentEnd) {
-                coveredUnits = std::max(coveredUnits, static_cast<double>(segment.textEnd));
-                continue;
-            }
-
-            const double progress = static_cast<double>(localMs - segmentStart) / static_cast<double>(segmentEnd - segmentStart);
-            coveredUnits = static_cast<double>(segment.textStart) + segmentUnits * std::clamp(progress, 0.0, 1.0);
-            break;
+        const auto& lastSegment = line.segments.back();
+        if (localMs >= lastSegment.offsetMs + std::max<std::int64_t>(1, lastSegment.durationMs)) {
+            return 100;
         }
 
-        if (localMs >= line.segments.back().offsetMs + line.segments.back().durationMs) {
-            coveredUnits = static_cast<double>(textLength);
+        const auto next = std::upper_bound(
+            line.segments.begin(),
+            line.segments.end(),
+            localMs,
+            [](std::int64_t value, const LyricSegment& segment) { return value < segment.offsetMs; });
+        const auto& segment = *std::prev(next);
+        const auto segmentStart = segment.offsetMs;
+        const auto segmentEnd = segment.offsetMs + std::max<std::int64_t>(1, segment.durationMs);
+        double coveredUnits = static_cast<double>(segment.textEnd);
+        if (localMs < segmentEnd) {
+            const auto segmentUnits = static_cast<double>(segment.textEnd - segment.textStart);
+            const double progress = static_cast<double>(localMs - segmentStart) / static_cast<double>(segmentEnd - segmentStart);
+            coveredUnits = static_cast<double>(segment.textStart) + segmentUnits * std::clamp(progress, 0.0, 1.0);
         }
         return std::clamp(static_cast<int>(coveredUnits * 100.0 / static_cast<double>(textLength) + 0.5), 0, 100);
     }
@@ -449,7 +579,7 @@ std::optional<VisibleLyricLine> LrcParser::visibleLineNear(int index, int direct
         if (candidate < 0 || candidate >= static_cast<int>(lines_.size())) continue;
         const auto text = trimView(lines_[candidate].text);
         if (!text.empty() && text != excludedText) {
-            return VisibleLyricLine{candidate, std::wstring(text)};
+            return VisibleLyricLine{candidate, text};
         }
     }
     return std::nullopt;

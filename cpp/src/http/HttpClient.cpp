@@ -101,6 +101,16 @@ HttpResponse HttpClient::request(std::wstring_view method, std::string_view url,
     WinHttpQueryHeaders(req.get(), WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER, WINHTTP_HEADER_NAME_BY_INDEX, &status, &statusSize, WINHTTP_NO_HEADER_INDEX);
     response.statusCode = status;
 
+    DWORD rawHeaderSize = 0;
+    WinHttpQueryHeaders(req.get(), WINHTTP_QUERY_RAW_HEADERS_CRLF, WINHTTP_HEADER_NAME_BY_INDEX, nullptr, &rawHeaderSize, WINHTTP_NO_HEADER_INDEX);
+    if (GetLastError() == ERROR_INSUFFICIENT_BUFFER && rawHeaderSize > 0) {
+        std::wstring rawHeaders(static_cast<std::size_t>(rawHeaderSize / sizeof(wchar_t)), L'\0');
+        if (WinHttpQueryHeaders(req.get(), WINHTTP_QUERY_RAW_HEADERS_CRLF, WINHTTP_HEADER_NAME_BY_INDEX, rawHeaders.data(), &rawHeaderSize, WINHTTP_NO_HEADER_INDEX)) {
+            rawHeaders.resize(wcslen(rawHeaders.c_str()));
+            response.rawHeaders = util::wideToUtf8(rawHeaders);
+        }
+    }
+
     for (;;) {
         DWORD available = 0;
         if (!WinHttpQueryDataAvailable(req.get(), &available) || available == 0) break;

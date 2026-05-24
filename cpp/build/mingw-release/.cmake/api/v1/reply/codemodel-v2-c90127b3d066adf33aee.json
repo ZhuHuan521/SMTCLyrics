@@ -43,14 +43,14 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "SMTCLyrics::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-SMTCLyrics-Release-d7eb5e2101d6419d666a.json",
+					"jsonFile" : "target-SMTCLyrics-Release-5fd31a7bc884fdeaabf5.json",
 					"name" : "SMTCLyrics",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "SMTCLyricsTests::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-SMTCLyricsTests-Release-a780b15b4900bd91595d.json",
+					"jsonFile" : "target-SMTCLyricsTests-Release-a19c28aa78ec0c7831e0.json",
 					"name" : "SMTCLyricsTests",
 					"projectIndex" : 0
 				},

@@ -11,6 +11,7 @@ namespace smtc::http {
 struct HttpResponse {
     unsigned statusCode = 0;
     std::vector<std::uint8_t> body;
+    std::string rawHeaders;
 
     std::string text() const {
         return {body.begin(), body.end()};

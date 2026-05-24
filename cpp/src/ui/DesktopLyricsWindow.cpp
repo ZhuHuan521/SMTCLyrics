@@ -1,9 +1,9 @@
 #include "ui/DesktopLyricsWindow.h"
 
 #include <algorithm>
+#include <array>
 #include <cstring>
 #include <memory>
-#include <vector>
 
 namespace smtc::ui {
 namespace {
@@ -31,20 +31,29 @@ std::unique_ptr<Gdiplus::Brush> makeBrush(const config::TextStyle& style, const 
     return std::make_unique<Gdiplus::LinearGradientBrush>(p1, p2, toGdiColor(style.color1), toGdiColor(style.color2));
 }
 
-std::vector<std::wstring_view> splitDisplayLines(std::wstring_view text) {
-    std::vector<std::wstring_view> lines;
+struct DisplayLines {
+    std::array<std::wstring_view, 4> items{};
+    std::size_t count = 0;
+};
+
+DisplayLines splitDisplayLines(std::wstring_view text) {
+    DisplayLines lines;
     std::size_t start = 0;
-    while (start <= text.size()) {
-        const auto end = text.find(L'\n', start);
-        if (end == std::wstring_view::npos) {
-            lines.push_back(text.substr(start));
+    while (start <= text.size() && lines.count < lines.items.size()) {
+        if (lines.count == lines.items.size() - 1) {
+            lines.items[lines.count++] = text.substr(start);
             break;
         }
-        lines.push_back(text.substr(start, end - start));
+        const auto end = text.find(L'\n', start);
+        if (end == std::wstring_view::npos) {
+            lines.items[lines.count++] = text.substr(start);
+            break;
+        }
+        lines.items[lines.count++] = text.substr(start, end - start);
         start = end + 1;
     }
-    if (lines.empty()) {
-        lines.push_back(text.substr(0, 0));
+    if (lines.count == 0) {
+        lines.items[lines.count++] = text.substr(0, 0);
     }
     return lines;
 }
@@ -114,10 +123,15 @@ void DesktopLyricsWindow::applyConfig(const config::AppConfig& config) {
     redraw();
 }
 
-void DesktopLyricsWindow::updateLyrics(std::wstring text, int highlightPercent, int highlightLine) {
-    text_ = std::move(text);
-    highlightPercent_ = std::clamp(highlightPercent, 0, 100);
-    highlightLine_ = std::max(0, highlightLine);
+void DesktopLyricsWindow::updateLyrics(std::wstring_view text, int highlightPercent, int highlightLine) {
+    const auto clampedHighlight = std::clamp(highlightPercent, 0, 100);
+    const auto clampedLine = std::max(0, highlightLine);
+    if (text_ == text && highlightPercent_ == clampedHighlight && highlightLine_ == clampedLine) {
+        return;
+    }
+    text_.assign(text.begin(), text.end());
+    highlightPercent_ = clampedHighlight;
+    highlightLine_ = clampedLine;
     redraw();
 }
 
@@ -220,29 +234,30 @@ void DesktopLyricsWindow::redraw() {
             const int lineSpacing = family->GetLineSpacing(style);
             const float fontSize = static_cast<float>(config_.font.size);
             const float lineHeight = emHeight > 0 ? fontSize * static_cast<float>(lineSpacing) / static_cast<float>(emHeight) : fontSize * 1.25f;
-            const float totalHeight = lineHeight * static_cast<float>(lines.size());
+            const float totalHeight = lineHeight * static_cast<float>(lines.count);
             const float startY = (static_cast<float>(height_) - totalHeight) / 2.0f;
-            const int activeLine = std::clamp(highlightLine_, 0, static_cast<int>(lines.size()) - 1);
+            const int activeLine = std::clamp(highlightLine_, 0, static_cast<int>(lines.count) - 1);
 
-            for (std::size_t i = 0; i < lines.size(); ++i) {
+            for (std::size_t i = 0; i < lines.count; ++i) {
+                const auto lineText = lines.items[i];
                 const float y = startY + static_cast<float>(i) * lineHeight;
                 Gdiplus::RectF layout(0.0f, y, static_cast<Gdiplus::REAL>(width_), lineHeight);
 
                 // Determine which style to use for this line
                 // In two-line mode: line 0 (active) uses highlight, line 1 (inactive) uses highlight2
                 const bool isActiveLine = (static_cast<int>(i) == activeLine);
-                const bool isSecondLine = (lines.size() > 1 && i == 1 && activeLine == 0);
+                const bool isSecondLine = (lines.count > 1 && i == 1 && activeLine == 0);
                 const auto& lineNormalStyle = isSecondLine ? config_.highlight2 : config_.normal;
                 const auto& lineBorderStyle = isSecondLine ? config_.highlight2.border : config_.normal.border;
 
                 Gdiplus::GraphicsPath shadowPath;
                 Gdiplus::RectF shadowLayout(2.0f, y + 2.0f, static_cast<Gdiplus::REAL>(width_), lineHeight);
-                shadowPath.AddString(lines[i].data(), static_cast<INT>(lines[i].size()), family, style, fontSize, shadowLayout, &format);
+                shadowPath.AddString(lineText.data(), static_cast<INT>(lineText.size()), family, style, fontSize, shadowLayout, &format);
                 Gdiplus::SolidBrush shadowBrush(Gdiplus::Color(150, 0, 0, 0));
                 graphics.FillPath(&shadowBrush, &shadowPath);
 
                 Gdiplus::GraphicsPath textPath;
-                textPath.AddString(lines[i].data(), static_cast<INT>(lines[i].size()), family, style, fontSize, layout, &format);
+                textPath.AddString(lineText.data(), static_cast<INT>(lineText.size()), family, style, fontSize, layout, &format);
                 Gdiplus::RectF bounds;
                 textPath.GetBounds(&bounds);
                 Gdiplus::Pen outline(colorFromColorRef(lineBorderStyle), 1.0f);

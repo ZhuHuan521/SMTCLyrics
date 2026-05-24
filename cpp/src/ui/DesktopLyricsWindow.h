@@ -9,6 +9,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <string_view>
 
 namespace smtc::ui {
 
@@ -20,7 +21,7 @@ public:
     bool create(const config::WindowConfig& windowConfig);
     void destroy();
     void applyConfig(const config::AppConfig& config);
-    void updateLyrics(std::wstring text, int highlightPercent = 0, int highlightLine = 0);
+    void updateLyrics(std::wstring_view text, int highlightPercent = 0, int highlightLine = 0);
     void setDraggable(bool draggable);
     void setGeometryChangedCallback(std::function<void(const config::WindowConfig&)> callback);
     void move(int left, int top, int width, int height);
