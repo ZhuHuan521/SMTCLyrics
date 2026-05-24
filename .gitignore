@@ -1,0 +1,54 @@
+# Build outputs
+build/
+cmake-build-*/
+out/
+bin/
+obj/
+
+# CMake generated files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+CTestTestfile.cmake
+Testing/
+Makefile
+CMakeUserPresets.json
+
+# Compiled binaries and intermediates
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+*.exe
+*.pdb
+*.ilk
+*.exp
+*.res
+*.aps
+
+# Local runtime data
+cache.json
+config.ini
+lyrics/
+*.log
+
+# IDE/editor local state
+.vs/
+.idea/
+.vscode/.ropeproject/
+*.user
+*.suo
+*.VC.db
+*.opendb
+*.wsuo
+.claude/settings.local.json
+
+# Generated reports
+.VSCodeCounter/
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini

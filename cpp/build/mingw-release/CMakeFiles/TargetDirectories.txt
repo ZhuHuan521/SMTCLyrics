@@ -1,5 +1,0 @@
-D:/programming/SMTCLyrics/cpp/build/mingw-release/CMakeFiles/smtclyrics_core.dir
-D:/programming/SMTCLyrics/cpp/build/mingw-release/CMakeFiles/SMTCLyrics.dir
-D:/programming/SMTCLyrics/cpp/build/mingw-release/CMakeFiles/SMTCLyricsTests.dir
-D:/programming/SMTCLyrics/cpp/build/mingw-release/CMakeFiles/edit_cache.dir
-D:/programming/SMTCLyrics/cpp/build/mingw-release/CMakeFiles/rebuild_cache.dir

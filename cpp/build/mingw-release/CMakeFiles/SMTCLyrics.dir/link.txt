@@ -1,3 +1,0 @@
-D:\mingw64\bin\cmake.exe -E rm -f CMakeFiles\SMTCLyrics.dir/objects.a
-D:\mingw64\bin\ar.exe qc CMakeFiles\SMTCLyrics.dir/objects.a @CMakeFiles\SMTCLyrics.dir\objects1.rsp
-D:\mingw64\bin\c++.exe -O3 -DNDEBUG -mwindows -Wl,--whole-archive CMakeFiles\SMTCLyrics.dir/objects.a -Wl,--no-whole-archive -o SMTCLyrics.exe -Wl,--out-implib,libSMTCLyrics.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\SMTCLyrics.dir\linkLibs.rsp
