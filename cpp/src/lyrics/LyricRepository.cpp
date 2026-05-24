@@ -20,6 +20,21 @@ std::wstring lowerNoSpace(std::wstring text) {
     return out;
 }
 
+std::wstring artistForKeyword(std::wstring_view artist) {
+    const auto cleanArtist = util::trim(artist);
+    const auto dash = cleanArtist.find(L'\u2014');
+    if (dash == std::wstring::npos) {
+        return cleanArtist;
+    }
+
+    const auto singer = util::trim(std::wstring_view(cleanArtist).substr(0, dash));
+    const auto album = util::trim(std::wstring_view(cleanArtist).substr(dash + 1));
+    if (singer.empty() || album.empty()) {
+        return cleanArtist;
+    }
+    return singer;
+}
+
 }
 
 LyricRepository::LyricRepository(std::filesystem::path lyricsDirectory, cache::LyricCache& cache, OnlineLyrics online)
@@ -107,10 +122,10 @@ std::vector<std::uint8_t> LyricRepository::fetchOnline(LyricSource source, std::
 }
 
 std::wstring makeKeyword(std::wstring_view artist, std::wstring_view title) {
-    const auto cleanArtist = util::trim(artist);
     const auto cleanTitle = util::trim(title);
+    const auto cleanArtist = artistForKeyword(artist);
     if (!cleanArtist.empty() && !cleanTitle.empty()) {
-        return cleanArtist + L" " + cleanTitle;
+        return cleanTitle + L" - " + cleanArtist;
     }
     return cleanTitle.empty() ? cleanArtist : cleanTitle;
 }
