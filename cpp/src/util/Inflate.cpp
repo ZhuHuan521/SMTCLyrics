@@ -7,11 +7,13 @@
 namespace smtc::util {
 namespace {
 
+// Deflate 是低位在前的位流，BitReader 负责逐位读取并维护当前位置。
 class BitReader {
 public:
     BitReader(const std::uint8_t* data, std::size_t size) : data_(data), size_(size) {}
 
     std::uint32_t readBits(int count) {
+        // Deflate 中多位字段按小端位序累积。
         std::uint32_t value = 0;
         for (int i = 0; i < count; ++i) {
             value |= readBit() << i;
@@ -20,11 +22,13 @@ public:
     }
 
     void alignByte() {
+        // 未压缩块从下一个字节边界开始。
         bitPos_ = (bitPos_ + 7) & ~std::size_t{7};
     }
 
 private:
     std::uint32_t readBit() {
+        // 越界说明压缩流损坏，抛异常交给外层转成空结果。
         if (bitPos_ >= size_ * 8) throw std::runtime_error("unexpected end of deflate stream");
         const auto byte = data_[bitPos_ / 8];
         const auto bit = static_cast<std::uint32_t>((byte >> (bitPos_ % 8)) & 1);
@@ -37,6 +41,7 @@ private:
     std::size_t bitPos_ = 0;
 };
 
+// Deflate 的规范码需要按位反转后才能匹配读取顺序。
 std::uint32_t reverseBits(std::uint32_t code, int length) {
     std::uint32_t result = 0;
     for (int i = 0; i < length; ++i) {
@@ -46,9 +51,11 @@ std::uint32_t reverseBits(std::uint32_t code, int length) {
     return result;
 }
 
+// 简单的规范 Huffman 表实现，按“码长 + 反转后的码值”线性匹配。
 class HuffmanTree {
 public:
     void build(const std::vector<int>& lengths) {
+        // lengths 的下标就是符号，值是该符号码长。
         entries_.clear();
         maxBits_ = 0;
         for (int length : lengths) {
@@ -78,6 +85,7 @@ public:
     }
 
     int decode(BitReader& reader) const {
+        // 每读一位就尝试匹配当前长度的 Huffman 码。
         std::uint32_t code = 0;
         for (int length = 1; length <= maxBits_; ++length) {
             code |= reader.readBits(1) << (length - 1);
@@ -101,6 +109,7 @@ private:
     int maxBits_ = 0;
 };
 
+// Deflate 固定 Huffman 字面量/长度表。
 HuffmanTree fixedLiteralTree() {
     std::vector<int> lengths(288, 0);
     for (int i = 0; i <= 143; ++i) lengths[static_cast<std::size_t>(i)] = 8;
@@ -112,6 +121,7 @@ HuffmanTree fixedLiteralTree() {
     return tree;
 }
 
+// Deflate 固定 Huffman 距离表。
 HuffmanTree fixedDistanceTree() {
     HuffmanTree tree;
     tree.build(std::vector<int>(32, 5));
@@ -119,6 +129,7 @@ HuffmanTree fixedDistanceTree() {
 }
 
 void decodeCompressedBlock(BitReader& reader, const HuffmanTree& literalTree, const HuffmanTree& distanceTree, std::vector<std::uint8_t>& output) {
+    // RFC 1951 的长度/距离基值与附加位表。
     static constexpr int kLengthBase[] = {3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258};
     static constexpr int kLengthExtra[] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0};
     static constexpr int kDistanceBase[] = {1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577};
@@ -127,10 +138,13 @@ void decodeCompressedBlock(BitReader& reader, const HuffmanTree& literalTree, co
     for (;;) {
         const int symbol = literalTree.decode(reader);
         if (symbol < 256) {
+            // 普通字节直接写入输出。
             output.push_back(static_cast<std::uint8_t>(symbol));
         } else if (symbol == 256) {
+            // 256 是块结束符。
             return;
         } else if (symbol >= 257 && symbol <= 285) {
+            // 长度/距离对表示从已有输出中复制一段数据。
             const int lengthIndex = symbol - 257;
             int length = kLengthBase[lengthIndex] + static_cast<int>(reader.readBits(kLengthExtra[lengthIndex]));
             const int distanceSymbol = distanceTree.decode(reader);
@@ -148,6 +162,7 @@ void decodeCompressedBlock(BitReader& reader, const HuffmanTree& literalTree, co
 }
 
 void decodeDynamicBlock(BitReader& reader, std::vector<std::uint8_t>& output) {
+    // 动态块先描述“码长 Huffman 树”，再用它解出字面量树和距离树。
     static constexpr int kCodeLengthOrder[] = {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
 
     const int literalCount = static_cast<int>(reader.readBits(5)) + 257;
@@ -192,6 +207,7 @@ void decodeDynamicBlock(BitReader& reader, std::vector<std::uint8_t>& output) {
 }
 
 std::vector<std::uint8_t> inflateDeflate(const std::uint8_t* data, std::size_t size) {
+    // 逐块解 Deflate：0=未压缩，1=固定 Huffman，2=动态 Huffman。
     BitReader reader(data, size);
     std::vector<std::uint8_t> output;
     bool finalBlock = false;
@@ -221,6 +237,7 @@ std::vector<std::uint8_t> inflateDeflate(const std::uint8_t* data, std::size_t s
 
 std::vector<std::uint8_t> inflateZlib(const std::vector<std::uint8_t>& bytes) {
     try {
+        // 先校验 zlib 头，再把后续 Deflate 数据交给 inflateDeflate。
         if (bytes.size() < 2) return {};
         const auto cmf = bytes[0];
         const auto flg = bytes[1];
@@ -229,6 +246,7 @@ std::vector<std::uint8_t> inflateZlib(const std::vector<std::uint8_t>& bytes) {
         if ((flg & 0x20) != 0) return {};
         return inflateDeflate(bytes.data() + 2, bytes.size() - 2);
     } catch (...) {
+        // 解压失败统一返回空，调用方据此尝试其他歌词格式或来源。
         return {};
     }
 }

@@ -5,6 +5,7 @@
 
 namespace smtc::util {
 
+// 可执行文件、临时目录、文件存在性和命令行引用相关工具。
 std::filesystem::path executablePath();
 std::filesystem::path executableDirectory();
 std::filesystem::path tempDirectory();

@@ -10,10 +10,12 @@
 namespace smtc::lyrics {
 namespace {
 
+// 判断一行是否含有非空白字符，避免空行参与显示。
 bool hasVisibleText(std::wstring_view text) {
     return std::any_of(text.begin(), text.end(), [](wchar_t ch) { return !std::iswspace(ch); });
 }
 
+// 对 string_view 做首尾空白裁剪，不分配新字符串。
 std::wstring_view trimView(std::wstring_view text) {
     while (!text.empty() && std::iswspace(text.front())) {
         text.remove_prefix(1);
@@ -24,6 +26,7 @@ std::wstring_view trimView(std::wstring_view text) {
     return text;
 }
 
+// 解析有符号整数，并做溢出保护。
 std::optional<std::int64_t> parseInteger(std::wstring_view text) {
     text = trimView(text);
     if (text.empty()) return std::nullopt;
@@ -47,6 +50,7 @@ std::optional<std::int64_t> parseInteger(std::wstring_view text) {
     return negative ? -value : value;
 }
 
+// 解析 start,duration 形式；KRC 部分标签还允许尾随第三字段。
 bool parseIntegerPair(std::wstring_view text, std::int64_t& first, std::int64_t& second, bool allowTrailingFields = false) {
     const auto comma = text.find(L',');
     if (comma == std::wstring_view::npos) return false;
@@ -65,6 +69,7 @@ bool parseIntegerPair(std::wstring_view text, std::int64_t& first, std::int64_t&
     return true;
 }
 
+// YRC 单词标签常见格式是 (start,duration,0)，这里只取前两个时间字段。
 bool parseIntegerTripleFirstTwo(std::wstring_view text, std::int64_t& first, std::int64_t& second) {
     const auto firstComma = text.find(L',');
     if (firstComma == std::wstring_view::npos) return false;
@@ -79,6 +84,7 @@ bool parseIntegerTripleFirstTwo(std::wstring_view text, std::int64_t& first, std
     return true;
 }
 
+// 去除行首行尾换行符，保留歌词内部空白。
 std::wstring_view trimLineBreaks(std::wstring_view text) {
     while (!text.empty() && (text.front() == L'\r' || text.front() == L'\n')) {
         text.remove_prefix(1);
@@ -89,6 +95,7 @@ std::wstring_view trimLineBreaks(std::wstring_view text) {
     return text;
 }
 
+// QRC/YRC 的词时间有时是绝对时间，有时是相对行首；这里做兼容归一化。
 std::int64_t qrcWordOffset(std::int64_t lineStartMs, std::int64_t lineDurationMs, std::int64_t wordStartMs) {
     const auto lineEndMs = lineStartMs + std::max<std::int64_t>(0, lineDurationMs);
     if (wordStartMs >= lineStartMs - 100 && wordStartMs <= lineEndMs + 1000) {
@@ -97,6 +104,7 @@ std::int64_t qrcWordOffset(std::int64_t lineStartMs, std::int64_t lineDurationMs
     return std::max<std::int64_t>(0, wordStartMs);
 }
 
+// 在 YRC 行体中寻找下一个 (start,duration,...) 单词时间标签。
 bool findYrcWordTag(std::wstring_view text, std::size_t start, std::size_t& tagBegin, std::size_t& tagEnd, std::int64_t& wordStartMs, std::int64_t& wordDurationMs) {
     std::size_t search = start;
     while (search < text.size()) {
@@ -114,6 +122,7 @@ bool findYrcWordTag(std::wstring_view text, std::size_t start, std::size_t& tagB
     return false;
 }
 
+// YRC 某些歌词片段末尾还会附带 [start,duration] 内联标签，显示前要剥掉。
 std::wstring_view removeTrailingYrcInlineTags(std::wstring_view text) {
     for (;;) {
         text = trimLineBreaks(text);
@@ -129,6 +138,7 @@ std::wstring_view removeTrailingYrcInlineTags(std::wstring_view text) {
     }
 }
 
+// 解析网易云 YRC 的单行：[行开始,行时长](词开始,词时长,0)词...
 bool parseYrcLine(std::wstring_view rawLine, LrcLine& out) {
     rawLine = trimLineBreaks(rawLine);
     if (rawLine.empty() || rawLine.front() != L'[') return false;
@@ -186,6 +196,7 @@ bool parseYrcLine(std::wstring_view rawLine, LrcLine& out) {
     return foundWordTiming && hasVisibleText(out.text);
 }
 
+// QRC 行标签记录每一行歌词在原文中的范围和时间。
 struct QrcLineTag {
     std::size_t begin = 0;
     std::size_t end = 0;
@@ -193,6 +204,7 @@ struct QrcLineTag {
     std::int64_t durationMs = 0;
 };
 
+// QQ QRC 的行级时间标签形如 [start,duration]。
 std::vector<QrcLineTag> findQrcLineTags(std::wstring_view text) {
     std::vector<QrcLineTag> tags;
     std::size_t pos = 0;
@@ -214,6 +226,7 @@ std::vector<QrcLineTag> findQrcLineTags(std::wstring_view text) {
     return tags;
 }
 
+// 解析 QRC 行体：普通文本与 (start,duration) 词级时间标签交错出现。
 bool parseQrcLineBody(std::int64_t lineStartMs, std::int64_t lineDurationMs, std::wstring_view rawBody, LrcLine& out) {
     const auto body = trimLineBreaks(rawBody);
     out = {};
@@ -268,11 +281,13 @@ bool parseQrcLineBody(std::int64_t lineStartMs, std::int64_t lineDurationMs, std
 }
 
 bool LrcParser::parseUtf8(std::string_view lrcUtf8) {
+    // 解析入口会依次尝试 YRC、QRC，最后回退到普通 LRC/KRC 行解析。
     lines_.clear();
     const auto text = util::utf8ToWide(lrcUtf8);
     const std::wstring_view textView(text);
     lines_.reserve(static_cast<std::size_t>(std::count(text.begin(), text.end(), L'\n') + 1));
     if (parseYrcContent(textView, lines_)) {
+        // 所有格式最终都按时间排序，frameAt 才能二分查找。
         std::stable_sort(lines_.begin(), lines_.end(), [](const LrcLine& a, const LrcLine& b) { return a.timeMs < b.timeMs; });
         return true;
     }
@@ -283,6 +298,7 @@ bool LrcParser::parseUtf8(std::string_view lrcUtf8) {
 
     std::size_t lineStart = 0;
     while (lineStart <= textView.size()) {
+        // 普通 LRC 支持一行多个 [mm:ss.xx] 标签，共用同一段歌词文本。
         const auto lineEnd = textView.find(L'\n', lineStart);
         auto rawLine = textView.substr(lineStart, lineEnd == std::wstring_view::npos ? std::wstring_view::npos : lineEnd - lineStart);
         if (!rawLine.empty() && rawLine.back() == L'\r') {
@@ -324,18 +340,21 @@ bool LrcParser::parseUtf8(std::string_view lrcUtf8) {
 }
 
 bool LrcParser::parseBytes(const std::vector<std::uint8_t>& bytes) {
+    // 在线源和本地歌词最终都以字节形式进入这里。
     if (bytes.empty()) {
         lines_.clear();
         return false;
     }
     std::string text(reinterpret_cast<const char*>(bytes.data()), bytes.size());
     if (text.size() >= 3 && static_cast<unsigned char>(text[0]) == 0xEF && static_cast<unsigned char>(text[1]) == 0xBB && static_cast<unsigned char>(text[2]) == 0xBF) {
+        // 去掉 UTF-8 BOM，避免第一行标签解析失败。
         text.erase(0, 3);
     }
     return parseUtf8(text);
 }
 
 LyricFrame LrcParser::frameAt(std::int64_t positionMs, int displayMode) const {
+    // displayMode: 1=当前行，2=当前+下一行，3=上一行+当前。
     LyricFrame frame;
     if (lines_.empty()) return frame;
 
@@ -347,6 +366,7 @@ LyricFrame LrcParser::frameAt(std::int64_t positionMs, int displayMode) const {
     if (!current) return frame;
 
     if (displayMode == 2) {
+        // 两句向后：当前行高亮，下一句用第二行样式显示。
         if (auto next = visibleLineNear(current->index + 1, +1, 3, current->text)) {
             frame.text.reserve(current->text.size() + 1 + next->text.size());
             frame.text.append(current->text.begin(), current->text.end()).push_back(L'\n');
@@ -356,6 +376,7 @@ LyricFrame LrcParser::frameAt(std::int64_t positionMs, int displayMode) const {
             frame.text.assign(current->text.begin(), current->text.end());
         }
     } else if (displayMode == 3) {
+        // 两句向前：上一句在第一行，当前行在第二行高亮。
         if (auto previous = visibleLineNear(current->index - 1, -1, 3, current->text)) {
             frame.text.reserve(previous->text.size() + 1 + current->text.size());
             frame.text.append(previous->text.begin(), previous->text.end()).push_back(L'\n');
@@ -372,6 +393,7 @@ LyricFrame LrcParser::frameAt(std::int64_t positionMs, int displayMode) const {
 }
 
 std::optional<std::int64_t> LrcParser::parseTimestamp(std::wstring_view token) {
+    // 普通 LRC 时间标签形如 mm:ss、mm:ss.xx 或 mm:ss.xxx。
     const auto colon = token.find(L':');
     if (colon == std::wstring::npos) return std::nullopt;
     auto minuteText = trimView(token.substr(0, colon));
@@ -415,6 +437,7 @@ std::optional<std::int64_t> LrcParser::parseTimestamp(std::wstring_view token) {
         ++fractionDigits;
     }
     if (roundDigit >= 5) {
+        // 超过三位小数时做四舍五入，保持毫秒精度。
         ++fractionMs;
         if (fractionMs >= 1000) {
             ++seconds;
@@ -426,6 +449,7 @@ std::optional<std::int64_t> LrcParser::parseTimestamp(std::wstring_view token) {
 }
 
 bool LrcParser::parseKrcLine(std::wstring_view rawLine, LrcLine& out) {
+    // 酷狗 KRC 单行格式：[start,duration]<offset,duration,...>词...
     if (rawLine.empty() || rawLine.front() != L'[') return false;
     const auto headerEnd = rawLine.find(L']');
     if (headerEnd == std::wstring_view::npos) return false;
@@ -478,6 +502,7 @@ bool LrcParser::parseKrcLine(std::wstring_view rawLine, LrcLine& out) {
 }
 
 bool LrcParser::parseYrcContent(std::wstring_view text, std::vector<LrcLine>& out) {
+    // 只有确认至少解析到词级时间时，才把整段文本当作 YRC。
     std::vector<LrcLine> parsed;
     bool hasTimedWords = false;
     std::size_t lineStart = 0;
@@ -504,6 +529,7 @@ bool LrcParser::parseYrcContent(std::wstring_view text, std::vector<LrcLine>& ou
 }
 
 bool LrcParser::parseQrcContent(std::wstring_view text, std::vector<LrcLine>& out) {
+    // QRC 先找所有行级标签，再用相邻标签之间的文本作为当前行体。
     const auto tags = findQrcLineTags(text);
     if (tags.empty()) return false;
 
@@ -528,12 +554,14 @@ bool LrcParser::parseQrcContent(std::wstring_view text, std::vector<LrcLine>& ou
 }
 
 int LrcParser::findCurrentIndex(std::int64_t positionMs) const {
+    // upper_bound 找到第一个晚于当前位置的行，前一行就是当前行。
     auto it = std::upper_bound(lines_.begin(), lines_.end(), positionMs, [](std::int64_t value, const LrcLine& line) { return value < line.timeMs; });
     if (it == lines_.begin()) return -1;
     return static_cast<int>(std::distance(lines_.begin(), std::prev(it)));
 }
 
 int LrcParser::highlightPercentForLine(int index, std::int64_t positionMs) const {
+    // 有词级片段时按片段内进度高亮，否则用整行 duration 估算。
     if (index < 0 || index >= static_cast<int>(lines_.size())) return 0;
     const auto& line = lines_[index];
     const auto textLength = line.text.size();
@@ -549,6 +577,7 @@ int LrcParser::highlightPercentForLine(int index, std::int64_t positionMs) const
         }
 
         const auto next = std::upper_bound(
+            // 找到当前位置所在的词级片段。
             line.segments.begin(),
             line.segments.end(),
             localMs,
@@ -574,6 +603,7 @@ int LrcParser::highlightPercentForLine(int index, std::int64_t positionMs) const
 }
 
 std::optional<VisibleLyricLine> LrcParser::visibleLineNear(int index, int direction, int maxDistance, std::wstring_view excludedText) const {
+    // 向前或向后寻找最近的非空行，跳过与当前行重复的文本。
     for (int i = 0; i <= maxDistance; ++i) {
         const int candidate = index + i * direction;
         if (candidate < 0 || candidate >= static_cast<int>(lines_.size())) continue;

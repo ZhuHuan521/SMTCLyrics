@@ -11,6 +11,7 @@
 namespace smtc::lyrics {
 namespace {
 
+// QRC 使用固定密钥的 3DES，再用 zlib 解压；下面这些类型让 DES 过程更明确。
 using DesBlock = std::array<std::uint8_t, 8>;
 using RoundKey = std::array<std::uint8_t, 6>;
 using DesSchedule = std::array<RoundKey, 16>;
@@ -19,6 +20,7 @@ using TripleDesSchedule = std::array<DesSchedule, 3>;
 constexpr int kEncrypt = 1;
 constexpr int kDecrypt = 0;
 
+// DES 的 8 个 S-Box，来自标准 DES 轮函数。
 constexpr std::array<int, 64> kBox1{
     14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7,
     0, 15, 7, 4, 14, 2, 13, 1, 10, 6, 12, 11, 9, 5, 3, 8,
@@ -77,6 +79,7 @@ constexpr std::array<int, 64> kBox8{
 
 constexpr std::array<int, 16> kKeyRndShift{1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1};
 
+// DES 密钥置换和压缩置换表。
 constexpr std::array<int, 28> kKeyPermC{
     56, 48, 40, 32, 24, 16, 8, 0, 57, 49, 41, 33, 25, 17,
     9, 1, 58, 50, 42, 34, 26, 18, 10, 2, 59, 51, 43, 35
@@ -94,12 +97,14 @@ constexpr std::array<int, 48> kKeyCompression{
     52, 45, 41, 49, 35, 28, 31
 };
 
+// 从字节数组中取某一位，并移动到目标 bit 位置。
 std::uint32_t getBitFromByteArray(const std::uint8_t* bytes, int bit, int targetShift) {
     const int index = bit / 32 * 4 + 3 - (bit % 32) / 8;
     const auto byteValue = static_cast<std::uint32_t>(bytes[index]);
     return ((byteValue >> (7 - (bit % 8))) & 0x01u) << targetShift;
 }
 
+// 从 32 位整数中按 DES 约定取位，分别服务左右两种排列写法。
 std::uint32_t getBitFromIntR(std::uint32_t value, int bit, int targetShift) {
     return ((value >> (31 - bit)) & 0x01u) << targetShift;
 }
@@ -109,10 +114,12 @@ std::uint32_t getBitFromIntL(std::uint32_t value, int bit, int targetShift) {
 }
 
 std::size_t formatSBoxInput(std::uint32_t value) {
+    // S-Box 索引由首尾两位作为行，中间四位作为列。
     return static_cast<std::size_t>((value & 0x20u) | ((value & 0x1fu) >> 1) | ((value & 0x01u) << 4));
 }
 
 void keySchedule(const std::array<std::uint8_t, 24>& key, int offset, DesSchedule& schedule, int mode) {
+    // 从 24 字节 3DES key 中取一个 8 字节子密钥并生成 16 轮轮密钥。
     std::uint32_t c = 0;
     std::uint32_t d = 0;
     for (int i = 0; i < 28; ++i) {
@@ -125,6 +132,7 @@ void keySchedule(const std::array<std::uint8_t, 24>& key, int offset, DesSchedul
         c = ((c << shift) | (c >> (28 - shift))) & 0xFFFFFFF0u;
         d = ((d << shift) | (d >> (28 - shift))) & 0xFFFFFFF0u;
         const int generatedIndex = mode == kDecrypt ? 15 - i : i;
+        // 解密时轮密钥顺序反向。
         auto& round = schedule[static_cast<std::size_t>(generatedIndex)];
         round.fill(0);
         for (int k = 0; k < 24; ++k) {
@@ -141,6 +149,7 @@ void keySchedule(const std::array<std::uint8_t, 24>& key, int offset, DesSchedul
 }
 
 TripleDesSchedule makeDecryptSchedule() {
+    // QQ QRC 的固定 3DES 密钥，按“解密-加密-解密”顺序生成调度表。
     constexpr std::array<std::uint8_t, 24> kQqKey{
         '!', '@', '#', ')', '(', '*', '$', '%',
         '1', '2', '3', 'Z', 'X', 'C', '!', '@',
@@ -155,6 +164,7 @@ TripleDesSchedule makeDecryptSchedule() {
 }
 
 void initialPermutation(std::array<std::uint32_t, 2>& state, const DesBlock& input) {
+    // DES 初始置换，把 64 位输入拆成左右两个 32 位状态。
     constexpr std::array<int, 32> kIp0{
         57, 49, 41, 33, 25, 17, 9, 1,
         59, 51, 43, 35, 27, 19, 11, 3,
@@ -176,6 +186,7 @@ void initialPermutation(std::array<std::uint32_t, 2>& state, const DesBlock& inp
 }
 
 void inverseInitialPermutation(const std::array<std::uint32_t, 2>& state, DesBlock& output) {
+    // DES 结束置换，把左右状态重新打包回 8 字节。
     constexpr std::array<int, 8> kOutIndices{3, 2, 1, 0, 7, 6, 5, 4};
     constexpr std::array<int, 8> kBitOffsets{7, 6, 5, 4, 3, 2, 1, 0};
 
@@ -194,6 +205,7 @@ void inverseInitialPermutation(const std::array<std::uint32_t, 2>& state, DesBlo
 }
 
 std::uint32_t f(std::uint32_t stateIn, const RoundKey& key) {
+    // DES Feistel 轮函数：扩展、异或轮密钥、S-Box、P 置换。
     const std::uint32_t t1 =
         getBitFromIntL(stateIn, 31, 0) | ((stateIn & 0xF0000000u) >> 1) |
         getBitFromIntL(stateIn, 4, 5) | getBitFromIntL(stateIn, 3, 6) |
@@ -249,6 +261,7 @@ std::uint32_t f(std::uint32_t stateIn, const RoundKey& key) {
 }
 
 void crypt(const DesBlock& input, DesBlock& output, const DesSchedule& key) {
+    // 单 DES 加/解密；差异已经体现在 keySchedule 的轮密钥顺序里。
     std::array<std::uint32_t, 2> state{};
     initialPermutation(state, input);
     for (int index = 0; index < 15; ++index) {
@@ -261,12 +274,14 @@ void crypt(const DesBlock& input, DesBlock& output, const DesSchedule& key) {
 }
 
 void tripleDesCrypt(const DesBlock& input, DesBlock& output, const TripleDesSchedule& key) {
+    // 3DES 由三个单 DES 阶段串联。
     crypt(input, output, key[0]);
     crypt(output, output, key[1]);
     crypt(output, output, key[2]);
 }
 
 int hexValue(char ch) {
+    // QRC 接口返回十六进制字符串，需要先转字节再解密。
     if (ch >= '0' && ch <= '9') return ch - '0';
     if (ch >= 'a' && ch <= 'f') return ch - 'a' + 10;
     if (ch >= 'A' && ch <= 'F') return ch - 'A' + 10;
@@ -274,6 +289,7 @@ int hexValue(char ch) {
 }
 
 std::vector<std::uint8_t> hexToBytes(std::string_view hex) {
+    // 允许密文里带少量空白；出现其他非法字符则整体失败。
     std::vector<std::uint8_t> bytes;
     bytes.reserve(hex.size() / 2);
 
@@ -299,6 +315,7 @@ std::vector<std::uint8_t> hexToBytes(std::string_view hex) {
 }
 
 std::string decryptQrc(std::string_view encryptedHex) {
+    // 外部入口：十六进制 -> 3DES 解密 -> zlib 解压 -> UTF-8 文本。
     const auto encryptedBytes = hexToBytes(encryptedHex);
     if (encryptedBytes.empty()) return {};
 
@@ -308,6 +325,7 @@ std::string decryptQrc(std::string_view encryptedHex) {
     DesBlock outputBlock{};
 
     for (std::size_t i = 0; i < encryptedBytes.size(); i += inputBlock.size()) {
+        // 最后一块不足 8 字节时只拷贝实际长度，保持与原实现兼容。
         const auto blockSize = std::min(inputBlock.size(), encryptedBytes.size() - i);
         std::copy_n(encryptedBytes.data() + i, blockSize, inputBlock.data());
         tripleDesCrypt(inputBlock, outputBlock, schedule);

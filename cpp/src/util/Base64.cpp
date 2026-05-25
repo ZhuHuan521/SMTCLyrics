@@ -4,8 +4,11 @@
 
 namespace smtc::util {
 namespace {
+
+// 标准 Base64 字母表。
 constexpr char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
+// 把一个 Base64 字符还原成 0..63；非法字符返回 -1。
 int decodeValue(unsigned char ch) {
     if (ch >= 'A' && ch <= 'Z') return ch - 'A';
     if (ch >= 'a' && ch <= 'z') return ch - 'a' + 26;
@@ -15,6 +18,7 @@ int decodeValue(unsigned char ch) {
     return -1;
 }
 
+// 以三个字节为一组编码成四个字符，末尾不足时用 '=' 补齐。
 std::string base64EncodeBytes(const std::uint8_t* data, std::size_t size) {
     std::string out;
     out.reserve(((size + 2) / 3) * 4);
@@ -33,14 +37,17 @@ std::string base64EncodeBytes(const std::uint8_t* data, std::size_t size) {
 }
 
 std::string base64Encode(std::string_view text) {
+    // string_view 版本直接把文本按原始字节编码。
     return base64EncodeBytes(reinterpret_cast<const std::uint8_t*>(text.data()), text.size());
 }
 
 std::string base64Encode(const std::vector<std::uint8_t>& bytes) {
+    // vector 版本用于接口返回体或摘要字节。
     return base64EncodeBytes(bytes.data(), bytes.size());
 }
 
 std::vector<std::uint8_t> base64Decode(std::string_view text) {
+    // 解码时忽略非 Base64 字符，方便处理接口偶尔带换行的内容。
     std::vector<std::uint8_t> out;
     int value = 0;
     int bits = -8;
@@ -59,6 +66,7 @@ std::vector<std::uint8_t> base64Decode(std::string_view text) {
 }
 
 std::string base64DecodeToString(std::string_view text) {
+    // 歌词接口通常返回 UTF-8 文本，这里只负责字节到 string 的搬运。
     const auto bytes = base64Decode(text);
     return {bytes.begin(), bytes.end()};
 }

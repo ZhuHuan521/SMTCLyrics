@@ -15,9 +15,11 @@
 namespace smtc::ui {
 namespace {
 
+// 控制窗口类名和“歌词源检测完成”自定义消息。
 constexpr wchar_t kClassName[] = L"SMTCLyricsControlWindow";
 constexpr UINT kSourceCheckCompleteMessage = WM_APP + 1;
 
+// 所有子控件的 ID。不同百位表示不同设置分组，便于阅读 WM_COMMAND 分发。
 enum ControlId {
     IdFontName = 101,
     IdFontSize,
@@ -81,24 +83,29 @@ enum ControlId {
 };
 
 std::wstring intText(int value) {
+    // Win32 编辑框只接受文本，数值统一在这里转宽字符串。
     return std::to_wstring(value);
 }
 
 int sourceToCombo(int source) {
+    // 配置中的歌词源是 1..4，下拉框索引是 0..3。
     if (source < 1 || source > 4) return 0;
     return source - 1;
 }
 
 int comboToSource(int selection) {
+    // 下拉框未选择时回到 QQ 音乐。
     if (selection < 0 || selection > 3) return 1;
     return selection + 1;
 }
 
 int clampSmtcPollIntervalMs(int value) {
+    // 与配置层保持同样的轮询范围。
     return std::clamp(value, 500, 2000);
 }
 
 const wchar_t* sourceLabel(int index) {
+    // 歌词源下拉框显示文本。
     switch (index) {
     case 0: return L"QQ 音乐";
     case 1: return L"酷狗";
@@ -109,6 +116,7 @@ const wchar_t* sourceLabel(int index) {
 }
 
 const wchar_t* gradientLabel(int index) {
+    // 渐变模式下拉框显示文本。
     switch (index) {
     case 0: return L"无渐变";
     case 1: return L"两色渐变";
@@ -118,12 +126,14 @@ const wchar_t* gradientLabel(int index) {
 }
 
 bool isColorButtonId(int id) {
+    // 颜色按钮统一走 WM_DRAWITEM 和颜色选择器。
     return id == IdNormalColor1 || id == IdNormalColor2 || id == IdNormalBorder ||
            id == IdHighlightColor1 || id == IdHighlightColor2 || id == IdHighlightBorder ||
            id == IdHighlight2Color1 || id == IdHighlight2Color2 || id == IdHighlight2Border;
 }
 
 int sourceStatusId(int index) {
+    // 歌词源检测结果标签按源索引映射到控件 ID。
     switch (index) {
     case 0: return IdQqStatus;
     case 1: return IdKgStatus;
@@ -136,6 +146,7 @@ int sourceStatusId(int index) {
 }
 
 ControlWindow::ControlWindow() {
+    // 控制窗口使用固定 UI 字体，创建失败时退回系统默认 GUI 字体。
     font_ = CreateFontW(-16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
                         OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
                         DEFAULT_PITCH | FF_DONTCARE, L"Segoe UI");
@@ -146,6 +157,7 @@ ControlWindow::ControlWindow() {
 }
 
 ControlWindow::~ControlWindow() {
+    // 释放窗口和本类创建的字体资源。
     if (hwnd_) {
         DestroyWindow(hwnd_);
     }
@@ -155,6 +167,7 @@ ControlWindow::~ControlWindow() {
 }
 
 bool ControlWindow::create(const config::AppConfig& config, ControlWindowCallbacks callbacks) {
+    // 保存初始配置和回调后注册/创建 Win32 窗口。
     config_ = config;
     callbacks_ = std::move(callbacks);
 
@@ -193,6 +206,7 @@ bool ControlWindow::create(const config::AppConfig& config, ControlWindowCallbac
 }
 
 void ControlWindow::show(int command) {
+    // 外层 Application 控制窗口显示时机。
     if (hwnd_) {
         ShowWindow(hwnd_, command);
         UpdateWindow(hwnd_);
@@ -200,11 +214,13 @@ void ControlWindow::show(int command) {
 }
 
 void ControlWindow::setConfig(const config::AppConfig& config) {
+    // 外部配置变化后重新填充控件，保持 UI 与运行态一致。
     config_ = config;
     if (hwnd_) populateControls();
 }
 
 void ControlWindow::syncLyricGeometry(const config::WindowConfig& window) {
+    // 歌词窗口被拖动时，控制面板里的几何输入框也要同步。
     if (!window.hasPosition) return;
     config_.window = window;
     if (!hwnd_) return;
@@ -215,10 +231,12 @@ void ControlWindow::syncLyricGeometry(const config::WindowConfig& window) {
 }
 
 void ControlWindow::setStatusText(std::wstring text) {
+    // 底部状态栏文本更新。
     setText(IdStatusText, text);
 }
 
 LRESULT CALLBACK ControlWindow::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
+    // 把 Win32 静态回调转发到 ControlWindow 实例。
     auto* self = reinterpret_cast<ControlWindow*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
     if (message == WM_NCCREATE) {
         auto* create = reinterpret_cast<CREATESTRUCTW*>(lParam);
@@ -234,6 +252,7 @@ LRESULT CALLBACK ControlWindow::WndProc(HWND hwnd, UINT message, WPARAM wParam, 
 LRESULT ControlWindow::handleMessage(UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
     case WM_COMMAND:
+        // 按按钮 ID 分发到对应设置保存或业务操作。
         switch (LOWORD(wParam)) {
         case IdApplyFont: applyFontAndLyricsSettings(); return 0;
         case IdSaveSongOffset: applySongOffset(); return 0;
@@ -257,9 +276,11 @@ LRESULT ControlWindow::handleMessage(UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
     case WM_DRAWITEM:
+        // 颜色按钮是 owner-draw，需要自己画色块。
         if (drawColorButton(*reinterpret_cast<DRAWITEMSTRUCT*>(lParam))) return TRUE;
         break;
     case kSourceCheckCompleteMessage: {
+        // 后台检测线程完成后把结果数组交回 UI 线程。
         std::unique_ptr<std::array<bool, 4>> status(reinterpret_cast<std::array<bool, 4>*>(lParam));
         completeSourceCheck(*status);
         return 0;
@@ -268,6 +289,7 @@ LRESULT ControlWindow::handleMessage(UINT message, WPARAM wParam, LPARAM lParam)
         DestroyWindow(hwnd_);
         return 0;
     case WM_DESTROY:
+        // 控制窗口关闭即退出整个程序。
         hwnd_ = nullptr;
         PostQuitMessage(0);
         return 0;
@@ -278,6 +300,7 @@ LRESULT ControlWindow::handleMessage(UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 void ControlWindow::createControls() {
+    // 这里使用固定坐标创建传统 Win32 控件，分组与 AppConfig 字段基本对应。
     // 基础设置
     addControl(L"BUTTON", L"基础设置", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 14, 12, 390, 252, 0);
     addLabel(L"字体", 30, 44, 54, 24);
@@ -385,14 +408,17 @@ void ControlWindow::createControls() {
     addValueLabel(L"", 14, 696, 786, 28, IdStatusText);
 
     for (int comboId : {IdNormalGradient, IdHighlightGradient, IdHighlight2Gradient}) {
+        // 初始化渐变模式下拉框。
         for (int i = 0; i < 3; ++i) SendMessageW(GetDlgItem(hwnd_, comboId), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(gradientLabel(i)));
     }
     for (int comboId : {IdSource1, IdSource2, IdSource3, IdSource4}) {
+        // 初始化歌词源优先级下拉框。
         for (int i = 0; i < 4; ++i) SendMessageW(GetDlgItem(hwnd_, comboId), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(sourceLabel(i)));
     }
 }
 
 void ControlWindow::populateControls() {
+    // 把当前 config_ 写入所有输入框、复选框、单选框和下拉框。
     setText(IdFontName, config_.font.name);
     setText(IdFontSize, intText(config_.font.size));
     setChecked(IdFontBold, config_.font.bold);
@@ -414,22 +440,26 @@ void ControlWindow::populateControls() {
 }
 
 void ControlWindow::applyFontAndLyricsSettings() {
+    // 基础设置包括字体、全局偏移、SMTC 和显示方式等可从控件读出的字段。
     config_ = readConfigFromControls();
     if (callbacks_.applyConfig) callbacks_.applyConfig(config_);
     setStatusText(L"基础设置已保存");
 }
 
 void ControlWindow::applySongOffset() {
+    // 歌曲微调是当前歌曲独立偏移，不直接写入 AppConfig。
     const int offset = getInt(IdSongOffset, 0);
     if (callbacks_.saveSongOffset) callbacks_.saveSongOffset(offset);
     setStatusText(L"歌曲微调已保存");
 }
 
 void ControlWindow::setSongOffset(int offsetMs) {
+    // Application 在换歌时会把缓存里的单曲偏移同步到这里。
     setText(IdSongOffset, intText(offsetMs));
 }
 
 void ControlWindow::applyColorSettings() {
+    // 颜色按钮已经直接写 config_，这里再读取下拉框等控件并应用。
     config_ = readConfigFromControls();
     if (callbacks_.applyConfig) callbacks_.applyConfig(config_);
     updateColorSwatches();
@@ -455,6 +485,7 @@ void ControlWindow::applySourceSettings() {
 }
 
 void ControlWindow::saveLyricGeometry() {
+    // 用户手动输入的几何值会移动歌词窗口，再由回调保存位置。
     config_.window.left = getInt(IdWinLeft, config_.window.left);
     config_.window.top = getInt(IdWinTop, config_.window.top);
     config_.window.width = getInt(IdWinWidth, config_.window.width);
@@ -465,6 +496,7 @@ void ControlWindow::saveLyricGeometry() {
 }
 
 void ControlWindow::toggleLock() {
+    // lyricDraggable_ 为 true 表示当前已解锁、允许拖动。
     lyricDraggable_ = !lyricDraggable_;
     if (callbacks_.setLyricDraggable) callbacks_.setLyricDraggable(lyricDraggable_);
     updateLockControls();
@@ -472,6 +504,7 @@ void ControlWindow::toggleLock() {
 }
 
 void ControlWindow::startSourceCheck() {
+    // 歌词源检测会访问网络，放到后台线程避免卡住窗口。
     if (sourceCheckRunning_) return;
     sourceCheckRunning_ = true;
     for (int i = 0; i < 4; ++i) setText(sourceStatusId(i), L"检测中");
@@ -481,6 +514,7 @@ void ControlWindow::startSourceCheck() {
     HWND target = hwnd_;
     auto check = callbacks_.checkLyricSources;
     std::thread([target, check = std::move(check)]() mutable {
+        // 结果数组通过 PostMessage 交回主线程；投递失败时 unique_ptr 自动释放。
         auto result = std::make_unique<std::array<bool, 4>>();
         result->fill(false);
         if (check) {
@@ -494,6 +528,7 @@ void ControlWindow::startSourceCheck() {
 }
 
 void ControlWindow::completeSourceCheck(const std::array<bool, 4>& status) {
+    // 把四个源的可用性写回对应状态标签。
     sourceCheckRunning_ = false;
     EnableWindow(GetDlgItem(hwnd_, IdCheckSources), TRUE);
     for (int i = 0; i < 4; ++i) {
@@ -503,6 +538,7 @@ void ControlWindow::completeSourceCheck(const std::array<bool, 4>& status) {
 }
 
 void ControlWindow::chooseColor(int id) {
+    // 使用系统颜色选择器，选中后立即应用到歌词窗口。
     CHOOSECOLORW color{};
     color.lStructSize = sizeof(color);
     color.hwndOwner = hwnd_;
@@ -518,11 +554,13 @@ void ControlWindow::chooseColor(int id) {
 }
 
 void ControlWindow::updateLockControls() {
+    // 锁定状态和按钮文案互为反向动作。
     setText(IdLockStatus, lyricDraggable_ ? L"已解锁" : L"已锁定");
     setText(IdLock, lyricDraggable_ ? L"锁定歌词窗口" : L"解锁歌词窗口");
 }
 
 void ControlWindow::updateColorSwatches() const {
+    // 颜色值变化后让 owner-draw 按钮重绘色块。
     for (int id : {IdNormalColor1, IdNormalColor2, IdNormalBorder, IdHighlightColor1, IdHighlightColor2, IdHighlightBorder,
                    IdHighlight2Color1, IdHighlight2Color2, IdHighlight2Border}) {
         if (HWND child = GetDlgItem(hwnd_, id)) InvalidateRect(child, nullptr, TRUE);
@@ -530,6 +568,7 @@ void ControlWindow::updateColorSwatches() const {
 }
 
 bool ControlWindow::drawColorButton(const DRAWITEMSTRUCT& item) const {
+    // owner-draw 颜色按钮：背景、色块、边框和焦点框。
     const int id = static_cast<int>(item.CtlID);
     if (!isColorButtonId(id)) return false;
 
@@ -549,6 +588,7 @@ bool ControlWindow::drawColorButton(const DRAWITEMSTRUCT& item) const {
 }
 
 config::AppConfig ControlWindow::readConfigFromControls() const {
+    // 从控件读取完整配置；无效数值回退到当前 config_。
     auto config = config_;
     config.font.name = getText(IdFontName);
     config.font.size = getInt(IdFontSize, config.font.size);
@@ -579,6 +619,7 @@ config::AppConfig ControlWindow::readConfigFromControls() const {
 }
 
 HWND ControlWindow::addControl(const wchar_t* className, const wchar_t* text, DWORD style, int x, int y, int width, int height, int id, DWORD exStyle) {
+    // 所有子控件都走同一工厂，统一设置父窗口、ID 和字体。
     HWND child = CreateWindowExW(exStyle, className, text, style, x, y, width, height, hwnd_, reinterpret_cast<HMENU>(static_cast<INT_PTR>(id)), GetModuleHandleW(nullptr), nullptr);
     if (child && font_) SendMessageW(child, WM_SETFONT, reinterpret_cast<WPARAM>(font_), TRUE);
     return child;
@@ -623,6 +664,7 @@ void ControlWindow::setText(int id, const std::wstring& text) const {
 }
 
 std::wstring ControlWindow::getText(int id) const {
+    // 先询问长度再读取，避免固定缓冲区截断。
     HWND child = GetDlgItem(hwnd_, id);
     if (!child) return {};
     const int length = GetWindowTextLengthW(child);
@@ -632,6 +674,7 @@ std::wstring ControlWindow::getText(int id) const {
 }
 
 int ControlWindow::getInt(int id, int fallback) const {
+    // 编辑框解析失败时返回调用者给的默认值。
     const auto text = util::trim(getText(id));
     if (text.empty()) return fallback;
     wchar_t* end = nullptr;
@@ -656,6 +699,7 @@ void ControlWindow::setComboSelection(int id, int index) const {
 }
 
 COLORREF ControlWindow::colorForButton(int id) const {
+    // 按按钮 ID 映射到 config_ 中对应的颜色字段。
     switch (id) {
     case IdNormalColor1: return config_.normal.color1;
     case IdNormalColor2: return config_.normal.color2;
@@ -671,6 +715,7 @@ COLORREF ControlWindow::colorForButton(int id) const {
 }
 
 void ControlWindow::setColorForButton(int id, COLORREF color) {
+    // 系统颜色选择器返回 COLORREF，直接写入对应配置字段。
     switch (id) {
     case IdNormalColor1: config_.normal.color1 = color; break;
     case IdNormalColor2: config_.normal.color2 = color; break;

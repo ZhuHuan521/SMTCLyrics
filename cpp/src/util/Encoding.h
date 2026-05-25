@@ -7,14 +7,17 @@
 
 namespace smtc::util {
 
+// Windows 宽字符与 UTF-8/ANSI 之间的编码转换。
 std::wstring utf8ToWide(std::string_view text);
 std::string wideToUtf8(std::wstring_view text);
 std::wstring ansiToWide(std::string_view text, unsigned codePage = 936);
 std::string wideToAnsi(std::wstring_view text, unsigned codePage = 936);
+// 二进制文件读写，不做文本编码转换。
 std::vector<std::uint8_t> readFileBytes(const std::filesystem::path& path);
 bool writeFileBytes(const std::filesystem::path& path, const std::vector<std::uint8_t>& bytes);
 std::wstring readTextAuto(const std::filesystem::path& path);
 std::string readUtf8Auto(const std::filesystem::path& path);
+// 网络接口和 XML/HTML 片段常用的文本工具。
 std::string urlEncode(std::string_view utf8);
 std::string htmlDecodeUtf8(std::string_view utf8);
 std::wstring trim(std::wstring_view text);

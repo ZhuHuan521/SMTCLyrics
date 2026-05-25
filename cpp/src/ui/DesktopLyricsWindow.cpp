@@ -8,8 +8,10 @@
 namespace smtc::ui {
 namespace {
 
+// 桌面歌词窗口类名，用于 RegisterClassExW/CreateWindowExW。
 constexpr wchar_t kClassName[] = L"SMTCLyricsOverlayWindow";
 
+// 把配置里的粗体/斜体/下划线转换成 GDI+ FontStyle 位标志。
 Gdiplus::FontStyle fontStyleFromConfig(const config::FontConfig& font) {
     int style = Gdiplus::FontStyleRegular;
     if (font.bold) style |= Gdiplus::FontStyleBold;
@@ -18,10 +20,12 @@ Gdiplus::FontStyle fontStyleFromConfig(const config::FontConfig& font) {
     return static_cast<Gdiplus::FontStyle>(style);
 }
 
+// COLORREF 是 0x00bbggrr，GDI+ Color 需要 ARGB 分量。
 Gdiplus::Color toGdiColor(COLORREF color, BYTE alpha = 255) {
     return Gdiplus::Color(alpha, GetRValue(color), GetGValue(color), GetBValue(color));
 }
 
+// 根据渐变模式创建画刷；当前实现用垂直线性渐变覆盖两色模式。
 std::unique_ptr<Gdiplus::Brush> makeBrush(const config::TextStyle& style, const Gdiplus::RectF& rect) {
     if (style.gradientMode <= 0) {
         return std::make_unique<Gdiplus::SolidBrush>(toGdiColor(style.color1));
@@ -31,11 +35,13 @@ std::unique_ptr<Gdiplus::Brush> makeBrush(const config::TextStyle& style, const 
     return std::make_unique<Gdiplus::LinearGradientBrush>(p1, p2, toGdiColor(style.color1), toGdiColor(style.color2));
 }
 
+// 最多显示四行，当前配置实际只会生成一行或两行。
 struct DisplayLines {
     std::array<std::wstring_view, 4> items{};
     std::size_t count = 0;
 };
 
+// 把 LrcParser 输出的换行文本拆成可绘制的行视图。
 DisplayLines splitDisplayLines(std::wstring_view text) {
     DisplayLines lines;
     std::size_t start = 0;
@@ -61,11 +67,13 @@ DisplayLines splitDisplayLines(std::wstring_view text) {
 }
 
 DesktopLyricsWindow::DesktopLyricsWindow() {
+    // GDI+ 初始化放在窗口对象生命周期内。
     Gdiplus::GdiplusStartupInput input;
     Gdiplus::GdiplusStartup(&gdiplusToken_, &input, nullptr);
 }
 
 DesktopLyricsWindow::~DesktopLyricsWindow() {
+    // 先销毁窗口/缓冲区，再关闭 GDI+。
     destroy();
     if (gdiplusToken_) {
         Gdiplus::GdiplusShutdown(gdiplusToken_);
@@ -75,6 +83,7 @@ DesktopLyricsWindow::~DesktopLyricsWindow() {
 bool DesktopLyricsWindow::create(const config::WindowConfig& windowConfig) {
     if (hwnd_) return true;
 
+    // 注册一个轻量弹出窗口类，用分层窗口实现透明歌词。
     WNDCLASSEXW wc{};
     wc.cbSize = sizeof(wc);
     wc.lpfnWndProc = &DesktopLyricsWindow::WndProc;
@@ -83,6 +92,7 @@ bool DesktopLyricsWindow::create(const config::WindowConfig& windowConfig) {
     wc.lpszClassName = kClassName;
     RegisterClassExW(&wc);
 
+    // 没有保存位置时，默认横向铺满工作区并靠近屏幕底部。
     RECT workArea{};
     SystemParametersInfoW(SPI_GETWORKAREA, 0, &workArea, 0);
     width_ = windowConfig.hasPosition ? windowConfig.width : workArea.right - workArea.left;
@@ -91,6 +101,7 @@ bool DesktopLyricsWindow::create(const config::WindowConfig& windowConfig) {
     const int top = windowConfig.hasPosition ? windowConfig.top : workArea.bottom - height_;
 
     hwnd_ = CreateWindowExW(
+        // WS_EX_LAYERED 支持逐像素 alpha，TOPMOST 让歌词浮在普通窗口上方。
         WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW,
         kClassName,
         L"SMTC歌词 By:柱环",
@@ -111,6 +122,7 @@ bool DesktopLyricsWindow::create(const config::WindowConfig& windowConfig) {
 }
 
 void DesktopLyricsWindow::destroy() {
+    // Win32 窗口和 DIB 后备缓冲都需要显式释放。
     if (hwnd_) {
         DestroyWindow(hwnd_);
         hwnd_ = nullptr;
@@ -119,11 +131,13 @@ void DesktopLyricsWindow::destroy() {
 }
 
 void DesktopLyricsWindow::applyConfig(const config::AppConfig& config) {
+    // 样式变化后立即重绘当前歌词文本。
     config_ = config;
     redraw();
 }
 
 void DesktopLyricsWindow::updateLyrics(std::wstring_view text, int highlightPercent, int highlightLine) {
+    // 同一帧内容不重复绘制；高亮值也限制在合法范围。
     const auto clampedHighlight = std::clamp(highlightPercent, 0, 100);
     const auto clampedLine = std::max(0, highlightLine);
     if (text_ == text && highlightPercent_ == clampedHighlight && highlightLine_ == clampedLine) {
@@ -144,6 +158,7 @@ void DesktopLyricsWindow::setGeometryChangedCallback(std::function<void(const co
 }
 
 void DesktopLyricsWindow::move(int left, int top, int width, int height) {
+    // 控制窗口应用几何时走这里，同时通知配置层保存新位置。
     if (!hwnd_) return;
     width_ = width;
     height_ = height;
@@ -153,6 +168,7 @@ void DesktopLyricsWindow::move(int left, int top, int width, int height) {
 }
 
 config::WindowConfig DesktopLyricsWindow::geometry() const {
+    // 从实际窗口矩形生成可持久化的 WindowConfig。
     config::WindowConfig result;
     if (!hwnd_) return result;
     RECT rect{};
@@ -166,6 +182,7 @@ config::WindowConfig DesktopLyricsWindow::geometry() const {
 }
 
 LRESULT CALLBACK DesktopLyricsWindow::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
+    // WM_NCCREATE 时把 this 保存进窗口 userdata，后续消息才能回到实例方法。
     auto* self = reinterpret_cast<DesktopLyricsWindow*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
     if (message == WM_NCCREATE) {
         auto* create = reinterpret_cast<CREATESTRUCTW*>(lParam);
@@ -184,6 +201,7 @@ LRESULT DesktopLyricsWindow::handleMessage(UINT message, WPARAM wParam, LPARAM l
     switch (message) {
     case WM_LBUTTONDOWN:
         if (draggable_) {
+            // 通过伪装成标题栏拖动，让无边框窗口也能移动。
             ReleaseCapture();
             SendMessageW(hwnd_, WM_NCLBUTTONDOWN, HTCAPTION, 0);
             notifyGeometryChanged();
@@ -191,6 +209,7 @@ LRESULT DesktopLyricsWindow::handleMessage(UINT message, WPARAM wParam, LPARAM l
         }
         break;
     case WM_CLOSE:
+        // 用户不能直接关闭歌词窗口，只能关闭控制窗口结束程序。
         return 0;
     case WM_DESTROY:
         hwnd_ = nullptr;
@@ -202,6 +221,7 @@ LRESULT DesktopLyricsWindow::handleMessage(UINT message, WPARAM wParam, LPARAM l
 }
 
 void DesktopLyricsWindow::redraw() {
+    // 所有绘制都先进入内存 DIB，再一次性 UpdateLayeredWindow 到屏幕。
     if (!hwnd_ || width_ <= 0 || height_ <= 0) return;
 
     HDC screenDc = GetDC(nullptr);
@@ -222,6 +242,7 @@ void DesktopLyricsWindow::redraw() {
         graphics.Clear(Gdiplus::Color(0, 0, 0, 0));
 
         if (!text_.empty()) {
+            // 使用 GraphicsPath 绘制文字，便于描边、阴影和裁剪高亮。
             auto* family = fontFamily();
             const auto style = fontStyleFromConfig(config_.font);
             Gdiplus::StringFormat format;
@@ -239,18 +260,19 @@ void DesktopLyricsWindow::redraw() {
             const int activeLine = std::clamp(highlightLine_, 0, static_cast<int>(lines.count) - 1);
 
             for (std::size_t i = 0; i < lines.count; ++i) {
+                // 每一行独立计算 layout，整体按总高度垂直居中。
                 const auto lineText = lines.items[i];
                 const float y = startY + static_cast<float>(i) * lineHeight;
                 Gdiplus::RectF layout(0.0f, y, static_cast<Gdiplus::REAL>(width_), lineHeight);
 
-                // Determine which style to use for this line
-                // In two-line mode: line 0 (active) uses highlight, line 1 (inactive) uses highlight2
+                // 两行模式下，非当前高亮行使用第二句样式。
                 const bool isActiveLine = (static_cast<int>(i) == activeLine);
                 const bool isSecondLine = (lines.count > 1 && i == 1 && activeLine == 0);
                 const auto& lineNormalStyle = isSecondLine ? config_.highlight2 : config_.normal;
                 const auto& lineBorderStyle = isSecondLine ? config_.highlight2.border : config_.normal.border;
 
                 Gdiplus::GraphicsPath shadowPath;
+                // 先画轻微阴影，再画描边和普通文字。
                 Gdiplus::RectF shadowLayout(2.0f, y + 2.0f, static_cast<Gdiplus::REAL>(width_), lineHeight);
                 shadowPath.AddString(lineText.data(), static_cast<INT>(lineText.size()), family, style, fontSize, shadowLayout, &format);
                 Gdiplus::SolidBrush shadowBrush(Gdiplus::Color(150, 0, 0, 0));
@@ -266,6 +288,7 @@ void DesktopLyricsWindow::redraw() {
                 graphics.FillPath(brush.get(), &textPath);
 
                 if (highlightPercent_ > 0 && isActiveLine) {
+                    // 通过水平裁剪区域叠加高亮画刷，实现从左到右的扫光效果。
                     Gdiplus::GraphicsState state = graphics.Save();
                     Gdiplus::RectF clip(bounds.X, bounds.Y, bounds.Width * highlightPercent_ / 100.0f, bounds.Height);
                     graphics.SetClip(clip);
@@ -291,6 +314,7 @@ void DesktopLyricsWindow::redraw() {
 }
 
 bool DesktopLyricsWindow::ensureBackBuffer(HDC referenceDc) {
+    // 尺寸未变时复用已有 DIB，减少频繁分配。
     if (memoryDc_ && backBufferBitmap_ && backBufferWidth_ == width_ && backBufferHeight_ == height_) {
         return true;
     }
@@ -300,6 +324,7 @@ bool DesktopLyricsWindow::ensureBackBuffer(HDC referenceDc) {
     memoryDc_ = CreateCompatibleDC(referenceDc);
     if (!memoryDc_) return false;
 
+    // 使用 top-down 32 位 DIB，像素内存可直接清零成透明背景。
     BITMAPINFO bitmapInfo{};
     bitmapInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
     bitmapInfo.bmiHeader.biWidth = width_;
@@ -326,6 +351,7 @@ bool DesktopLyricsWindow::ensureBackBuffer(HDC referenceDc) {
 }
 
 void DesktopLyricsWindow::releaseBackBuffer() {
+    // 按 SelectObject/CreateDIBSection/CreateCompatibleDC 的反向顺序释放。
     if (memoryDc_ && oldBackBufferBitmap_) {
         SelectObject(memoryDc_, oldBackBufferBitmap_);
         oldBackBufferBitmap_ = nullptr;
@@ -344,6 +370,7 @@ void DesktopLyricsWindow::releaseBackBuffer() {
 }
 
 Gdiplus::FontFamily* DesktopLyricsWindow::fontFamily() {
+    // 字体名没变时复用 FontFamily；创建失败时回退微软雅黑。
     if (!fontFamily_ || cachedFontRequest_ != config_.font.name) {
         cachedFontRequest_ = config_.font.name;
         auto candidate = std::make_unique<Gdiplus::FontFamily>(config_.font.name.c_str());
@@ -356,12 +383,14 @@ Gdiplus::FontFamily* DesktopLyricsWindow::fontFamily() {
 }
 
 void DesktopLyricsWindow::notifyGeometryChanged() const {
+    // 位置变化回调由 Application 保存到 config.ini 并同步控制窗口。
     if (geometryChanged_) {
         geometryChanged_(geometry());
     }
 }
 
 Gdiplus::Color DesktopLyricsWindow::colorFromColorRef(COLORREF color, BYTE alpha) const {
+    // 成员版本保留给需要访问对象状态的调用处，目前只是统一颜色转换。
     return Gdiplus::Color(alpha, GetRValue(color), GetGValue(color), GetBValue(color));
 }
 

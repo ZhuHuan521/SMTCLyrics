@@ -8,6 +8,7 @@
 
 namespace smtc::config {
 
+// 字体配置，对应歌词窗口绘制时创建的 GDI+ 字体。
 struct FontConfig {
     std::wstring name = L"楷体";
     int size = 35;
@@ -16,6 +17,7 @@ struct FontConfig {
     bool underline = false;
 };
 
+// 一组文字颜色：起始色、结束色、描边色和渐变模式。
 struct TextStyle {
     COLORREF color1 = RGB(255, 0, 0);
     COLORREF color2 = RGB(255, 255, 0);
@@ -23,6 +25,7 @@ struct TextStyle {
     int gradientMode = 1;
 };
 
+// 歌词窗口几何信息；hasPosition=false 时由程序按工作区自动摆放。
 struct WindowConfig {
     int left = 0;
     int top = 0;
@@ -31,11 +34,12 @@ struct WindowConfig {
     bool hasPosition = false;
 };
 
+// 应用完整配置，会被控制窗口编辑并写入 config.ini。
 struct AppConfig {
     FontConfig font;
     TextStyle normal;
     TextStyle highlight{RGB(0, 128, 255), RGB(0, 255, 255), RGB(0, 0, 0), 1};
-    TextStyle highlight2{RGB(128, 128, 128), RGB(192, 192, 192), RGB(0, 0, 0), 1};  // second line color
+    TextStyle highlight2{RGB(128, 128, 128), RGB(192, 192, 192), RGB(0, 0, 0), 1};  // 两句显示时第二行的颜色。
     WindowConfig window;
     int lyricOffsetMs = 0;
     std::vector<int> sourcePriority{1, 2, 3, 4};
@@ -44,10 +48,12 @@ struct AppConfig {
     int displayMode = 1;
 };
 
+// INI 配置读写器，同时兼容旧版中文 section/key 和新版英文 section/key。
 class ConfigStore {
 public:
     explicit ConfigStore(std::filesystem::path path);
 
+    // 读取、完整保存，以及针对高频变更字段的局部保存。
     AppConfig load() const;
     void save(const AppConfig& config) const;
     void saveWindow(const WindowConfig& window) const;
@@ -57,6 +63,7 @@ public:
     const std::filesystem::path& path() const { return path_; }
 
 private:
+    // 下面的 read*Any 会先读新版键名，缺失时再读旧版键名。
     std::wstring readString(std::wstring_view section, std::wstring_view key, std::wstring_view fallback) const;
     std::wstring readStringAny(std::wstring_view section, std::wstring_view key, std::wstring_view legacySection, std::wstring_view legacyKey, std::wstring_view fallback) const;
     COLORREF readColorAny(std::wstring_view section, std::wstring_view key, std::wstring_view legacySection, std::wstring_view legacyKey, COLORREF fallback) const;

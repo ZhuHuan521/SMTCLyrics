@@ -11,6 +11,7 @@
 namespace smtc::http {
 namespace {
 
+// WinHTTP 句柄需要 WinHttpCloseHandle，这里用 unique_ptr 自动释放。
 struct InternetHandleDeleter {
     void operator()(HINTERNET handle) const {
         if (handle) WinHttpCloseHandle(handle);
@@ -18,6 +19,7 @@ struct InternetHandleDeleter {
 };
 using InternetHandle = std::unique_ptr<void, InternetHandleDeleter>;
 
+// 把 UTF-8 请求头拼成 WinHTTP 需要的 CRLF 分隔宽字符串。
 std::wstring headersToWide(const std::vector<HttpClient::Header>& headers, std::string_view contentType, bool hasBody) {
     std::wstring result;
     for (const auto& [name, value] : headers) {
@@ -34,6 +36,7 @@ std::wstring headersToWide(const std::vector<HttpClient::Header>& headers, std::
     return result;
 }
 
+// URL_COMPONENTS 只给指针和长度，转成独立字符串方便后续使用。
 std::wstring componentToString(const URL_COMPONENTS& components, const wchar_t* ptr, DWORD length) {
     if (!ptr || length == 0) return {};
     return {ptr, ptr + length};
@@ -42,10 +45,12 @@ std::wstring componentToString(const URL_COMPONENTS& components, const wchar_t* 
 }
 
 HttpResponse HttpClient::get(std::string_view url, const std::vector<Header>& headers) const {
+    // GET 没有请求体，contentType 留空。
     return request(L"GET", url, {}, headers, {});
 }
 
 HttpResponse HttpClient::post(std::string_view url, std::string_view body, const std::vector<Header>& headers, std::string_view contentType) const {
+    // POST 默认按表单提交，网易云等接口会复用这个路径。
     return request(L"POST", url, body, headers, contentType);
 }
 
@@ -53,6 +58,7 @@ HttpResponse HttpClient::request(std::wstring_view method, std::string_view url,
     HttpResponse response;
     const auto wideUrl = util::utf8ToWide(url);
 
+    // 先让 WinHTTP 拆分 scheme/host/path/query，避免手写 URL 解析。
     URL_COMPONENTS components{};
     components.dwStructSize = sizeof(components);
     components.dwSchemeLength = static_cast<DWORD>(-1);
@@ -68,6 +74,7 @@ HttpResponse HttpClient::request(std::wstring_view method, std::string_view url,
     path += componentToString(components, components.lpszExtraInfo, components.dwExtraInfoLength);
     if (path.empty()) path = L"/";
 
+    // 每次请求创建独立 session/connect/request，简单可靠，适合低频歌词请求。
     InternetHandle session(WinHttpOpen(L"SMTCLyrics/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0));
     if (!session) return response;
 
@@ -81,6 +88,7 @@ HttpResponse HttpClient::request(std::wstring_view method, std::string_view url,
     const DWORD timeout = 10000;
     WinHttpSetTimeouts(req.get(), timeout, timeout, timeout, timeout);
 
+    // WinHTTP 的 body 参数需要可写指针签名，但这里不会修改原始字符串。
     const auto headerText = headersToWide(headers, contentType, !body.empty());
     LPVOID bodyPtr = body.empty() ? WINHTTP_NO_REQUEST_DATA : static_cast<LPVOID>(const_cast<char*>(body.data()));
     const DWORD bodySize = static_cast<DWORD>(body.size());
@@ -101,6 +109,7 @@ HttpResponse HttpClient::request(std::wstring_view method, std::string_view url,
     WinHttpQueryHeaders(req.get(), WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER, WINHTTP_HEADER_NAME_BY_INDEX, &status, &statusSize, WINHTTP_NO_HEADER_INDEX);
     response.statusCode = status;
 
+    // 网易云匿名注册会从 Set-Cookie 中取值，所以保留原始响应头。
     DWORD rawHeaderSize = 0;
     WinHttpQueryHeaders(req.get(), WINHTTP_QUERY_RAW_HEADERS_CRLF, WINHTTP_HEADER_NAME_BY_INDEX, nullptr, &rawHeaderSize, WINHTTP_NO_HEADER_INDEX);
     if (GetLastError() == ERROR_INSUFFICIENT_BUFFER && rawHeaderSize > 0) {
@@ -111,6 +120,7 @@ HttpResponse HttpClient::request(std::wstring_view method, std::string_view url,
         }
     }
 
+    // 逐块读取响应体，直到 WinHTTP 报告没有更多数据。
     for (;;) {
         DWORD available = 0;
         if (!WinHttpQueryDataAvailable(req.get(), &available) || available == 0) break;

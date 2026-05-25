@@ -24,24 +24,28 @@
 namespace smtc::lyrics {
 namespace {
 
+// 大多数歌词接口会检查 User-Agent，模拟浏览器可减少空响应。
 std::vector<http::HttpClient::Header> browserHeaders() {
     return {
         {"User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"},
     };
 }
 
+// QQ 音乐搜索接口需要 y.qq.com Referer。
 std::vector<http::HttpClient::Header> qqHeaders() {
     auto headers = browserHeaders();
     headers.emplace_back("Referer", "https://y.qq.com/");
     return headers;
 }
 
+// QQ 歌词下载接口需要 c.y.qq.com Referer。
 std::vector<http::HttpClient::Header> qqDownloadHeaders() {
     auto headers = browserHeaders();
     headers.emplace_back("Referer", "https://c.y.qq.com/");
     return headers;
 }
 
+// 网络接口返回异常时直接返回空 JSON，调用方按字段缺失处理。
 nlohmann::json parseJson(const std::vector<std::uint8_t>& body) {
     try {
         return nlohmann::json::parse(std::string(body.begin(), body.end()));
@@ -50,6 +54,7 @@ nlohmann::json parseJson(const std::vector<std::uint8_t>& body) {
     }
 }
 
+// 接口中的 ID 有时是字符串、有时是数字，统一转成 string。
 std::string jsonString(const nlohmann::json& value) {
     if (value.is_string()) return value.get<std::string>();
     if (value.is_number_integer()) return std::to_string(value.get<long long>());
@@ -63,6 +68,7 @@ std::string jsonString(const nlohmann::json* value) {
 }
 
 const nlohmann::json* jsonAt(const nlohmann::json* value, std::string_view key) {
+    // 安全访问对象字段，避免链式取值时抛异常。
     if (!value || !value->is_object()) return nullptr;
     const auto it = value->find(std::string(key));
     return it == value->end() ? nullptr : &*it;
@@ -78,18 +84,22 @@ const nlohmann::json* jsonAt(const nlohmann::json* value, std::size_t index) {
 }
 
 bool nonEmptyArray(const nlohmann::json* value) {
+    // 搜索接口常见返回结构：数组缺失或为空都代表没有结果。
     return value && value->is_array() && !value->empty();
 }
 
 std::vector<std::uint8_t> toBytes(std::string_view text) {
+    // LrcParser 需要字节数组，这里不改变文本编码。
     return {text.begin(), text.end()};
 }
 
 bool isXmlNameBoundary(char ch) {
+    // 简单 XML 扫描时确认标签名边界，避免 <content2> 误匹配 <content>。
     return std::isspace(static_cast<unsigned char>(ch)) != 0 || ch == '>' || ch == '/';
 }
 
 std::size_t findXmlTag(std::string_view xml, std::string_view tagName, std::size_t start = 0) {
+    // 只做本项目需要的轻量 XML 查找，不引入完整 XML 解析器。
     const auto needle = "<" + std::string(tagName);
     std::size_t pos = start;
     while ((pos = xml.find(needle, pos)) != std::string_view::npos) {
@@ -103,6 +113,7 @@ std::size_t findXmlTag(std::string_view xml, std::string_view tagName, std::size
 }
 
 std::string extractCData(std::string_view xml, std::string_view tagName) {
+    // QQ 旧歌词接口把 Base64 歌词放在 CDATA 里。
     std::size_t pos = 0;
     while ((pos = findXmlTag(xml, tagName, pos)) != std::string_view::npos) {
         const auto tagEnd = xml.find('>', pos);
@@ -123,6 +134,7 @@ std::string extractCData(std::string_view xml, std::string_view tagName) {
 }
 
 std::string extractXmlAttribute(std::string_view xml, std::string_view attributeName) {
+    // QRC 解密后的 XML 把真正歌词放在 LyricContent 属性中。
     std::size_t pos = 0;
     while ((pos = xml.find(attributeName, pos)) != std::string_view::npos) {
         const auto nameEnd = pos + attributeName.size();
@@ -144,12 +156,14 @@ std::string extractXmlAttribute(std::string_view xml, std::string_view attribute
 }
 
 std::string extractQrcContent(std::string_view decryptedXml) {
+    // 属性内容还包含 HTML 实体，取出后再解码。
     auto content = extractXmlAttribute(decryptedXml, "LyricContent");
     if (content.empty()) return {};
     return util::htmlDecodeUtf8(content);
 }
 
 std::vector<std::uint8_t> decryptKrc(const std::vector<std::uint8_t>& bytes) {
+    // 酷狗 KRC：校验 krc1 头，异或固定 key，再 zlib 解压。
     constexpr std::uint8_t kHeader[] = {'k', 'r', 'c', '1'};
     constexpr std::uint8_t kKey[] = {64, 71, 97, 119, 94, 50, 116, 71, 81, 54, 49, 45, 206, 210, 110, 105};
     if (bytes.size() <= sizeof(kHeader) || std::memcmp(bytes.data(), kHeader, sizeof(kHeader)) != 0) {
@@ -165,6 +179,7 @@ std::vector<std::uint8_t> decryptKrc(const std::vector<std::uint8_t>& bytes) {
 }
 
 std::string formatLrcTimestamp(double seconds) {
+    // 酷我接口给秒数，转换成标准 LRC 时间戳。
     if (seconds < 0) seconds = 0;
     const auto totalMs = static_cast<long long>(seconds * 1000.0 + 0.5);
     const auto minutes = totalMs / 60000;
@@ -178,6 +193,7 @@ std::string formatLrcTimestamp(double seconds) {
 }
 
 std::string makeUuidV4() {
+    // 酷我歌词接口需要 reqId，这里生成一个随机 UUID v4。
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<int> dis(0, 255);
@@ -194,6 +210,7 @@ std::string makeUuidV4() {
     return out.str();
 }
 
+// BCrypt 句柄的 RAII 包装，避免加解密路径泄漏系统资源。
 struct BCryptAlgorithmDeleter {
     void operator()(BCRYPT_ALG_HANDLE handle) const {
         if (handle) BCryptCloseAlgorithmProvider(handle, 0);
@@ -217,6 +234,7 @@ using BCryptHash = std::unique_ptr<void, BCryptHashDeleter>;
 using BCryptKey = std::unique_ptr<void, BCryptKeyDeleter>;
 
 std::optional<DWORD> bcryptDwordProperty(BCRYPT_ALG_HANDLE algorithm, const wchar_t* property) {
+    // 读取算法对象长度、摘要长度等 DWORD 属性。
     DWORD value = 0;
     DWORD copied = 0;
     if (!BCRYPT_SUCCESS(BCryptGetProperty(algorithm, property, reinterpret_cast<PUCHAR>(&value), sizeof(value), &copied, 0))) {
@@ -226,6 +244,7 @@ std::optional<DWORD> bcryptDwordProperty(BCRYPT_ALG_HANDLE algorithm, const wcha
 }
 
 std::vector<std::uint8_t> bcryptHash(std::wstring_view algorithmName, std::string_view data) {
+    // 目前用于 MD5 签名；封装成通用 hash 以便复用 BCrypt 生命周期处理。
     BCRYPT_ALG_HANDLE rawAlgorithm = nullptr;
     if (!BCRYPT_SUCCESS(BCryptOpenAlgorithmProvider(&rawAlgorithm, std::wstring(algorithmName).c_str(), nullptr, 0))) {
         return {};
@@ -255,6 +274,7 @@ std::vector<std::uint8_t> bcryptHash(std::wstring_view algorithmName, std::strin
 }
 
 std::string hexEncode(const std::vector<std::uint8_t>& bytes, bool uppercase) {
+    // 网易云 EAPI 加密参数需要十六进制大写，MD5 签名需要小写。
     std::ostringstream out;
     out << std::hex << std::setfill('0');
     if (uppercase) out << std::uppercase;
@@ -265,10 +285,12 @@ std::string hexEncode(const std::vector<std::uint8_t>& bytes, bool uppercase) {
 }
 
 std::string md5Hex(std::string_view data) {
+    // 网易云 EAPI 签名算法使用 MD5 十六进制字符串。
     return hexEncode(bcryptHash(BCRYPT_MD5_ALGORITHM, data), false);
 }
 
 std::vector<std::uint8_t> pkcs7Pad(std::string_view data, std::size_t blockSize) {
+    // AES-ECB 输入需要按 16 字节块 PKCS#7 补齐。
     std::vector<std::uint8_t> padded(data.begin(), data.end());
     const auto pad = blockSize - (padded.size() % blockSize);
     padded.insert(padded.end(), pad, static_cast<std::uint8_t>(pad));
@@ -276,6 +298,7 @@ std::vector<std::uint8_t> pkcs7Pad(std::string_view data, std::size_t blockSize)
 }
 
 std::vector<std::uint8_t> pkcs7Unpad(std::vector<std::uint8_t> data) {
+    // 解密后校验并去除 PKCS#7 padding。
     if (data.empty()) return {};
     const auto pad = data.back();
     if (pad == 0 || pad > 16 || pad > data.size()) return {};
@@ -287,6 +310,7 @@ std::vector<std::uint8_t> pkcs7Unpad(std::vector<std::uint8_t> data) {
 }
 
 std::vector<std::uint8_t> aesEcbCrypt(const std::vector<std::uint8_t>& input, std::string_view key, bool encrypt) {
+    // 网易云 EAPI 使用 AES-128-ECB，Windows 下用 BCrypt 实现。
     if (key.size() != 16 || input.empty() || (!encrypt && input.size() % 16 != 0)) return {};
 
     BCRYPT_ALG_HANDLE rawAlgorithm = nullptr;
@@ -342,6 +366,7 @@ std::vector<std::uint8_t> aesEcbDecryptPkcs7(const std::vector<std::uint8_t>& da
 }
 
 std::string randomFromAlphabet(std::string_view alphabet, int length) {
+    // 生成网易云匿名会话所需的随机设备字段。
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<std::size_t> dis(0, alphabet.size() - 1);
@@ -375,10 +400,12 @@ std::string randomMacAddress() {
 }
 
 std::string neteaseClientSign() {
+    // 模拟桌面客户端的 clientSign cookie。
     return randomMacAddress() + "@@@" + randomUppercase(8) + "@@@@@@" + randomHex(64);
 }
 
 std::string neteaseAnonymousUsername(std::string_view deviceId) {
+    // 网易云匿名注册接口需要由 deviceId 派生的 username。
     constexpr std::string_view key = "3go8&$8*3*3h0k(2)2";
     std::string xored;
     xored.reserve(deviceId.size());
@@ -389,6 +416,7 @@ std::string neteaseAnonymousUsername(std::string_view deviceId) {
     return util::base64Encode(std::string(deviceId) + " " + util::base64Encode(digest));
 }
 
+// 网易云请求需要一组 cookie 以及 mconfig/header 参数。
 struct NeteaseSession {
     std::vector<http::HttpClient::Header> cookies;
     std::string paramsHeader;
@@ -402,6 +430,7 @@ std::string cookieValue(const std::vector<http::HttpClient::Header>& cookies, st
 }
 
 void upsertCookie(std::vector<http::HttpClient::Header>& cookies, std::string name, std::string value) {
+    // Set-Cookie 返回的新值覆盖已有 cookie。
     if (value.empty()) return;
     for (auto& [key, existing] : cookies) {
         if (key == name) {
@@ -413,6 +442,7 @@ void upsertCookie(std::vector<http::HttpClient::Header>& cookies, std::string na
 }
 
 std::string neteaseParamsHeader(const std::vector<http::HttpClient::Header>& cookies) {
+    // EAPI params 内部还要带一份 header JSON。
     nlohmann::json header;
     header["clientSign"] = cookieValue(cookies, "clientSign");
     header["os"] = cookieValue(cookies, "os");
@@ -424,6 +454,7 @@ std::string neteaseParamsHeader(const std::vector<http::HttpClient::Header>& coo
 }
 
 std::string joinedCookies(const std::vector<http::HttpClient::Header>& cookies) {
+    // 把内部 cookie 列表拼成 HTTP Cookie 头。
     std::string out;
     for (const auto& [name, value] : cookies) {
         if (name.empty() || value.empty()) continue;
@@ -436,6 +467,7 @@ std::string joinedCookies(const std::vector<http::HttpClient::Header>& cookies) 
 }
 
 std::vector<http::HttpClient::Header> neteaseHeaders(const NeteaseSession& session) {
+    // 尽量贴近网易云桌面客户端请求头。
     auto headers = std::vector<http::HttpClient::Header>{
         {"accept", "*/*"},
         {"mconfig-info", "{\"IuRPVVmc3WWul9fT\":{\"version\":733184,\"appver\":\"3.1.3.203419\"}}"},
@@ -457,6 +489,7 @@ std::vector<http::HttpClient::Header> neteaseHeaders(const NeteaseSession& sessi
 }
 
 std::string eapiPathToApiPath(std::string_view path) {
+    // EAPI 签名中使用 api 路径，而实际请求使用 eapi 路径。
     std::string apiPath(path);
     const auto pos = apiPath.find("eapi");
     if (pos != std::string::npos) {
@@ -466,6 +499,7 @@ std::string eapiPathToApiPath(std::string_view path) {
 }
 
 std::string neteaseEapiParams(std::string_view path, nlohmann::json params) {
+    // 网易云 EAPI 参数：MD5 签名后再 AES-ECB 加密，并以 params=HEX 发送。
     constexpr std::string_view key = "e82ckenh8dichen8";
     const auto apiPath = eapiPathToApiPath(path);
     const auto paramsText = params.dump(-1, ' ', true);
@@ -475,6 +509,7 @@ std::string neteaseEapiParams(std::string_view path, nlohmann::json params) {
 }
 
 http::HttpResponse neteaseEapiPost(const http::HttpClient& client, std::string_view path, nlohmann::json params, const NeteaseSession& session) {
+    // 统一发送网易云 EAPI 请求。
     params["e_r"] = true;
     params["header"] = session.paramsHeader;
     const auto body = neteaseEapiParams(path, std::move(params));
@@ -482,6 +517,7 @@ http::HttpResponse neteaseEapiPost(const http::HttpClient& client, std::string_v
 }
 
 nlohmann::json decryptNeteaseEapiResponse(const http::HttpResponse& response) {
+    // 网易云 EAPI 响应同样是 AES-ECB 加密 JSON。
     constexpr std::string_view key = "e82ckenh8dichen8";
     if (!response || response.body.size() % 16 != 0) return {};
     const auto decrypted = aesEcbDecryptPkcs7(response.body, key);
@@ -489,6 +525,7 @@ nlohmann::json decryptNeteaseEapiResponse(const http::HttpResponse& response) {
 }
 
 std::string trimAscii(std::string_view text) {
+    // 解析 HTTP 头时只需要 ASCII 空白裁剪。
     while (!text.empty() && std::isspace(static_cast<unsigned char>(text.front())) != 0) text.remove_prefix(1);
     while (!text.empty() && std::isspace(static_cast<unsigned char>(text.back())) != 0) text.remove_suffix(1);
     return std::string(text);
@@ -500,6 +537,7 @@ std::string lowerAscii(std::string text) {
 }
 
 std::string cookieFromSetCookie(std::string_view rawHeaders, std::string_view name) {
+    // 从原始响应头中提取指定 Set-Cookie 的值。
     std::size_t lineStart = 0;
     while (lineStart <= rawHeaders.size()) {
         const auto lineEnd = rawHeaders.find("\r\n", lineStart);
@@ -520,6 +558,7 @@ std::string cookieFromSetCookie(std::string_view rawHeaders, std::string_view na
 }
 
 NeteaseSession makeNeteaseSession(const http::HttpClient& client) {
+    // 创建匿名网易云会话；成功时会拿到 MUSIC_A 等关键 cookie。
     static constexpr std::array<std::string_view, 4> modes{
         "MS-iCraft B760M WIFI",
         "ASUS ROG STRIX Z790",
@@ -560,10 +599,12 @@ NeteaseSession makeNeteaseSession(const http::HttpClient& client) {
 }
 
 long long monotonicSeconds() {
+    // 会话缓存过期时间使用单调时钟，避免系统时间调整影响。
     return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
 }
 
 NeteaseSession cachedNeteaseSession(const http::HttpClient& client) {
+    // 网易云匿名会话可复用，避免每次抓歌词都重新注册。
     static std::mutex mutex;
     static std::optional<NeteaseSession> cached;
     static long long expiresAt = 0;
@@ -586,6 +627,7 @@ NeteaseSession cachedNeteaseSession(const http::HttpClient& client) {
 }
 
 std::string fetchNeteaseEapiSongId(const http::HttpClient& client, std::string_view keywordUtf8, const NeteaseSession& session) {
+    // 首选新版 EAPI 搜索，结果更贴近桌面客户端。
     nlohmann::json params;
     params["limit"] = "20";
     params["offset"] = "0";
@@ -602,6 +644,7 @@ std::string fetchNeteaseEapiSongId(const http::HttpClient& client, std::string_v
 }
 
 std::string fetchNeteaseLegacySongId(const http::HttpClient& client, std::string_view keywordUtf8, const std::vector<http::HttpClient::Header>& headers) {
+    // 新版搜索失败时回退到旧 Web API。
     const auto encoded = util::urlEncode(keywordUtf8);
     const auto searchUrl = "https://music.163.com/api/search/get/web?csrf_token=&hlpretag=&hlposttag=&s=" + encoded + "&type=1&offset=0&total=true&limit=10";
     const auto search = parseJson(client.get(searchUrl, headers).body);
@@ -611,6 +654,7 @@ std::string fetchNeteaseLegacySongId(const http::HttpClient& client, std::string
 }
 
 std::vector<std::uint8_t> fetchNeteaseLegacyLrc(const http::HttpClient& client, std::string_view id, const std::vector<http::HttpClient::Header>& headers) {
+    // 最后兜底读取旧版普通 LRC。
     const auto lyricUrl = "https://music.163.com/api/song/lyric?id=" + std::string(id) + "&lv=-1&kv=-1&tv=-1";
     const auto lyric = parseJson(client.get(lyricUrl, headers).body);
     const auto lrc = jsonString(jsonAt(jsonAt(lyric, "lrc"), "lyric"));
@@ -620,6 +664,7 @@ std::vector<std::uint8_t> fetchNeteaseLegacyLrc(const http::HttpClient& client, 
 }
 
 std::string sourceName(LyricSource source) {
+    // 这些短名主要用于调试或未来展示。
     switch (source) {
     case LyricSource::Local: return "local";
     case LyricSource::QQ: return "qq";
@@ -631,6 +676,7 @@ std::string sourceName(LyricSource source) {
 }
 
 std::optional<LyricSource> sourceFromIndex(int index) {
+    // 配置和缓存以 0..4/1..4 数字保存，统一转成枚举。
     switch (index) {
     case 0: return LyricSource::Local;
     case 1: return LyricSource::QQ;
@@ -644,6 +690,7 @@ std::optional<LyricSource> sourceFromIndex(int index) {
 OnlineLyrics::OnlineLyrics(http::HttpClient client) : client_(std::move(client)) {}
 
 std::vector<std::uint8_t> OnlineLyrics::fetch(LyricSource source, std::string_view keywordUtf8) const {
+    // 分发到具体平台；本地源由 LyricRepository 处理。
     switch (source) {
     case LyricSource::QQ: return fetchQQ(keywordUtf8);
     case LyricSource::Kugou: return fetchKugou(keywordUtf8);
@@ -655,6 +702,7 @@ std::vector<std::uint8_t> OnlineLyrics::fetch(LyricSource source, std::string_vi
 }
 
 std::vector<std::uint8_t> OnlineLyrics::fetchQQ(std::string_view keywordUtf8) const {
+    // QQ：先搜索歌曲，再优先下载 QRC，失败后回退普通 LRC。
     const auto encoded = util::urlEncode(keywordUtf8);
     const auto searchUrl = "https://shc.y.qq.com/soso/fcgi-bin/search_for_qq_cp?_=1657641526460&g_tk=1037878909&format=json&inCharset=utf-8&outCharset=utf-8&notice=0&platform=h5&needNewCode=1&w=" + encoded + "&zhidaqu=1&catZhida=1&t=0&flag=1&ie=utf-8&sem=1&aggr=0&perpage=20&n=20&p=1&remoteplace=txt.mqq.all";
     const auto search = parseJson(client_.get(searchUrl, qqHeaders()).body);
@@ -671,6 +719,7 @@ std::vector<std::uint8_t> OnlineLyrics::fetchQQ(std::string_view keywordUtf8) co
         musicId = jsonString(jsonAt(firstSong, "id"));
     }
     if (!musicId.empty() && musicId != "0") {
+        // lrctype=4 返回 QRC，内容需要 3DES 解密并从 XML 属性取出。
         const auto body = "version=15&miniversion=100&lrctype=4&musicid=" + util::urlEncode(musicId);
         const auto rawXml = client_.post("https://c.y.qq.com/qqmusic/fcgi-bin/lyric_download.fcg", body, qqDownloadHeaders()).text();
         const auto encrypted = extractCData(rawXml, "content");
@@ -683,6 +732,7 @@ std::vector<std::uint8_t> OnlineLyrics::fetchQQ(std::string_view keywordUtf8) co
         }
     }
 
+    // QRC 失败时使用旧接口，返回 Base64 + HTML 实体编码的 LRC。
     if (songmid.empty() || songmid == "0") return {};
 
     std::random_device rd;
@@ -700,6 +750,7 @@ std::vector<std::uint8_t> OnlineLyrics::fetchQQ(std::string_view keywordUtf8) co
 }
 
 std::vector<std::uint8_t> OnlineLyrics::fetchKugou(std::string_view keywordUtf8) const {
+    // 酷狗：搜索歌曲 hash -> 搜索歌词候选 -> 优先 KRC，失败回退 LRC。
     const auto encoded = util::urlEncode(keywordUtf8);
     const auto headers = browserHeaders();
     const auto searchUrl = "http://ioscdn.kugou.com/api/v3/search/song?keyword=" + encoded + "&page=1&pagesize=40&showtype=10&plat=2&version=7910&tag=1&correct=1&privilege=1&sver=5";
@@ -728,6 +779,7 @@ std::vector<std::uint8_t> OnlineLyrics::fetchKugou(std::string_view keywordUtf8)
     const auto krcDownload = parseJson(client_.get(krcUrl, headers).body);
     const auto krcContent = jsonString(jsonAt(krcDownload, "content"));
     if (!krcContent.empty()) {
+        // KRC 是 Base64 后的加密压缩内容。
         const auto decoded = util::base64Decode(krcContent);
         if (auto decrypted = decryptKrc(decoded); !decrypted.empty()) {
             return decrypted;
@@ -741,6 +793,7 @@ std::vector<std::uint8_t> OnlineLyrics::fetchKugou(std::string_view keywordUtf8)
 }
 
 std::vector<std::uint8_t> OnlineLyrics::fetchKuwo(std::string_view keywordUtf8) const {
+    // 酷我接口返回逐行 JSON，需要转换成标准 LRC 文本。
     const auto encoded = util::urlEncode(keywordUtf8);
     const auto headers = browserHeaders();
     const auto searchUrl = "https://kuwo.cn/search/searchMusicBykeyWord?vipver=1&client=kt&ft=music&cluster=0&strategy=2012&encoding=utf8&rformat=json&mobi=1&issubtitle=1&show_copyright_off=1&pn=0&rn=20&all=" + encoded;
@@ -771,6 +824,7 @@ std::vector<std::uint8_t> OnlineLyrics::fetchKuwo(std::string_view keywordUtf8) 
 }
 
 std::vector<std::uint8_t> OnlineLyrics::fetchNetease(std::string_view keywordUtf8) const {
+    // 网易云：EAPI 搜歌和取词，优先 YRC，失败再取 LRC/旧 API。
     const auto headers = browserHeaders();
     const auto session = cachedNeteaseSession(client_);
     auto id = fetchNeteaseEapiSongId(client_, keywordUtf8, session);

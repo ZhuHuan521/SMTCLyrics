@@ -10,6 +10,7 @@
 namespace smtc::util {
 namespace {
 
+// MultiByteToWideChar 的统一封装；严格转换失败后再尝试宽松转换。
 std::wstring multiByteToWide(std::string_view text, unsigned codePage) {
     if (text.empty()) {
         return {};
@@ -29,6 +30,7 @@ std::wstring multiByteToWide(std::string_view text, unsigned codePage) {
     return result;
 }
 
+// WideCharToMultiByte 的统一封装，用于 UTF-8/GBK 输出。
 std::string wideToMultiByte(std::wstring_view text, unsigned codePage) {
     if (text.empty()) {
         return {};
@@ -42,6 +44,7 @@ std::string wideToMultiByte(std::wstring_view text, unsigned codePage) {
     return result;
 }
 
+// 简单 UTF-8 合法性检查，用于自动判断无 BOM 文本文件。
 bool looksLikeUtf8(const std::vector<std::uint8_t>& bytes) {
     int remaining = 0;
     for (const auto byte : bytes) {
@@ -68,6 +71,7 @@ bool looksLikeUtf8(const std::vector<std::uint8_t>& bytes) {
     return remaining == 0;
 }
 
+// HTML 数字实体解析时使用的十六进制字符转换。
 int hexValue(wchar_t ch) {
     if (ch >= L'0' && ch <= L'9') return ch - L'0';
     if (ch >= L'a' && ch <= L'f') return ch - L'a' + 10;
@@ -78,10 +82,12 @@ int hexValue(wchar_t ch) {
 }
 
 std::wstring utf8ToWide(std::string_view text) {
+    // 项目内部的网络文本默认按 UTF-8 进入宽字符世界。
     return multiByteToWide(text, CP_UTF8);
 }
 
 std::string wideToUtf8(std::wstring_view text) {
+    // Win32/GDI 使用宽字符，网络和 JSON 使用 UTF-8。
     return wideToMultiByte(text, CP_UTF8);
 }
 
@@ -94,6 +100,7 @@ std::string wideToAnsi(std::wstring_view text, unsigned codePage) {
 }
 
 std::vector<std::uint8_t> readFileBytes(const std::filesystem::path& path) {
+    // 二进制读取，保留原始编码和换行。
     std::ifstream in(path, std::ios::binary);
     if (!in) {
         return {};
@@ -102,6 +109,7 @@ std::vector<std::uint8_t> readFileBytes(const std::filesystem::path& path) {
 }
 
 bool writeFileBytes(const std::filesystem::path& path, const std::vector<std::uint8_t>& bytes) {
+    // 二进制覆盖写入，调用方负责决定编码。
     std::ofstream out(path, std::ios::binary | std::ios::trunc);
     if (!out) {
         return false;
@@ -111,6 +119,7 @@ bool writeFileBytes(const std::filesystem::path& path, const std::vector<std::ui
 }
 
 std::wstring readTextAuto(const std::filesystem::path& path) {
+    // 自动识别 UTF-8 BOM、UTF-16LE BOM、无 BOM UTF-8，最后退回 GBK。
     auto bytes = readFileBytes(path);
     if (bytes.empty()) {
         return {};
@@ -129,10 +138,12 @@ std::wstring readTextAuto(const std::filesystem::path& path) {
 }
 
 std::string readUtf8Auto(const std::filesystem::path& path) {
+    // 统一把本地文本文件转成 UTF-8，方便后续解析。
     return wideToUtf8(readTextAuto(path));
 }
 
 std::string urlEncode(std::string_view utf8) {
+    // 按 UTF-8 字节做百分号编码，用于拼接搜索接口 URL。
     static constexpr char hex[] = "0123456789ABCDEF";
     std::string out;
     for (unsigned char ch : utf8) {
@@ -148,6 +159,7 @@ std::string urlEncode(std::string_view utf8) {
 }
 
 std::string htmlDecodeUtf8(std::string_view utf8) {
+    // 解码常见 XML/HTML 实体，QQ 歌词接口会把内容放在属性里。
     std::wstring input = utf8ToWide(utf8);
     std::wstring out;
     out.reserve(input.size());
@@ -191,6 +203,7 @@ std::string htmlDecodeUtf8(std::string_view utf8) {
 }
 
 std::wstring trim(std::wstring_view text) {
+    // 去除首尾 Unicode 空白字符。
     const auto begin = std::find_if_not(text.begin(), text.end(), [](wchar_t ch) { return iswspace(ch) != 0; });
     const auto end = std::find_if_not(text.rbegin(), text.rend(), [](wchar_t ch) { return iswspace(ch) != 0; }).base();
     if (begin >= end) return {};
@@ -198,10 +211,12 @@ std::wstring trim(std::wstring_view text) {
 }
 
 std::string trimUtf8(std::string_view text) {
+    // 先转宽字符再 trim，避免只按 ASCII 空白处理中文环境文本。
     return wideToUtf8(trim(utf8ToWide(text)));
 }
 
 std::wstring replaceAll(std::wstring text, std::wstring_view from, std::wstring_view to) {
+    // 宽字符版本的全量替换。
     if (from.empty()) return text;
     std::size_t pos = 0;
     while ((pos = text.find(from, pos)) != std::wstring::npos) {
@@ -212,6 +227,7 @@ std::wstring replaceAll(std::wstring text, std::wstring_view from, std::wstring_
 }
 
 std::string replaceAll(std::string text, std::string_view from, std::string_view to) {
+    // 字节串版本的全量替换，常用于 UTF-8 片段。
     if (from.empty()) return text;
     std::size_t pos = 0;
     while ((pos = text.find(from, pos)) != std::string::npos) {

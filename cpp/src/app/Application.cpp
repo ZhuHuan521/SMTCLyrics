@@ -21,11 +21,15 @@
 namespace smtc::app {
 namespace {
 
+// SMTC 轮询不能过快，否则 WinRT 调用和窗口刷新会占用不必要的 CPU。
 constexpr int kMinSmtcPollIntervalMs = 500;
 constexpr int kMaxSmtcPollIntervalMs = 2000;
+// SMTC1 在换歌初期的位置偶尔会滞后，延迟一段时间后再校准一次。
 constexpr long long kSmtc1TrackChangeCalibrationDelayMs = 10000;
+// 后台歌词加载线程通过自定义窗口消息把结果交回 UI 线程。
 constexpr UINT kLyricsLoadedMessage = WM_APP + 101;
 
+// 跨线程传递的歌词加载结果；由主线程在 handleLyricsLoadedMessage 中接管释放。
 struct AsyncLyricLoadResult {
     std::uint64_t requestId = 0;
     std::wstring keyword;
@@ -34,10 +38,12 @@ struct AsyncLyricLoadResult {
     bool success = false;
 };
 
+// 控制窗口允许配置轮询间隔，这里做最终边界保护。
 UINT smtcPollIntervalMs(const config::AppConfig& config) {
     return static_cast<UINT>(std::clamp(config.smtcPollIntervalMs, kMinSmtcPollIntervalMs, kMaxSmtcPollIntervalMs));
 }
 
+// 优先使用可执行文件旁的 lyrics 目录，开发运行时也兼容当前工作目录下的 lyrics。
 std::filesystem::path chooseLyricsDirectory(const std::filesystem::path& exeDir) {
     auto path = exeDir / L"lyrics";
     if (std::filesystem::is_directory(path)) return path;
@@ -47,6 +53,7 @@ std::filesystem::path chooseLyricsDirectory(const std::filesystem::path& exeDir)
     return exeDir / L"lyrics";
 }
 
+// 配置文件中的歌词源优先级可能缺项或重复；这里归一成 1..4 的完整排列。
 std::vector<int> normalizedSourcePriority(const std::vector<int>& priority) {
     std::vector<int> result;
     for (int source : priority) {
@@ -62,6 +69,7 @@ std::vector<int> normalizedSourcePriority(const std::vector<int>& priority) {
     return result;
 }
 
+// “换源”时把当前源移动到队尾，从下一个源开始重新搜索。
 std::vector<int> sourcePriorityAfter(const std::vector<int>& priority, lyrics::LyricSource currentSource) {
     auto result = normalizedSourcePriority(priority);
     const int current = static_cast<int>(currentSource);
@@ -75,6 +83,7 @@ std::vector<int> sourcePriorityAfter(const std::vector<int>& priority, lyrics::L
 
 }
 
+// 构造阶段只准备路径和轻量对象，真正的窗口/文件初始化放在 initialize。
 Application::Application()
     : exeDir_(util::executableDirectory()),
       lyricsDir_(chooseLyricsDirectory(exeDir_)),
@@ -84,6 +93,7 @@ Application::Application()
 int Application::run() {
     initialize();
 
+    // 主线程消息循环同时处理窗口消息、定时器和后台歌词加载完成消息。
     MSG message{};
     while (GetMessageW(&message, nullptr, 0, 0) > 0) {
         if (message.message == kLyricsLoadedMessage) {
@@ -107,6 +117,7 @@ int Application::run() {
 }
 
 void Application::initialize() {
+    // 缓存和配置先落地，避免后续 UI 读到缺省文件。
     cache_.ensureExists();
     cache_.load();
     config_ = configStore_.load();
@@ -116,12 +127,14 @@ void Application::initialize() {
         PostQuitMessage(1);
         return;
     }
+    // 桌面歌词窗口只负责显示，位置变化通过回调写回配置。
     window_.applyConfig(config_);
     window_.setDraggable(false);
     window_.setGeometryChangedCallback([this](const config::WindowConfig& window) { rememberLyricWindow(window); });
     rememberLyricWindow(window_.geometry());
 
     ui::ControlWindowCallbacks callbacks;
+    // 控制窗口不直接操作业务对象，而是通过回调把意图交给 Application。
     callbacks.applyConfig = [this](const config::AppConfig& config) { applyConfig(config); };
     callbacks.getLyricGeometry = [this] { return window_.geometry(); };
     callbacks.moveLyricWindow = [this](const config::WindowConfig& window) {
@@ -142,7 +155,7 @@ void Application::initialize() {
     }
     controlWindow_.show();
 
-    // Set window icon from embedded resource
+    // 从资源文件设置两个窗口的图标。
     if (auto hIcon = LoadIconW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(IDI_APP_ICON))) {
         SendMessageW(window_.hwnd(), WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
         SendMessageW(controlWindow_.hwnd(), WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
@@ -154,6 +167,7 @@ void Application::initialize() {
 
 void Application::smtcTick() {
     try {
+        // 每次轮询读取当前媒体会话，若没有有效会话则清空当前歌词状态。
         const auto state = smtc_.readState(config_.smtcMode);
         if (!state.valid) {
             ++lyricLoadRequestId_;
@@ -172,6 +186,7 @@ void Application::smtcTick() {
         }
 
         const long long now = currentTimeMs();
+        // 接受 SMTC 当前位置，并把总歌词偏移合并到渲染位置基线里。
         const auto syncToSmtcPosition = [&] {
             lastSmtcPositionMs_ = state.positionMs;
             lastAcceptedPositionMs_ = state.positionMs + totalOffsetMs();
@@ -179,6 +194,7 @@ void Application::smtcTick() {
         };
 
         if (keyword != currentKeyword_) {
+            // 曲目变化时重置进度基线并异步加载新歌词。
             currentKeyword_ = keyword;
             syncToSmtcPosition();
             smtc1TrackChangeCalibrationAtMs_ = config_.smtcMode == 1 ? now + kSmtc1TrackChangeCalibrationDelayMs : 0;
@@ -188,8 +204,7 @@ void Application::smtcTick() {
         isPlaying_ = state.playing;
 
         if (config_.smtcMode == 1) {
-            // SMTC1: updates ~1000ms, use local extrapolation + ±1500ms calibration
-            // Use SMTC position for delta calculation; large deltas are treated as seek/jump.
+            // SMTC1 通常约 1 秒更新一次：平时本地外推，偏差过大时认为发生跳转并重新同步。
             const long long localEstimate = lastSmtcPositionMs_ + (now - lastSmtcTimestampMs_);
             const long long delta = state.positionMs - localEstimate;
             const bool trackChangeCalibrationDue = smtc1TrackChangeCalibrationAtMs_ > 0 && now >= smtc1TrackChangeCalibrationAtMs_;
@@ -208,8 +223,7 @@ void Application::smtcTick() {
             }
         } else {
             smtc1TrackChangeCalibrationAtMs_ = 0;
-            // SMTC2: only updates on play/pause/seek, no updates during playback
-            // Calibrate when raw SMTC position changes (seek detected)
+            // SMTC2 在播放中不持续更新位置，只有原始位置变化时才认为用户进行了 seek。
             if (state.positionMs != lastSmtcPositionMs_) {
                 lastSmtcPositionMs_ = state.positionMs;
                 lastAcceptedPositionMs_ = state.positionMs + totalOffsetMs();
@@ -217,7 +231,7 @@ void Application::smtcTick() {
             }
         }
 
-        // Render
+        // 轮询 tick 也会渲染一次，保证暂停/跳转后的歌词能立即更新。
         if (!parser_.empty()) {
             const long long now = currentTimeMs();
             const long long renderPos = estimatedPositionMs(now);
@@ -230,11 +244,12 @@ void Application::smtcTick() {
             }
         }
     } catch (...) {
+        // SMTC/WinRT 偶发异常不应终止整个 UI 消息循环。
     }
 }
 
 void Application::renderTick() {
-    // Both modes need render tick for smooth extrapolation when playing
+    // 播放时用高频 render tick 推进高亮动画，避免只跟随 SMTC 低频轮询。
     if (!isPlaying_ || parser_.empty()) return;
 
     try {
@@ -248,16 +263,18 @@ void Application::renderTick() {
             lastHighlightLine_ = frame.highlightLine;
         }
     } catch (...) {
+        // 绘制过程失败时跳过当前帧，下一帧继续尝试。
     }
 }
 
 void Application::applyConfig(const config::AppConfig& config) {
+    // 配置变更会影响歌词偏移、样式和轮询周期，因此需要同时更新持久化和运行态。
     config_ = config;
     configStore_.save(config_);
     if (config_.smtcMode != 1) {
         smtc1TrackChangeCalibrationAtMs_ = 0;
     }
-    // Recalculate render position with new offset
+    // 歌词偏移变化后重新计算渲染基线。
     lastAcceptedPositionMs_ = lastSmtcPositionMs_ + totalOffsetMs();
     window_.applyConfig(config_);
     restartTimers();
@@ -271,13 +288,14 @@ void Application::restartTimers() {
     if (!window_.hwnd()) return;
     KillTimer(window_.hwnd(), kSmtcTimerId);
     KillTimer(window_.hwnd(), kRenderTimerId);
-    // SMTC polling at lower frequency to save CPU
+    // SMTC 轮询低频执行，节省 CPU 和 WinRT 调用开销。
     SetTimer(window_.hwnd(), kSmtcTimerId, smtcPollIntervalMs(config_), nullptr);
-    // Render timer at ~60fps for smooth animation
+    // 渲染定时器约 60fps，只在播放且已有歌词时真正刷新。
     SetTimer(window_.hwnd(), kRenderTimerId, kRenderIntervalMs, nullptr);
 }
 
 void Application::loadLyricsForCurrentTrack(const smtc_provider::MediaState& state, bool ignoreCache, const config::AppConfig* configOverride) {
+    // 先清空旧帧，避免后台加载期间继续显示上一首歌的歌词进度。
     lastShownText_.clear();
     lastHighlightPercent_ = -1;
     lastHighlightLine_ = -1;
@@ -297,12 +315,14 @@ void Application::loadLyricsForCurrentTrack(const smtc_provider::MediaState& sta
     const auto exeDir = exeDir_;
     const auto lyricsDir = lyricsDir_;
 
+    // 在线请求可能阻塞，所以放到后台线程；结果只通过 PostMessage 回到主线程。
     std::thread([requestId, hwnd, exeDir, lyricsDir, keyword, asyncConfig, ignoreCache] {
         auto asyncResult = std::make_unique<AsyncLyricLoadResult>();
         asyncResult->requestId = requestId;
         asyncResult->keyword = keyword;
 
         try {
+            // 后台线程使用自己的 cache/repository 实例，避免跨线程共享可变对象。
             cache::LyricCache cache(exeDir / L"cache.json");
             cache.load();
             lyrics::LyricRepository repository(lyricsDir, cache);
@@ -314,6 +334,7 @@ void Application::loadLyricsForCurrentTrack(const smtc_provider::MediaState& sta
         }
 
         if (PostMessageW(hwnd, kLyricsLoadedMessage, 0, reinterpret_cast<LPARAM>(asyncResult.get()))) {
+            // 消息投递成功后所有权交给主线程。
             asyncResult.release();
         }
     }).detach();
@@ -321,8 +342,10 @@ void Application::loadLyricsForCurrentTrack(const smtc_provider::MediaState& sta
 }
 
 void Application::handleLyricsLoadedMessage(LPARAM lParam) {
+    // 重新取得后台线程 release 出来的所有权。
     std::unique_ptr<AsyncLyricLoadResult> result(reinterpret_cast<AsyncLyricLoadResult*>(lParam));
     if (!result) return;
+    // 防止慢请求覆盖新歌或新一轮手动刷新。
     if (result->requestId != lyricLoadRequestId_ || result->keyword != currentKeyword_) {
         return;
     }
@@ -332,6 +355,7 @@ void Application::handleLyricsLoadedMessage(LPARAM lParam) {
     lastHighlightLine_ = -1;
 
     if (!result->success) {
+        // 加载失败时保持空解析器，窗口显示明确的失败提示。
         parser_ = lyrics::LrcParser{};
         currentSource_ = lyrics::LyricSource::Local;
         showTextOnce(L"未找到歌词：" + result->keyword);
@@ -342,6 +366,7 @@ void Application::handleLyricsLoadedMessage(LPARAM lParam) {
     parser_ = std::move(result->parser);
     currentSource_ = result->source;
     if (currentSource_ != lyrics::LyricSource::Local) {
+        // 记住成功的在线源，下次同一首歌可优先走缓存源。
         const auto keywordUtf8 = util::wideToUtf8(result->keyword);
         cache_.setSource(keywordUtf8, static_cast<int>(currentSource_));
         cache_.save();
@@ -352,6 +377,7 @@ void Application::handleLyricsLoadedMessage(LPARAM lParam) {
 }
 
 void Application::reloadLyrics(bool ignoreCache) {
+    // 重新读取一次 SMTC，避免手动刷新时仍使用过期的曲目信息。
     const auto state = smtc_.readState(config_.smtcMode);
     if (!state.valid || lyrics::makeKeyword(state.artist, state.title).empty()) {
         controlWindow_.setStatusText(L"未检测到正在播放的 SMTC 媒体");
@@ -361,6 +387,7 @@ void Application::reloadLyrics(bool ignoreCache) {
 }
 
 void Application::switchLyricsSource() {
+    // 换源不改写当前配置，只用临时优先级重新加载当前歌曲。
     const auto state = smtc_.readState(config_.smtcMode);
     if (!state.valid || lyrics::makeKeyword(state.artist, state.title).empty()) {
         controlWindow_.setStatusText(L"未检测到正在播放的 SMTC 媒体");
@@ -372,19 +399,21 @@ void Application::switchLyricsSource() {
 }
 
 void Application::clearLyricCache() {
+    // 清空内存并立即写回，保证下一次加载不再命中旧源/旧偏移。
     cache_.clear();
     cache_.save();
     controlWindow_.setStatusText(L"歌词源和微调记忆已清除");
 }
 
 void Application::saveSongOffset(int offsetMs) {
+    // 单曲微调保存到 cache.json，和全局 lyricOffsetMs 叠加生效。
     currentSongOffsetMs_ = offsetMs;
     if (!currentKeyword_.empty()) {
         const auto keywordUtf8 = util::wideToUtf8(currentKeyword_);
         cache_.setOffset(keywordUtf8, offsetMs);
         cache_.save();
     }
-    // Recalculate render position with new total offset
+    // 偏移变化后重新计算渲染基线。
     lastAcceptedPositionMs_ = lastSmtcPositionMs_ + totalOffsetMs();
     lastShownText_.clear();
     lastHighlightPercent_ = -1;
@@ -392,6 +421,7 @@ void Application::saveSongOffset(int offsetMs) {
 }
 
 void Application::openLocalLyric() {
+    // 尽量使用当前关键字；没有缓存时临时从 SMTC 读一次。
     auto keyword = currentKeyword_;
     if (keyword.empty()) {
         const auto state = smtc_.readState(config_.smtcMode);
@@ -405,6 +435,7 @@ void Application::openLocalLyric() {
     std::filesystem::create_directories(lyricsDir_);
     const auto path = lyricsDir_ / (keyword + L".lrc");
     if (!std::filesystem::exists(path)) {
+        // 本地歌词不存在时创建空文件，方便用户直接编辑。
         util::writeFileBytes(path, {});
     }
     const auto quotedPath = util::quoteForCommandLine(path);
@@ -413,6 +444,7 @@ void Application::openLocalLyric() {
 }
 
 void Application::rememberLyricWindow(const config::WindowConfig& window) {
+    // 拖动或手动输入位置都会走这里，把歌词窗口几何同步到配置文件和控制窗口。
     if (!window.hasPosition) return;
     config_.window = window;
     configStore_.saveWindow(window);
@@ -420,6 +452,7 @@ void Application::rememberLyricWindow(const config::WindowConfig& window) {
 }
 
 std::array<bool, 4> Application::checkLyricSources() {
+    // 用一个固定中文关键字分别测试四个在线源，结果显示在控制窗口。
     std::array<bool, 4> result{};
     const auto keywordUtf8 = util::wideToUtf8(L"关键词");
     lyrics::OnlineLyrics online;
@@ -440,6 +473,7 @@ std::array<bool, 4> Application::checkLyricSources() {
 }
 
 void Application::showTextOnce(const std::wstring& text) {
+    // 状态提示不需要重复刷同一段文本。
     if (text != lastShownText_) {
         window_.updateLyrics(text, 0);
         lastShownText_ = text;
@@ -449,10 +483,12 @@ void Application::showTextOnce(const std::wstring& text) {
 }
 
 long long Application::estimatedPositionMs(long long now) const {
+    // 暂停时固定在最后接受的位置；播放时按本地时间差外推。
     return isPlaying_ ? lastAcceptedPositionMs_ + (now - lastSmtcTimestampMs_) : lastAcceptedPositionMs_;
 }
 
 long long Application::currentTimeMs() const {
+    // QueryPerformanceCounter 是单调高精度时钟，适合做歌词动画插值。
     static const long long frequency = [] {
         LARGE_INTEGER freq{};
         QueryPerformanceFrequency(&freq);
