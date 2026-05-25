@@ -23,6 +23,7 @@ namespace {
 
 constexpr int kMinSmtcPollIntervalMs = 500;
 constexpr int kMaxSmtcPollIntervalMs = 2000;
+constexpr long long kSmtc1TrackChangeCalibrationDelayMs = 10000;
 constexpr UINT kLyricsLoadedMessage = WM_APP + 101;
 
 struct AsyncLyricLoadResult {
@@ -159,6 +160,7 @@ void Application::smtcTick() {
             currentKeyword_.clear();
             currentSource_ = lyrics::LyricSource::Local;
             parser_ = lyrics::LrcParser{};
+            smtc1TrackChangeCalibrationAtMs_ = 0;
             isPlaying_ = false;
             showTextOnce(L"未检测到正在播放的 SMTC 媒体");
             return;
@@ -169,11 +171,17 @@ void Application::smtcTick() {
             return;
         }
 
-        if (keyword != currentKeyword_) {
-            currentKeyword_ = keyword;
+        const long long now = currentTimeMs();
+        const auto syncToSmtcPosition = [&] {
             lastSmtcPositionMs_ = state.positionMs;
             lastAcceptedPositionMs_ = state.positionMs + totalOffsetMs();
-            lastSmtcTimestampMs_ = currentTimeMs();
+            lastSmtcTimestampMs_ = now;
+        };
+
+        if (keyword != currentKeyword_) {
+            currentKeyword_ = keyword;
+            syncToSmtcPosition();
+            smtc1TrackChangeCalibrationAtMs_ = config_.smtcMode == 1 ? now + kSmtc1TrackChangeCalibrationDelayMs : 0;
             loadLyricsForCurrentTrack(state);
         }
 
@@ -181,38 +189,38 @@ void Application::smtcTick() {
 
         if (config_.smtcMode == 1) {
             // SMTC1: updates ~1000ms, use local extrapolation + ±1500ms calibration
-            // Use raw SMTC position for delta calculation
-            const long long now = currentTimeMs();
+            // Use SMTC position for delta calculation; large deltas are treated as seek/jump.
             const long long localEstimate = lastSmtcPositionMs_ + (now - lastSmtcTimestampMs_);
             const long long delta = state.positionMs - localEstimate;
+            const bool trackChangeCalibrationDue = smtc1TrackChangeCalibrationAtMs_ > 0 && now >= smtc1TrackChangeCalibrationAtMs_;
 
             if (state.playing) {
-                if (std::abs(delta) > 1500) {
-                    lastSmtcPositionMs_ = state.positionMs;
-                    lastAcceptedPositionMs_ = state.positionMs + totalOffsetMs();
-                    lastSmtcTimestampMs_ = now;
+                if (trackChangeCalibrationDue) {
+                    syncToSmtcPosition();
+                } else if (std::abs(delta) > 1500) {
+                    syncToSmtcPosition();
                 }
             } else {
-                lastSmtcPositionMs_ = state.positionMs;
-                lastAcceptedPositionMs_ = state.positionMs + totalOffsetMs();
-                lastSmtcTimestampMs_ = now;
+                syncToSmtcPosition();
+            }
+            if (trackChangeCalibrationDue) {
+                smtc1TrackChangeCalibrationAtMs_ = 0;
             }
         } else {
+            smtc1TrackChangeCalibrationAtMs_ = 0;
             // SMTC2: only updates on play/pause/seek, no updates during playback
             // Calibrate when raw SMTC position changes (seek detected)
             if (state.positionMs != lastSmtcPositionMs_) {
                 lastSmtcPositionMs_ = state.positionMs;
                 lastAcceptedPositionMs_ = state.positionMs + totalOffsetMs();
-                lastSmtcTimestampMs_ = currentTimeMs();
+                lastSmtcTimestampMs_ = now;
             }
         }
 
         // Render
         if (!parser_.empty()) {
             const long long now = currentTimeMs();
-            const long long renderPos = isPlaying_ ?
-                (lastAcceptedPositionMs_ + (now - lastSmtcTimestampMs_)) :
-                lastAcceptedPositionMs_;
+            const long long renderPos = estimatedPositionMs(now);
             const auto frame = parser_.frameAt(renderPos, config_.displayMode);
             if (!frame.text.empty() && (frame.text != lastShownText_ || frame.highlightPercent != lastHighlightPercent_ || frame.highlightLine != lastHighlightLine_)) {
                 window_.updateLyrics(frame.text, frame.highlightPercent, frame.highlightLine);
@@ -230,11 +238,9 @@ void Application::renderTick() {
     if (!isPlaying_ || parser_.empty()) return;
 
     try {
-        // Estimate current position by extrapolating from last accepted position
-        const long long elapsed = currentTimeMs() - lastSmtcTimestampMs_;
-        const long long estimatedPositionMs = lastAcceptedPositionMs_ + elapsed;
+        const long long renderPos = estimatedPositionMs(currentTimeMs());
 
-        const auto frame = parser_.frameAt(estimatedPositionMs, config_.displayMode);
+        const auto frame = parser_.frameAt(renderPos, config_.displayMode);
         if (!frame.text.empty() && (frame.text != lastShownText_ || frame.highlightPercent != lastHighlightPercent_ || frame.highlightLine != lastHighlightLine_)) {
             window_.updateLyrics(frame.text, frame.highlightPercent, frame.highlightLine);
             lastShownText_ = frame.text;
@@ -248,6 +254,9 @@ void Application::renderTick() {
 void Application::applyConfig(const config::AppConfig& config) {
     config_ = config;
     configStore_.save(config_);
+    if (config_.smtcMode != 1) {
+        smtc1TrackChangeCalibrationAtMs_ = 0;
+    }
     // Recalculate render position with new offset
     lastAcceptedPositionMs_ = lastSmtcPositionMs_ + totalOffsetMs();
     window_.applyConfig(config_);
@@ -437,6 +446,10 @@ void Application::showTextOnce(const std::wstring& text) {
         lastHighlightPercent_ = 0;
         lastHighlightLine_ = 0;
     }
+}
+
+long long Application::estimatedPositionMs(long long now) const {
+    return isPlaying_ ? lastAcceptedPositionMs_ + (now - lastSmtcTimestampMs_) : lastAcceptedPositionMs_;
 }
 
 long long Application::currentTimeMs() const {

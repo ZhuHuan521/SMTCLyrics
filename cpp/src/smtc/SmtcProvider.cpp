@@ -16,9 +16,17 @@ using winrt::Windows::Media::Control::GlobalSystemMediaTransportControlsSessionP
 
 constexpr auto kManagerRetryInterval = std::chrono::seconds(5);
 constexpr auto kMediaPropertiesRefreshInterval = std::chrono::seconds(1);
+constexpr auto kPrecisePositionMaxAge = std::chrono::milliseconds(3000);
 
 std::int64_t millisecondsFromTimeSpan(winrt::Windows::Foundation::TimeSpan value) {
     return std::chrono::duration_cast<std::chrono::milliseconds>(value).count();
+}
+
+std::int64_t millisecondsSinceDateTime(winrt::Windows::Foundation::DateTime value) {
+    if (value.time_since_epoch().count() <= 0) {
+        return -1;
+    }
+    return std::chrono::duration_cast<std::chrono::milliseconds>(winrt::clock::now() - value).count();
 }
 
 std::wstring hstringToWide(const winrt::hstring& text) {
@@ -58,6 +66,9 @@ MediaState SmtcProvider::readState(int mode) {
         const auto timeline = session.GetTimelineProperties();
         const auto playback = session.GetPlaybackInfo();
         const auto rawPositionMs = millisecondsFromTimeSpan(timeline.Position());
+        const auto timelineUpdatedAgeMs = millisecondsSinceDateTime(timeline.LastUpdatedTime());
+        const bool timelineUpdatedRecently = timelineUpdatedAgeMs >= 0 &&
+            timelineUpdatedAgeMs <= kPrecisePositionMaxAge.count();
 
         const bool sessionChanged = !session_ || sessionId != lastSessionId_;
         const bool positionRestarted = lastRawPositionMs_ > 3000 && rawPositionMs < 1000;
@@ -96,7 +107,9 @@ MediaState SmtcProvider::readState(int mode) {
             lastRawPositionMs_ = rawPositionMs;
         }
 
-        if (mode == 2 && state.playing) {
+        if (mode == 1 && state.playing && timelineUpdatedRecently) {
+            state.positionMs = rawPositionMs + timelineUpdatedAgeMs;
+        } else if (mode == 2 && state.playing) {
             const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastObserved_).count();
             state.positionMs = rawPositionMs + elapsed;
         } else {

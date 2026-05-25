@@ -38,6 +38,7 @@ private:
     void rememberLyricWindow(const config::WindowConfig& window);
     static std::array<bool, 4> checkLyricSources();
     void showTextOnce(const std::wstring& text);
+    long long estimatedPositionMs(long long now) const;
     long long currentTimeMs() const;
     int totalOffsetMs() const { return config_.lyricOffsetMs + currentSongOffsetMs_; }
 
@@ -62,6 +63,7 @@ private:
     long long lastSmtcPositionMs_ = 0;
     long long lastSmtcTimestampMs_ = 0;
     long long lastAcceptedPositionMs_ = 0;  // last position we accepted (no going back)
+    long long smtc1TrackChangeCalibrationAtMs_ = 0;
     bool isPlaying_ = false;
 
     static constexpr UINT_PTR kSmtcTimerId = 1;
