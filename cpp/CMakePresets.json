@@ -18,6 +18,17 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
+    },
+    {
+      "name": "mingw-size",
+      "displayName": "MinGW Size Optimized",
+      "generator": "MinGW Makefiles",
+      "binaryDir": "${sourceDir}/build/mingw-size",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "MinSizeRel",
+        "SMTCLYRICS_ENABLE_LTO": "OFF",
+        "SMTCLYRICS_STRIP_RELEASE": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -28,6 +39,10 @@
     {
       "name": "mingw-release",
       "configurePreset": "mingw-release"
+    },
+    {
+      "name": "mingw-size",
+      "configurePreset": "mingw-size"
     }
   ]
 }

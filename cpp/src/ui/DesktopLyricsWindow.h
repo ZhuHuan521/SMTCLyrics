@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace smtc::ui {
 
@@ -43,10 +44,18 @@ private:
     bool ensureBackBuffer(HDC referenceDc);
     void releaseBackBuffer();
     Gdiplus::FontFamily* fontFamily();
+    void invalidateLayout();
+    bool rebuildLayoutCache();
     void notifyGeometryChanged() const;
     Gdiplus::Color colorFromColorRef(COLORREF color, BYTE alpha = 255) const;
 
     // 窗口几何、当前歌词帧和 GDI/GDI+ 资源。
+    struct CachedLine {
+        std::unique_ptr<Gdiplus::GraphicsPath> shadowPath;
+        std::unique_ptr<Gdiplus::GraphicsPath> textPath;
+        Gdiplus::RectF bounds;
+    };
+
     HWND hwnd_ = nullptr;
     int width_ = 0;
     int height_ = 0;
@@ -65,6 +74,8 @@ private:
     int backBufferHeight_ = 0;
     std::unique_ptr<Gdiplus::FontFamily> fontFamily_;
     std::wstring cachedFontRequest_;
+    std::vector<CachedLine> layoutCache_;
+    bool layoutDirty_ = true;
 };
 
 }

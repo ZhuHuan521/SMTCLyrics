@@ -45,6 +45,7 @@ public:
     bool parseBytes(const std::vector<std::uint8_t>& bytes);
     // 根据播放位置生成当前应显示的歌词文本和高亮进度。
     LyricFrame frameAt(std::int64_t positionMs, int displayMode) const;
+    void frameAt(std::int64_t positionMs, int displayMode, LyricFrame& frame) const;
     bool empty() const { return lines_.empty(); }
     const std::vector<LrcLine>& lines() const { return lines_; }
 

@@ -354,16 +354,24 @@ bool LrcParser::parseBytes(const std::vector<std::uint8_t>& bytes) {
 }
 
 LyricFrame LrcParser::frameAt(std::int64_t positionMs, int displayMode) const {
-    // displayMode: 1=当前行，2=当前+下一行，3=上一行+当前。
     LyricFrame frame;
-    if (lines_.empty()) return frame;
+    frameAt(positionMs, displayMode, frame);
+    return frame;
+}
+
+void LrcParser::frameAt(std::int64_t positionMs, int displayMode, LyricFrame& frame) const {
+    // displayMode: 1=当前行，2=当前+下一行，3=上一行+当前。
+    frame.text.clear();
+    frame.highlightPercent = 0;
+    frame.highlightLine = 0;
+    if (lines_.empty()) return;
 
     const auto adjusted = positionMs;
     const int index = findCurrentIndex(adjusted);
-    if (index < 0) return frame;
+    if (index < 0) return;
 
     const auto current = visibleLineNear(index, +1, 2);
-    if (!current) return frame;
+    if (!current) return;
 
     if (displayMode == 2) {
         // 两句向后：当前行高亮，下一句用第二行样式显示。
@@ -389,7 +397,6 @@ LyricFrame LrcParser::frameAt(std::int64_t positionMs, int displayMode) const {
         frame.text.assign(current->text.begin(), current->text.end());
     }
     frame.highlightPercent = highlightPercentForLine(current->index, adjusted);
-    return frame;
 }
 
 std::optional<std::int64_t> LrcParser::parseTimestamp(std::wstring_view token) {

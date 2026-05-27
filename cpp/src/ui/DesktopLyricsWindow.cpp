@@ -127,12 +127,14 @@ void DesktopLyricsWindow::destroy() {
         DestroyWindow(hwnd_);
         hwnd_ = nullptr;
     }
+    layoutCache_.clear();
     releaseBackBuffer();
 }
 
 void DesktopLyricsWindow::applyConfig(const config::AppConfig& config) {
     // 样式变化后立即重绘当前歌词文本。
     config_ = config;
+    invalidateLayout();
     redraw();
 }
 
@@ -143,9 +145,15 @@ void DesktopLyricsWindow::updateLyrics(std::wstring_view text, int highlightPerc
     if (text_ == text && highlightPercent_ == clampedHighlight && highlightLine_ == clampedLine) {
         return;
     }
-    text_.assign(text.begin(), text.end());
+    const bool textChanged = text_ != text;
+    if (textChanged) {
+        text_.assign(text.begin(), text.end());
+    }
     highlightPercent_ = clampedHighlight;
     highlightLine_ = clampedLine;
+    if (textChanged) {
+        invalidateLayout();
+    }
     redraw();
 }
 
@@ -160,8 +168,12 @@ void DesktopLyricsWindow::setGeometryChangedCallback(std::function<void(const co
 void DesktopLyricsWindow::move(int left, int top, int width, int height) {
     // 控制窗口应用几何时走这里，同时通知配置层保存新位置。
     if (!hwnd_) return;
+    const bool sizeChanged = width_ != width || height_ != height;
     width_ = width;
     height_ = height;
+    if (sizeChanged) {
+        invalidateLayout();
+    }
     SetWindowPos(hwnd_, HWND_TOPMOST, left, top, width_, height_, SWP_NOACTIVATE);
     redraw();
     notifyGeometryChanged();
@@ -242,61 +254,40 @@ void DesktopLyricsWindow::redraw() {
         graphics.Clear(Gdiplus::Color(0, 0, 0, 0));
 
         if (!text_.empty()) {
-            // 使用 GraphicsPath 绘制文字，便于描边、阴影和裁剪高亮。
-            auto* family = fontFamily();
-            const auto style = fontStyleFromConfig(config_.font);
-            Gdiplus::StringFormat format;
-            format.SetAlignment(Gdiplus::StringAlignmentCenter);
-            format.SetLineAlignment(Gdiplus::StringAlignmentCenter);
-            format.SetFormatFlags(Gdiplus::StringFormatFlagsNoWrap);
-
-            const auto lines = splitDisplayLines(text_);
-            const int emHeight = family->GetEmHeight(style);
-            const int lineSpacing = family->GetLineSpacing(style);
-            const float fontSize = static_cast<float>(config_.font.size);
-            const float lineHeight = emHeight > 0 ? fontSize * static_cast<float>(lineSpacing) / static_cast<float>(emHeight) : fontSize * 1.25f;
-            const float totalHeight = lineHeight * static_cast<float>(lines.count);
-            const float startY = (static_cast<float>(height_) - totalHeight) / 2.0f;
-            const int activeLine = std::clamp(highlightLine_, 0, static_cast<int>(lines.count) - 1);
-
-            for (std::size_t i = 0; i < lines.count; ++i) {
-                // 每一行独立计算 layout，整体按总高度垂直居中。
-                const auto lineText = lines.items[i];
-                const float y = startY + static_cast<float>(i) * lineHeight;
-                Gdiplus::RectF layout(0.0f, y, static_cast<Gdiplus::REAL>(width_), lineHeight);
-
-                // 两行模式下，非当前高亮行使用第二句样式。
-                const bool isActiveLine = (static_cast<int>(i) == activeLine);
-                const bool isSecondLine = (lines.count > 1 && i == 1 && activeLine == 0);
-                const auto& lineNormalStyle = isSecondLine ? config_.highlight2 : config_.normal;
-                const auto& lineBorderStyle = isSecondLine ? config_.highlight2.border : config_.normal.border;
-
-                Gdiplus::GraphicsPath shadowPath;
-                // 先画轻微阴影，再画描边和普通文字。
-                Gdiplus::RectF shadowLayout(2.0f, y + 2.0f, static_cast<Gdiplus::REAL>(width_), lineHeight);
-                shadowPath.AddString(lineText.data(), static_cast<INT>(lineText.size()), family, style, fontSize, shadowLayout, &format);
+            // 使用缓存好的文字路径绘制，高亮推进时避免反复 AddString。
+            if (layoutDirty_) {
+                rebuildLayoutCache();
+            }
+            if (!layoutCache_.empty()) {
+                const int activeLine = std::clamp(highlightLine_, 0, static_cast<int>(layoutCache_.size()) - 1);
                 Gdiplus::SolidBrush shadowBrush(Gdiplus::Color(150, 0, 0, 0));
-                graphics.FillPath(&shadowBrush, &shadowPath);
 
-                Gdiplus::GraphicsPath textPath;
-                textPath.AddString(lineText.data(), static_cast<INT>(lineText.size()), family, style, fontSize, layout, &format);
-                Gdiplus::RectF bounds;
-                textPath.GetBounds(&bounds);
-                Gdiplus::Pen outline(colorFromColorRef(lineBorderStyle), 1.0f);
-                graphics.DrawPath(&outline, &textPath);
-                auto brush = makeBrush(lineNormalStyle, bounds);
-                graphics.FillPath(brush.get(), &textPath);
+                for (std::size_t i = 0; i < layoutCache_.size(); ++i) {
+                    const auto& line = layoutCache_[i];
+                    // 两行模式下，非当前高亮行使用第二句样式。
+                    const bool isActiveLine = (static_cast<int>(i) == activeLine);
+                    const bool isSecondLine = (layoutCache_.size() > 1 && i == 1 && activeLine == 0);
+                    const auto& lineNormalStyle = isSecondLine ? config_.highlight2 : config_.normal;
+                    const auto& lineBorderStyle = isSecondLine ? config_.highlight2.border : config_.normal.border;
 
-                if (highlightPercent_ > 0 && isActiveLine) {
-                    // 通过水平裁剪区域叠加高亮画刷，实现从左到右的扫光效果。
-                    Gdiplus::GraphicsState state = graphics.Save();
-                    Gdiplus::RectF clip(bounds.X, bounds.Y, bounds.Width * highlightPercent_ / 100.0f, bounds.Height);
-                    graphics.SetClip(clip);
-                    Gdiplus::Pen highlightOutline(colorFromColorRef(config_.highlight.border), 1.0f);
-                    graphics.DrawPath(&highlightOutline, &textPath);
-                    auto highlightBrush = makeBrush(config_.highlight, bounds);
-                    graphics.FillPath(highlightBrush.get(), &textPath);
-                    graphics.Restore(state);
+                    // 先画轻微阴影，再画描边和普通文字。
+                    graphics.FillPath(&shadowBrush, line.shadowPath.get());
+                    Gdiplus::Pen outline(colorFromColorRef(lineBorderStyle), 1.0f);
+                    graphics.DrawPath(&outline, line.textPath.get());
+                    auto brush = makeBrush(lineNormalStyle, line.bounds);
+                    graphics.FillPath(brush.get(), line.textPath.get());
+
+                    if (highlightPercent_ > 0 && isActiveLine) {
+                        // 通过水平裁剪区域叠加高亮画刷，实现从左到右的扫光效果。
+                        Gdiplus::GraphicsState state = graphics.Save();
+                        Gdiplus::RectF clip(line.bounds.X, line.bounds.Y, line.bounds.Width * highlightPercent_ / 100.0f, line.bounds.Height);
+                        graphics.SetClip(clip);
+                        Gdiplus::Pen highlightOutline(colorFromColorRef(config_.highlight.border), 1.0f);
+                        graphics.DrawPath(&highlightOutline, line.textPath.get());
+                        auto highlightBrush = makeBrush(config_.highlight, line.bounds);
+                        graphics.FillPath(highlightBrush.get(), line.textPath.get());
+                        graphics.Restore(state);
+                    }
                 }
             }
         }
@@ -380,6 +371,51 @@ Gdiplus::FontFamily* DesktopLyricsWindow::fontFamily() {
         fontFamily_ = std::move(candidate);
     }
     return fontFamily_.get();
+}
+
+void DesktopLyricsWindow::invalidateLayout() {
+    layoutDirty_ = true;
+    layoutCache_.clear();
+}
+
+bool DesktopLyricsWindow::rebuildLayoutCache() {
+    layoutCache_.clear();
+    layoutDirty_ = false;
+    if (text_.empty() || width_ <= 0 || height_ <= 0) return true;
+
+    auto* family = fontFamily();
+    if (!family) return false;
+
+    const auto style = fontStyleFromConfig(config_.font);
+    Gdiplus::StringFormat format;
+    format.SetAlignment(Gdiplus::StringAlignmentCenter);
+    format.SetLineAlignment(Gdiplus::StringAlignmentCenter);
+    format.SetFormatFlags(Gdiplus::StringFormatFlagsNoWrap);
+
+    const auto lines = splitDisplayLines(text_);
+    const int emHeight = family->GetEmHeight(style);
+    const int lineSpacing = family->GetLineSpacing(style);
+    const float fontSize = static_cast<float>(config_.font.size);
+    const float lineHeight = emHeight > 0 ? fontSize * static_cast<float>(lineSpacing) / static_cast<float>(emHeight) : fontSize * 1.25f;
+    const float totalHeight = lineHeight * static_cast<float>(lines.count);
+    const float startY = (static_cast<float>(height_) - totalHeight) / 2.0f;
+
+    layoutCache_.reserve(lines.count);
+    for (std::size_t i = 0; i < lines.count; ++i) {
+        const auto lineText = lines.items[i];
+        const float y = startY + static_cast<float>(i) * lineHeight;
+        Gdiplus::RectF layout(0.0f, y, static_cast<Gdiplus::REAL>(width_), lineHeight);
+        Gdiplus::RectF shadowLayout(2.0f, y + 2.0f, static_cast<Gdiplus::REAL>(width_), lineHeight);
+
+        CachedLine cached;
+        cached.shadowPath = std::make_unique<Gdiplus::GraphicsPath>();
+        cached.textPath = std::make_unique<Gdiplus::GraphicsPath>();
+        cached.shadowPath->AddString(lineText.data(), static_cast<INT>(lineText.size()), family, style, fontSize, shadowLayout, &format);
+        cached.textPath->AddString(lineText.data(), static_cast<INT>(lineText.size()), family, style, fontSize, layout, &format);
+        cached.textPath->GetBounds(&cached.bounds);
+        layoutCache_.push_back(std::move(cached));
+    }
+    return true;
 }
 
 void DesktopLyricsWindow::notifyGeometryChanged() const {

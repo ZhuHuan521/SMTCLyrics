@@ -235,13 +235,8 @@ void Application::smtcTick() {
         if (!parser_.empty()) {
             const long long now = currentTimeMs();
             const long long renderPos = estimatedPositionMs(now);
-            const auto frame = parser_.frameAt(renderPos, config_.displayMode);
-            if (!frame.text.empty() && (frame.text != lastShownText_ || frame.highlightPercent != lastHighlightPercent_ || frame.highlightLine != lastHighlightLine_)) {
-                window_.updateLyrics(frame.text, frame.highlightPercent, frame.highlightLine);
-                lastShownText_ = frame.text;
-                lastHighlightPercent_ = frame.highlightPercent;
-                lastHighlightLine_ = frame.highlightLine;
-            }
+            parser_.frameAt(renderPos, config_.displayMode, scratchFrame_);
+            showFrameIfChanged(scratchFrame_);
         }
     } catch (...) {
         // SMTC/WinRT 偶发异常不应终止整个 UI 消息循环。
@@ -255,13 +250,8 @@ void Application::renderTick() {
     try {
         const long long renderPos = estimatedPositionMs(currentTimeMs());
 
-        const auto frame = parser_.frameAt(renderPos, config_.displayMode);
-        if (!frame.text.empty() && (frame.text != lastShownText_ || frame.highlightPercent != lastHighlightPercent_ || frame.highlightLine != lastHighlightLine_)) {
-            window_.updateLyrics(frame.text, frame.highlightPercent, frame.highlightLine);
-            lastShownText_ = frame.text;
-            lastHighlightPercent_ = frame.highlightPercent;
-            lastHighlightLine_ = frame.highlightLine;
-        }
+        parser_.frameAt(renderPos, config_.displayMode, scratchFrame_);
+        showFrameIfChanged(scratchFrame_);
     } catch (...) {
         // 绘制过程失败时跳过当前帧，下一帧继续尝试。
     }
@@ -480,6 +470,20 @@ void Application::showTextOnce(const std::wstring& text) {
         lastHighlightPercent_ = 0;
         lastHighlightLine_ = 0;
     }
+}
+
+void Application::showFrameIfChanged(const lyrics::LyricFrame& frame) {
+    if (frame.text.empty()) return;
+    if (frame.text == lastShownText_ && frame.highlightPercent == lastHighlightPercent_ && frame.highlightLine == lastHighlightLine_) {
+        return;
+    }
+
+    window_.updateLyrics(frame.text, frame.highlightPercent, frame.highlightLine);
+    if (frame.text != lastShownText_) {
+        lastShownText_ = frame.text;
+    }
+    lastHighlightPercent_ = frame.highlightPercent;
+    lastHighlightLine_ = frame.highlightLine;
 }
 
 long long Application::estimatedPositionMs(long long now) const {

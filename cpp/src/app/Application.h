@@ -55,6 +55,7 @@ private:
     static std::array<bool, 4> checkLyricSources();
     // 只在文本变化时刷新歌词窗口，减少无意义重绘。
     void showTextOnce(const std::wstring& text);
+    void showFrameIfChanged(const lyrics::LyricFrame& frame);
     // 用最近一次 SMTC 位置和本地高精度时钟估算当前播放进度。
     long long estimatedPositionMs(long long now) const;
     // 高精度单调时钟，单位毫秒。
@@ -77,6 +78,7 @@ private:
     lyrics::LyricSource currentSource_ = lyrics::LyricSource::Local;
     std::wstring currentKeyword_;
     int currentSongOffsetMs_ = 0;
+    lyrics::LyricFrame scratchFrame_;
     std::wstring lastShownText_;
     int lastHighlightPercent_ = -1;
     int lastHighlightLine_ = -1;
