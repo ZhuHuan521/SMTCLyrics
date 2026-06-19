@@ -26,6 +26,8 @@ constexpr int kMinSmtcPollIntervalMs = 500;
 constexpr int kMaxSmtcPollIntervalMs = 2000;
 // SMTC1 在换歌初期的位置偶尔会滞后，延迟一段时间后再校准一次。
 constexpr long long kSmtc1TrackChangeCalibrationDelayMs = 10000;
+// Apple Music 内部位置偶尔会有小幅抖动；超过该阈值才认为用户拖动了进度。
+constexpr long long kAppleMusicPositionCorrectionThresholdMs = 1500;
 // 后台歌词加载线程通过自定义窗口消息把结果交回 UI 线程。
 constexpr UINT kLyricsLoadedMessage = WM_APP + 101;
 
@@ -102,7 +104,7 @@ int Application::run() {
         }
         if (message.message == WM_TIMER) {
             if (message.wParam == kSmtcTimerId) {
-                smtcTick();
+                playbackTick();
                 continue;
             }
             if (message.wParam == kRenderTimerId) {
@@ -113,6 +115,7 @@ int Application::run() {
         TranslateMessage(&message);
         DispatchMessageW(&message);
     }
+    appleMusic_.shutdown();
     return static_cast<int>(message.wParam);
 }
 
@@ -147,6 +150,8 @@ void Application::initialize() {
     callbacks.clearCache = [this] { clearLyricCache(); };
     callbacks.openLocalLyric = [this] { openLocalLyric(); };
     callbacks.checkLyricSources = [] { return checkLyricSources(); };
+    callbacks.checkAppleMusicBridge = [this] { checkAppleMusicBridge(); };
+    callbacks.toggleAppleMusicBridge = [this] { toggleAppleMusicBridge(); };
     callbacks.saveSongOffset = [this](int ms) { saveSongOffset(ms); };
     if (!controlWindow_.create(config_, std::move(callbacks))) {
         MessageBoxW(nullptr, L"控制窗口创建失败", L"SMTCLyrics", MB_ICONERROR | MB_OK);
@@ -161,12 +166,73 @@ void Application::initialize() {
         SendMessageW(controlWindow_.hwnd(), WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
     }
 
-    showTextOnce(L"等待 SMTC 媒体会话...");
+    showTextOnce(config_.smtcMode == 3 ? L"等待 Apple Music 内部播放信息..." : L"等待 SMTC 媒体会话...");
     restartTimers();
 }
 
-void Application::smtcTick() {
+void Application::playbackTick() {
     try {
+        if (config_.smtcMode == 3) {
+            const auto state = readPlaybackState();
+            if (!state.valid) {
+                ++lyricLoadRequestId_;
+                currentKeyword_.clear();
+                currentSource_ = lyrics::LyricSource::Local;
+                parser_ = lyrics::LrcParser{};
+                smtc1TrackChangeCalibrationAtMs_ = 0;
+                isPlaying_ = false;
+                showTextOnce(noPlaybackMessage());
+                return;
+            }
+
+            const auto keyword = lyrics::makeKeyword(state.artist, state.title);
+            if (keyword.empty()) return;
+
+            const long long now = currentTimeMs();
+            const auto syncToAppleMusicPosition = [&] {
+                lastSmtcPositionMs_ = state.positionMs;
+                lastAcceptedPositionMs_ = state.positionMs + totalOffsetMs();
+                lastSmtcTimestampMs_ = now;
+            };
+            const auto scheduleAppleMusicCalibration = [&] {
+                smtc1TrackChangeCalibrationAtMs_ = state.playing ? now + kSmtc1TrackChangeCalibrationDelayMs : 0;
+            };
+
+            if (keyword != currentKeyword_) {
+                currentKeyword_ = keyword;
+                syncToAppleMusicPosition();
+                scheduleAppleMusicCalibration();
+                loadLyricsForCurrentTrack(state);
+            }
+
+            const bool wasPlaying = isPlaying_;
+            isPlaying_ = state.playing;
+            const bool trackChangeCalibrationDue = smtc1TrackChangeCalibrationAtMs_ > 0 && now >= smtc1TrackChangeCalibrationAtMs_;
+            if (!state.playing) {
+                syncToAppleMusicPosition();
+                smtc1TrackChangeCalibrationAtMs_ = 0;
+            } else if (!wasPlaying) {
+                syncToAppleMusicPosition();
+                scheduleAppleMusicCalibration();
+            } else if (trackChangeCalibrationDue) {
+                syncToAppleMusicPosition();
+                smtc1TrackChangeCalibrationAtMs_ = 0;
+            } else {
+                const long long localEstimate = lastSmtcPositionMs_ + (now - lastSmtcTimestampMs_);
+                const long long delta = state.positionMs - localEstimate;
+                if (std::abs(delta) > kAppleMusicPositionCorrectionThresholdMs) {
+                    syncToAppleMusicPosition();
+                    smtc1TrackChangeCalibrationAtMs_ = 0;
+                }
+            }
+
+            if (!parser_.empty()) {
+                parser_.frameAt(estimatedPositionMs(currentTimeMs()), config_.displayMode, scratchFrame_);
+                showFrameIfChanged(scratchFrame_);
+            }
+            return;
+        }
+
         // 每次轮询读取当前媒体会话，若没有有效会话则清空当前歌词状态。
         const auto state = smtc_.readState(config_.smtcMode);
         if (!state.valid) {
@@ -259,9 +325,13 @@ void Application::renderTick() {
 
 void Application::applyConfig(const config::AppConfig& config) {
     // 配置变更会影响歌词偏移、样式和轮询周期，因此需要同时更新持久化和运行态。
+    const int previousSmtcMode = config_.smtcMode;
     config_ = config;
     configStore_.save(config_);
-    if (config_.smtcMode != 1) {
+    if (previousSmtcMode != config_.smtcMode) {
+        appleMusic_.shutdown();
+    }
+    if (config_.smtcMode != 1 && config_.smtcMode != 3) {
         smtc1TrackChangeCalibrationAtMs_ = 0;
     }
     // 歌词偏移变化后重新计算渲染基线。
@@ -284,7 +354,7 @@ void Application::restartTimers() {
     SetTimer(window_.hwnd(), kRenderTimerId, kRenderIntervalMs, nullptr);
 }
 
-void Application::loadLyricsForCurrentTrack(const smtc_provider::MediaState& state, bool ignoreCache, const config::AppConfig* configOverride) {
+void Application::loadLyricsForCurrentTrack(const playback::MediaState& state, bool ignoreCache, const config::AppConfig* configOverride) {
     // 先清空旧帧，避免后台加载期间继续显示上一首歌的歌词进度。
     lastShownText_.clear();
     lastHighlightPercent_ = -1;
@@ -367,6 +437,15 @@ void Application::handleLyricsLoadedMessage(LPARAM lParam) {
 }
 
 void Application::reloadLyrics(bool ignoreCache) {
+    if (config_.smtcMode == 3) {
+        const auto state = readPlaybackState();
+        if (!state.valid || lyrics::makeKeyword(state.artist, state.title).empty()) {
+            controlWindow_.setStatusText(noPlaybackMessage());
+            return;
+        }
+        loadLyricsForCurrentTrack(state, ignoreCache);
+        return;
+    }
     // 重新读取一次 SMTC，避免手动刷新时仍使用过期的曲目信息。
     const auto state = smtc_.readState(config_.smtcMode);
     if (!state.valid || lyrics::makeKeyword(state.artist, state.title).empty()) {
@@ -377,6 +456,17 @@ void Application::reloadLyrics(bool ignoreCache) {
 }
 
 void Application::switchLyricsSource() {
+    if (config_.smtcMode == 3) {
+        const auto state = readPlaybackState();
+        if (!state.valid || lyrics::makeKeyword(state.artist, state.title).empty()) {
+            controlWindow_.setStatusText(noPlaybackMessage());
+            return;
+        }
+        auto config = config_;
+        config.sourcePriority = sourcePriorityAfter(config_.sourcePriority, currentSource_);
+        loadLyricsForCurrentTrack(state, true, &config);
+        return;
+    }
     // 换源不改写当前配置，只用临时优先级重新加载当前歌曲。
     const auto state = smtc_.readState(config_.smtcMode);
     if (!state.valid || lyrics::makeKeyword(state.artist, state.title).empty()) {
@@ -413,7 +503,15 @@ void Application::saveSongOffset(int offsetMs) {
 void Application::openLocalLyric() {
     // 尽量使用当前关键字；没有缓存时临时从 SMTC 读一次。
     auto keyword = currentKeyword_;
+    if (keyword.empty() && config_.smtcMode == 3) {
+        const auto state = readPlaybackState();
+        if (state.valid) keyword = lyrics::makeKeyword(state.artist, state.title);
+    }
     if (keyword.empty()) {
+        if (config_.smtcMode == 3) {
+            controlWindow_.setStatusText(noPlaybackMessage());
+            return;
+        }
         const auto state = smtc_.readState(config_.smtcMode);
         if (state.valid) keyword = lyrics::makeKeyword(state.artist, state.title);
     }
@@ -431,6 +529,33 @@ void Application::openLocalLyric() {
     const auto quotedPath = util::quoteForCommandLine(path);
     const auto result = ShellExecuteW(nullptr, L"open", L"notepad.exe", quotedPath.c_str(), nullptr, SW_SHOWNORMAL);
     controlWindow_.setStatusText(reinterpret_cast<INT_PTR>(result) > 32 ? L"已打开本地歌词" : L"打开本地歌词失败");
+}
+
+void Application::checkAppleMusicBridge() {
+    const auto status = appleMusic_.detectBridge();
+    controlWindow_.setStatusText(status.message);
+}
+
+void Application::toggleAppleMusicBridge() {
+    const auto status = appleMusic_.detectBridge();
+    std::wstring message;
+    bool ok = false;
+
+    if (!status.appleMusicRunning) {
+        message = status.message;
+    } else if (status.bridgeResponding) {
+        ok = appleMusic_.unloadBridge(message);
+        if (ok && config_.smtcMode == 3) {
+            message = L"DLL 已卸载；方式 3 仍启用，下一次轮询会按需重新加载";
+        }
+    } else {
+        ok = appleMusic_.loadBridge(message);
+    }
+
+    if (!ok && message.empty()) {
+        message = appleMusic_.lastError().empty() ? L"Apple Music bridge 操作失败" : appleMusic_.lastError();
+    }
+    controlWindow_.setStatusText(message);
 }
 
 void Application::rememberLyricWindow(const config::WindowConfig& window) {
@@ -460,6 +585,22 @@ std::array<bool, 4> Application::checkLyricSources() {
     }
 
     return result;
+}
+
+playback::MediaState Application::readPlaybackState() {
+    if (config_.smtcMode == 3) {
+        return appleMusic_.readState();
+    }
+    return smtc_.readState(config_.smtcMode);
+}
+
+std::wstring Application::noPlaybackMessage() const {
+    if (config_.smtcMode == 3) {
+        const auto& error = appleMusic_.lastError();
+        if (!error.empty()) return error;
+        return L"未检测到 Apple Music 内部播放信息";
+    }
+    return L"未检测到正在播放的 SMTC 媒体";
 }
 
 void Application::showTextOnce(const std::wstring& text) {

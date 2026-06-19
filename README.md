@@ -1,12 +1,13 @@
 # SMTCLyrics
 
-SMTCLyrics 是一个 Windows 桌面歌词显示工具。它通过 SMTC（System Media Transport Controls）读取当前媒体会话的歌曲名、歌手、播放状态和进度，优先加载本地 `.lrc` 歌词，找不到时再从在线歌词源获取同步歌词，并用透明置顶窗口显示桌面歌词。
+SMTCLyrics 是一个 Windows 桌面歌词显示工具。它通过 SMTC（System Media Transport Controls）或 Apple Music 内部接口读取当前媒体的歌曲名、歌手、播放状态和进度，优先加载本地 `.lrc` 歌词，找不到时再从在线歌词源获取同步歌词，并用透明置顶窗口显示桌面歌词。
 
 本仓库当前以 `cpp/` 下的 C++20 工程为主；`e/` 中保留了早期易语言工程与运行资源，部分配置、缓存和本地歌词会在 CMake 构建后复制到可执行文件目录。
 
 ## 功能特性
 
 - 自动读取支持 SMTC 的播放器信息，包括标题、歌手、播放/暂停状态和播放进度。
+- 可选 Apple Music 内部模式，直接读取 Windows 版 Apple Music 的内部播放状态。
 - 支持本地歌词优先，默认读取运行目录或当前目录下的 `lyrics/`。
 - 支持 QQ 音乐、酷狗音乐、酷我音乐、网易云音乐等在线歌词源。
 - 支持普通 LRC，以及 QRC、KRC、YRC 等带逐字时间轴的歌词格式。
@@ -76,8 +77,10 @@ cmake --build --preset mingw-release
 
 ```text
 cpp/build/mingw-debug/SMTCLyrics.exe
+cpp/build/mingw-debug/SMTCLyricsAppleMusicBridge.dll
 cpp/build/mingw-debug/SMTCLyricsTests.exe
 cpp/build/mingw-release/SMTCLyrics.exe
+cpp/build/mingw-release/SMTCLyricsAppleMusicBridge.dll
 cpp/build/mingw-release/SMTCLyricsTests.exe
 ```
 
@@ -97,7 +100,9 @@ cache.json           # 歌词源缓存和单曲偏移缓存
 lyrics/              # 本地歌词目录
 ```
 
-如果没有检测到 SMTC 媒体会话，桌面歌词窗口会显示等待提示。在线歌词源依赖第三方服务接口和网络状态，接口失效时建议优先使用本地歌词。
+Release 版 `SMTCLyrics.exe` 已内置方式 3 的 Apple Music bridge。运行时会把 bridge 释放到当前用户临时目录后加载到 Apple Music 进程中；同目录 `SMTCLyricsAppleMusicBridge.dll` 仅作为开发构建产物和资源缺失时的回退，不是发布时必需文件。Apple Music 内部模式不需要额外注册 Windows 身份包；方式 1/2 仍然使用 SMTC。正常退出 SMTCLyrics 时会通知 bridge 从 Apple Music 进程卸载。MinGW 的 C++/GCC/Winpthread 运行库已静态链接，不需要额外携带 `libstdc++-6.dll`、`libgcc_s_seh-1.dll` 或 `libwinpthread-1.dll`。
+
+如果没有检测到 SMTC 媒体会话或 Apple Music 内部播放信息，桌面歌词窗口会显示等待提示。在线歌词源依赖第三方服务接口和网络状态，接口失效时建议优先使用本地歌词。
 
 ## 本地歌词
 
@@ -179,7 +184,7 @@ height=150
 
 - `Lyrics.offsetMs`：全局歌词偏移，单位毫秒。
 - `Sources.priority1` 到 `priority4`：在线歌词源优先级，`1=QQ`，`2=酷狗`，`3=酷我`，`4=网易云`。
-- `SMTC.mode`：SMTC 进度同步模式，取值 `1` 或 `2`。
+- `SMTC.mode`：播放信息来源/同步模式，`1=SMTC1`，`2=SMTC2`，`3=Apple Music 内部`。
 - `SMTC.pollIntervalMs`：SMTC 轮询间隔，程序会限制在 `500` 到 `2000` 毫秒。
 - `Display.mode`：显示模式，`1=单行`，`2=当前行+下一行`，`3=上一行+当前行`。
 - `Window`：歌词窗口位置和尺寸，通常通过控制窗口拖动保存。

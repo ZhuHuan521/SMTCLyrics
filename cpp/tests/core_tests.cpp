@@ -1,3 +1,4 @@
+#include "applemusic/AppleMusicInternalProvider.h"
 #include "cache/Cache.h"
 #include "config/Config.h"
 #include "lyrics/LrcParser.h"
@@ -150,6 +151,42 @@ void testConfig() {
     require(config.sourcePriority.size() == 4, "source priority should contain four sources");
 }
 
+void testAppleMusicInternalStateMapping() {
+    smtc::applemusic::AppleMusicInternalSnapshot snapshot;
+    snapshot.name = L"Song";
+    snapshot.artist = L"Artist";
+    snapshot.album = L"Album";
+    snapshot.currentPosition100ns = 42LL * 10'000'000;
+    snapshot.duration100ns = 180LL * 10'000'000;
+    snapshot.playing = true;
+
+    auto state = smtc::applemusic::mapAppleMusicSnapshotToMediaState(snapshot);
+    require(state.valid, "Apple Music internal mapping should be valid with a title");
+    require(state.title == L"Song" && state.artist == L"Artist" && state.album == L"Album", "Apple Music internal metadata should map");
+    require(state.positionMs == 42'000 && state.durationMs == 180'000, "Apple Music TimeSpan values should map to milliseconds");
+    require(state.playing, "Apple Music playing flag should map");
+
+    snapshot.currentPosition100ns = 200LL * 10'000'000;
+    state = smtc::applemusic::mapAppleMusicSnapshotToMediaState(snapshot);
+    require(state.positionMs == 180'000, "Apple Music position should clamp to duration");
+
+    snapshot.name.clear();
+    snapshot.subtitle = L"Fallback";
+    state = smtc::applemusic::mapAppleMusicSnapshotToMediaState(snapshot);
+    require(state.valid && state.title == L"Fallback", "Apple Music mapping should fall back to subtitle");
+
+    snapshot.subtitle.clear();
+    state = smtc::applemusic::mapAppleMusicSnapshotToMediaState(snapshot);
+    require(!state.valid, "Apple Music mapping should be invalid without title text");
+
+    snapshot.name = L"Song";
+    snapshot.subtitle = L"Artist From Subtitle \u2014 Album From Subtitle";
+    snapshot.artist.clear();
+    snapshot.album.clear();
+    state = smtc::applemusic::mapAppleMusicSnapshotToMediaState(snapshot);
+    require(state.artist == L"Artist From Subtitle" && state.album == L"Album From Subtitle", "Apple Music subtitle should fill missing artist and album");
+}
+
 void testEnglishConfigRoundTrip() {
     const auto path = std::filesystem::temp_directory_path() / L"smtclyrics-config-english.ini";
     std::filesystem::remove(path);
@@ -168,7 +205,7 @@ void testEnglishConfigRoundTrip() {
     config.highlight.color2 = RGB(7, 8, 9);
     config.highlight.border = RGB(10, 11, 12);
     config.sourcePriority = {4, 3, 2, 1};
-    config.smtcMode = 2;
+    config.smtcMode = 3;
     config.smtcPollIntervalMs = 75;
     config.displayMode = 3;
     config.window = {120, 80, 1280, 160, true};
@@ -184,10 +221,12 @@ void testEnglishConfigRoundTrip() {
     require(loaded.normal.color1 == RGB(12, 34, 56), "hex color should round-trip");
     require(loaded.highlight.border == RGB(10, 11, 12), "highlight border color should round-trip");
     require(loaded.sourcePriority == std::vector<int>({4, 3, 2, 1}), "source priority should save as one-based indexes");
+    require(loaded.smtcMode == 3, "Apple Music internal mode should round-trip");
     require(loaded.smtcPollIntervalMs == 500, "SMTC poll interval should clamp to the safe minimum");
     require(loaded.window.hasPosition && loaded.window.left == 120 && loaded.window.top == 80, "window position should round-trip");
     require(readIniString(path, L"Lyrics", L"normalColor1") == L"#0C2238", "colors should be written as #RRGGBB");
     require(readIniString(path, L"SMTC", L"pollIntervalMs") == L"500", "SMTC poll interval should be written with the safe minimum");
+    require(readIniString(path, L"SMTC", L"mode") == L"3", "Apple Music internal mode should be written");
     require(readIniString(path, L"Account", L"cookie", L"missing") == L"missing", "cookie account section should not be written");
 
     std::filesystem::remove(path);
@@ -279,6 +318,7 @@ int main() {
         testQrcDecrypterFixture();
         testInflateZlib();
         testConfig();
+        testAppleMusicInternalStateMapping();
         testEnglishConfigRoundTrip();
         testLegacyConfigMigration();
         testCache();

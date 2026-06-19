@@ -1,9 +1,11 @@
 #pragma once
 
+#include "applemusic/AppleMusicInternalProvider.h"
 #include "cache/Cache.h"
 #include "config/Config.h"
 #include "lyrics/LrcParser.h"
 #include "lyrics/OnlineLyrics.h"
+#include "playback/PlaybackState.h"
 #include "smtc/SmtcProvider.h"
 #include "ui/ControlWindow.h"
 #include "ui/DesktopLyricsWindow.h"
@@ -28,7 +30,7 @@ private:
     // 初始化持久化文件、窗口、回调和定时器。
     void initialize();
     // 低频读取 SMTC 状态，检测换歌/暂停/跳转，并触发歌词加载。
-    void smtcTick();
+    void playbackTick();
     // 高频渲染插值后的歌词进度，让高亮动画更顺滑。
     void renderTick();
     // 接收控制窗口的新配置，并同步到存储、窗口和计时状态。
@@ -36,7 +38,7 @@ private:
     // 根据配置重启 SMTC 轮询定时器和渲染定时器。
     void restartTimers();
     // 为当前曲目异步加载歌词；可选择绕过缓存或使用临时配置。
-    void loadLyricsForCurrentTrack(const smtc_provider::MediaState& state, bool ignoreCache = false, const config::AppConfig* configOverride = nullptr);
+    void loadLyricsForCurrentTrack(const playback::MediaState& state, bool ignoreCache = false, const config::AppConfig* configOverride = nullptr);
     // 接收后台歌词加载线程发回主线程的结果。
     void handleLyricsLoadedMessage(LPARAM lParam);
     // 手动重新获取当前曲目的歌词。
@@ -47,12 +49,18 @@ private:
     void clearLyricCache();
     // 创建/打开当前歌曲对应的本地 .lrc 文件。
     void openLocalLyric();
+    // 手动检测 Apple Music bridge DLL 是否已加载并可读取。
+    void checkAppleMusicBridge();
+    // 手动加载、重载或卸载 Apple Music bridge DLL。
+    void toggleAppleMusicBridge();
     // 保存当前歌曲独立的歌词时间偏移。
     void saveSongOffset(int offsetMs);
     // 保存歌词窗口的位置和尺寸，供下次启动恢复。
     void rememberLyricWindow(const config::WindowConfig& window);
     // 用固定关键字探测四个在线歌词源是否还能返回可解析歌词。
     static std::array<bool, 4> checkLyricSources();
+    playback::MediaState readPlaybackState();
+    std::wstring noPlaybackMessage() const;
     // 只在文本变化时刷新歌词窗口，减少无意义重绘。
     void showTextOnce(const std::wstring& text);
     void showFrameIfChanged(const lyrics::LyricFrame& frame);
@@ -71,6 +79,7 @@ private:
     cache::LyricCache cache_;
     // 核心协作者：媒体状态读取、两个窗口和当前歌词解析器。
     smtc_provider::SmtcProvider smtc_;
+    applemusic::AppleMusicInternalProvider appleMusic_;
     ui::DesktopLyricsWindow window_;
     ui::ControlWindow controlWindow_;
     lyrics::LrcParser parser_;

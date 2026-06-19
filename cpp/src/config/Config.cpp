@@ -102,7 +102,7 @@ AppConfig ConfigStore::load() const {
     config.highlight2.gradientMode = std::clamp(readIntAny(L"Lyrics", L"highlight2GradientMode", L"字体", L"高亮文字渐变模式_2", config.highlight2.gradientMode), 0, 2);
 
     config.lyricOffsetMs = readIntAny(L"Lyrics", L"offsetMs", L"歌词", L"微调", 0);
-    config.smtcMode = std::clamp(readIntAny(L"SMTC", L"mode", L"SMTC", L"SMTC", 1), 1, 2);
+    config.smtcMode = std::clamp(readIntAny(L"SMTC", L"mode", L"SMTC", L"SMTC", 1), 1, 3);
     config.smtcPollIntervalMs = clampSmtcPollIntervalMs(readInt(L"SMTC", L"pollIntervalMs", config.smtcPollIntervalMs));
     config.displayMode = std::clamp(readIntAny(L"Display", L"mode", L"显示方式", L"显示方式", 1), 1, 3);
 
@@ -160,7 +160,7 @@ void ConfigStore::save(const AppConfig& config) const {
     for (std::size_t i = 0; i < config.sourcePriority.size() && i < 4; ++i) {
         writeString(L"Sources", L"priority" + std::to_wstring(i + 1), std::to_wstring(std::clamp(config.sourcePriority[i], 1, 4)));
     }
-    writeString(L"SMTC", L"mode", std::to_wstring(std::clamp(config.smtcMode, 1, 2)));
+    writeString(L"SMTC", L"mode", std::to_wstring(std::clamp(config.smtcMode, 1, 3)));
     writeString(L"SMTC", L"pollIntervalMs", std::to_wstring(clampSmtcPollIntervalMs(config.smtcPollIntervalMs)));
     writeString(L"Display", L"mode", std::to_wstring(std::clamp(config.displayMode, 1, 3)));
     if (config.window.hasPosition) {
@@ -186,7 +186,7 @@ void ConfigStore::saveDisplayMode(int mode) const {
 void ConfigStore::saveSmtcMode(int mode) const {
     // 旧版把 mode 存在 SMTC/SMTC，保存新版时删掉它。
     deleteKey(L"SMTC", L"SMTC");
-    writeString(L"SMTC", L"mode", std::to_wstring(std::clamp(mode, 1, 2)));
+    writeString(L"SMTC", L"mode", std::to_wstring(std::clamp(mode, 1, 3)));
 }
 
 std::wstring ConfigStore::readString(std::wstring_view section, std::wstring_view key, std::wstring_view fallback) const {

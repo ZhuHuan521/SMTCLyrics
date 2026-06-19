@@ -21,6 +21,8 @@ struct ControlWindowCallbacks {
     std::function<void()> clearCache;
     std::function<void()> openLocalLyric;
     std::function<std::array<bool, 4>()> checkLyricSources;
+    std::function<void()> checkAppleMusicBridge;
+    std::function<void()> toggleAppleMusicBridge;
     std::function<void(int)> saveSongOffset;
 };
 
