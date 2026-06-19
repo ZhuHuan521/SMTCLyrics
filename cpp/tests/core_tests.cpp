@@ -4,6 +4,7 @@
 #include "lyrics/LrcParser.h"
 #include "lyrics/LyricRepository.h"
 #include "lyrics/QrcDecrypter.h"
+#include "util/Base64.h"
 #include "util/Encoding.h"
 #include "util/Inflate.h"
 #include "util/Path.h"
@@ -284,22 +285,39 @@ void testCache() {
     smtc::cache::LyricCache cache(path);
     cache.clear();
     cache.setSource("Jordan Chan 算你狠", 2);
+    cache.setOffset("Jordan Chan 算你狠", -125);
     cache.save();
     cache.load();
     const auto source = cache.sourceFor("Jordan Chan 算你狠");
     require(source && *source == 2, "cache should persist source index");
+    const auto offset = cache.offsetFor("Jordan Chan 算你狠");
+    require(offset && *offset == -125, "cache should persist song offset");
+
+    const auto savedBytes = smtc::util::readFileBytes(path);
+    const std::string savedText(savedBytes.begin(), savedBytes.end());
+    const auto key = smtc::util::base64Encode("Jordan Chan 算你狠");
+    const auto firstKey = savedText.find(key);
+    require(firstKey != std::string::npos, "cache should store song under a base64 key");
+    require(savedText.find(key, firstKey + 1) == std::string::npos, "cache should store one key per song");
+    require(savedText.find("\"songs\"") != std::string::npos, "cache should store per-song objects");
+    require(savedText.find("\"source\":{") == std::string::npos, "cache should not write legacy source map");
+    require(savedText.find("\"offset\":{") == std::string::npos, "cache should not write legacy offset map");
+
+    cache.removeSource("Jordan Chan 算你狠");
+    require(!cache.sourceFor("Jordan Chan 算你狠").has_value(), "cache should remove only source field");
+    require(cache.offsetFor("Jordan Chan 算你狠").value_or(0) == -125, "cache should keep offset when source is removed");
 
     smtc::util::writeFileBytes(path, std::vector<std::uint8_t>{'{', '"', 'o', 'f', 'f', 's', 'e', 't', '"', ':', '{', '}', '}'});
     cache.load();
-    require(!cache.sourceFor("missing").has_value(), "cache without source object should not assert");
+    require(!cache.sourceFor("missing").has_value(), "cache without songs object should not assert");
     cache.setSource("missing", 3);
-    require(cache.sourceFor("missing").value_or(0) == 3, "cache should recreate missing source object");
+    require(cache.sourceFor("missing").value_or(0) == 3, "cache should recreate missing songs object");
 
-    const std::string malformedShape = R"({"source":[],"offset":"bad"})";
+    const std::string malformedShape = R"({"songs":[],"source":{"legacy":1},"offset":{"legacy":2}})";
     smtc::util::writeFileBytes(path, std::vector<std::uint8_t>(malformedShape.begin(), malformedShape.end()));
     cache.load();
-    require(!cache.sourceFor("missing").has_value(), "cache with malformed source should not assert");
-    require(!cache.offsetFor("missing").has_value(), "cache with malformed offset should not assert");
+    require(!cache.sourceFor("missing").has_value(), "cache with malformed songs should not assert");
+    require(!cache.offsetFor("missing").has_value(), "cache with malformed songs should not return offset");
 
     const std::string nonObjectRoot = R"(["not","an","object"])";
     smtc::util::writeFileBytes(path, std::vector<std::uint8_t>(nonObjectRoot.begin(), nonObjectRoot.end()));

@@ -9,35 +9,58 @@
 namespace smtc::cache {
 namespace {
 
-// cache.json 的最小结构：source 记歌词源，offset 记单曲微调。
-constexpr char kDefaultJson[] = R"({"source":{},"offset":{}})";
+// cache.json 的最小结构：按歌曲聚合歌词源和单曲微调，避免同一个 key 存两遍。
+constexpr char kDefaultJson[] = R"({"songs":{}})";
+
+nlohmann::json defaultJson() {
+    return nlohmann::json{{"songs", nlohmann::json::object()}};
+}
 
 // 读取缓存时保持容错：文件为空、损坏或字段类型错误都回到默认结构。
 nlohmann::json parseOrDefault(std::string_view text) {
     try {
         auto json = nlohmann::json::parse(text.empty() ? kDefaultJson : std::string(text));
         if (!json.is_object()) {
-            json = nlohmann::json::object();
+            return defaultJson();
         }
 
-        const auto sourceIt = json.find("source");
-        if (sourceIt == json.end() || !sourceIt->is_object()) {
-            json["source"] = nlohmann::json::object();
+        const auto songsIt = json.find("songs");
+        if (songsIt == json.end() || !songsIt->is_object()) {
+            return defaultJson();
         }
-
-        const auto offsetIt = json.find("offset");
-        if (offsetIt == json.end() || !offsetIt->is_object()) {
-            json["offset"] = nlohmann::json::object();
-        }
-        return json;
+        return nlohmann::json{{"songs", *songsIt}};
     } catch (...) {
-        return nlohmann::json{{"source", nlohmann::json::object()}, {"offset", nlohmann::json::object()}};
+        return defaultJson();
     }
 }
 
 // 歌曲关键字可能包含空格、中文和特殊字符，Base64 后更适合作为 JSON key。
 std::string keyFor(std::string_view keywordUtf8) {
     return util::base64Encode(keywordUtf8);
+}
+
+std::optional<int> intField(const nlohmann::json& song, std::string_view fieldName) {
+    if (!song.is_object()) return std::nullopt;
+    const auto it = song.find(std::string(fieldName));
+    if (it == song.end() || !it->is_number_integer()) return std::nullopt;
+    return it->get<int>();
+}
+
+nlohmann::json& songEntry(nlohmann::json& json, const std::string& key) {
+    auto& songs = json["songs"];
+    auto& song = songs[key];
+    if (!song.is_object()) {
+        song = nlohmann::json::object();
+    }
+    return song;
+}
+
+void eraseSongIfEmpty(nlohmann::json& json, const std::string& key) {
+    auto& songs = json["songs"];
+    const auto it = songs.find(key);
+    if (it != songs.end() && it->is_object() && it->empty()) {
+        songs.erase(it);
+    }
 }
 
 }
@@ -62,40 +85,29 @@ void LyricCache::save() const {
 }
 
 std::optional<int> LyricCache::sourceFor(std::string_view keywordUtf8) const {
-    // 历史版本可能把 source 存成数字或字符串，这里两种都兼容。
     const auto json = parseOrDefault(jsonText_);
     const auto key = keyFor(keywordUtf8);
-    const auto sourceIt = json.find("source");
-    if (sourceIt == json.end() || !sourceIt->is_object()) {
-        return std::nullopt;
-    }
-    const auto valueIt = sourceIt->find(key);
-    if (valueIt == sourceIt->end()) {
-        return std::nullopt;
-    }
-    const auto& value = *valueIt;
-    try {
-        if (value.is_number_integer()) return value.get<int>();
-        if (value.is_string()) return std::stoi(value.get<std::string>());
-    } catch (...) {
-    }
-    return std::nullopt;
+    const auto& songs = json["songs"];
+    const auto songIt = songs.find(key);
+    if (songIt == songs.end()) return std::nullopt;
+    return intField(*songIt, "source");
 }
 
 void LyricCache::setSource(std::string_view keywordUtf8, int sourceIndex) {
-    // 仍保存为字符串，兼容旧缓存文件格式。
     auto json = parseOrDefault(jsonText_);
-    auto& source = json["source"];
-    source[keyFor(keywordUtf8)] = std::to_string(sourceIndex);
+    songEntry(json, keyFor(keywordUtf8))["source"] = sourceIndex;
     jsonText_ = json.dump();
 }
 
 void LyricCache::removeSource(std::string_view keywordUtf8) {
     // 只删除指定歌曲的来源缓存，不影响单曲偏移。
     auto json = parseOrDefault(jsonText_);
-    auto sourceIt = json.find("source");
-    if (sourceIt != json.end() && sourceIt->is_object()) {
-        sourceIt->erase(keyFor(keywordUtf8));
+    const auto key = keyFor(keywordUtf8);
+    auto& songs = json["songs"];
+    const auto songIt = songs.find(key);
+    if (songIt != songs.end() && songIt->is_object()) {
+        songIt->erase("source");
+        eraseSongIfEmpty(json, key);
     }
     jsonText_ = json.dump();
 }
@@ -113,31 +125,18 @@ void LyricCache::ensureExists() const {
 }
 
 std::optional<int> LyricCache::offsetFor(std::string_view keywordUtf8) const {
-    // 单曲偏移和歌词源一样兼容数字/字符串两种旧格式。
     const auto json = parseOrDefault(jsonText_);
     const auto key = keyFor(keywordUtf8);
-    const auto offsetIt = json.find("offset");
-    if (offsetIt == json.end() || !offsetIt->is_object()) {
-        return std::nullopt;
-    }
-    const auto valueIt = offsetIt->find(key);
-    if (valueIt == offsetIt->end()) {
-        return std::nullopt;
-    }
-    const auto& value = *valueIt;
-    try {
-        if (value.is_number_integer()) return value.get<int>();
-        if (value.is_string()) return std::stoi(value.get<std::string>());
-    } catch (...) {
-    }
-    return std::nullopt;
+    const auto& songs = json["songs"];
+    const auto songIt = songs.find(key);
+    if (songIt == songs.end()) return std::nullopt;
+    return intField(*songIt, "offset");
 }
 
 void LyricCache::setOffset(std::string_view keywordUtf8, int offsetMs) {
     // 单曲偏移用于修正个别歌词文件或在线歌词的时间轴误差。
     auto json = parseOrDefault(jsonText_);
-    auto& offset = json["offset"];
-    offset[keyFor(keywordUtf8)] = std::to_string(offsetMs);
+    songEntry(json, keyFor(keywordUtf8))["offset"] = offsetMs;
     jsonText_ = json.dump();
 }
 

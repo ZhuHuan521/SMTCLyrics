@@ -30,7 +30,7 @@ public:
 private:
     // 关键字会先 Base64，避免 JSON key 中出现特殊字符或编码差异。
     std::filesystem::path path_;
-    std::string jsonText_ = R"({"source":{},"offset":{}})";
+    std::string jsonText_ = R"({"songs":{}})";
 };
 
 }
