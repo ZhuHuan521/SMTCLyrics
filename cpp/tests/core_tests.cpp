@@ -69,6 +69,10 @@ std::string extractLongHexRun(std::string_view text) {
     return {};
 }
 
+std::vector<std::uint8_t> toBytes(std::string_view text) {
+    return {text.begin(), text.end()};
+}
+
 void testLrcParser() {
     const auto runtimeDir = smtc::util::executableDirectory();
     const auto lrcPath = runtimeDir / L"lyrics" / L"Lo Ta-You 皇后大道東 (feat. 蔣志光).lrc";
@@ -122,6 +126,81 @@ void testLrcParser() {
     frame = yrcParser.frameAt(1'750, 1);
     require(frame.text == L"ABC", "yrc word timings should be stripped from displayed text");
     require(frame.highlightPercent >= 45 && frame.highlightPercent <= 55, "yrc absolute word timing should map to highlight percent");
+}
+
+void testLyricRepositoryLocalPriority() {
+    const auto dir = std::filesystem::temp_directory_path() / L"smtclyrics-local-priority";
+    const auto cachePath = std::filesystem::temp_directory_path() / L"smtclyrics-local-priority-cache.json";
+    std::filesystem::remove_all(dir);
+    std::filesystem::remove(cachePath);
+    std::filesystem::create_directories(dir);
+
+    const auto keyword = std::wstring(L"Song - Artist");
+    const auto krcPath = dir / L"Song - Artist.krc";
+    const auto lrcPath = dir / L"Song - Artist.lrc";
+    require(smtc::util::writeFileBytes(krcPath, toBytes("[1000,2000]<0,1000,0>A<1000,1000,0>B\n")), "should write sample krc");
+    require(smtc::util::writeFileBytes(lrcPath, toBytes("[00:01.000]fallback\n")), "should write sample lrc");
+
+    smtc::cache::LyricCache cache(cachePath);
+    smtc::lyrics::LyricRepository repository(dir, cache);
+    std::filesystem::path matchedPath;
+    const auto bytes = repository.loadLocal(keyword, &matchedPath);
+
+    require(!bytes.empty(), "repository should load local lyric");
+    require(matchedPath.extension() == L".krc", "repository should prefer local krc over lrc");
+
+    std::filesystem::remove_all(dir);
+    std::filesystem::remove(cachePath);
+}
+
+void testLyricRepositoryLocalFallback() {
+    const auto dir = std::filesystem::temp_directory_path() / L"smtclyrics-local-fallback";
+    const auto cachePath = std::filesystem::temp_directory_path() / L"smtclyrics-local-fallback-cache.json";
+    std::filesystem::remove_all(dir);
+    std::filesystem::remove(cachePath);
+    std::filesystem::create_directories(dir);
+
+    const auto keyword = std::wstring(L"Song - Artist");
+    const auto krcPath = dir / L"Song - Artist.krc";
+    const auto qrcPath = dir / L"Song - Artist.qrc";
+    const auto lrcPath = dir / L"Song - Artist.lrc";
+    require(smtc::util::writeFileBytes(krcPath, toBytes("not a lyric")), "should write invalid krc");
+    require(smtc::util::writeFileBytes(qrcPath, toBytes("still not a lyric")), "should write invalid qrc");
+    require(smtc::util::writeFileBytes(lrcPath, toBytes("[00:01.000]fallback\n")), "should write fallback lrc");
+
+    smtc::cache::LyricCache cache(cachePath);
+    smtc::lyrics::LyricRepository repository(dir, cache);
+    std::filesystem::path matchedPath;
+    const auto bytes = repository.loadLocal(keyword, &matchedPath);
+
+    require(!bytes.empty(), "repository should fall back to local lrc");
+    require(matchedPath.extension() == L".lrc", "repository should use lrc when krc and qrc fail to parse");
+
+    std::filesystem::remove_all(dir);
+    std::filesystem::remove(cachePath);
+}
+
+void testSpecificBase64WrappedLocalKrc() {
+    const auto runtimeDir = smtc::util::executableDirectory();
+    const auto lyricsDir = runtimeDir / L"lyrics";
+    const auto path = lyricsDir / L"忘了你，忘了我 - 王杰.krc";
+    if (!std::filesystem::is_regular_file(path)) return;
+
+    const auto cachePath = std::filesystem::temp_directory_path() / L"smtclyrics-specific-krc-cache.json";
+    std::filesystem::remove(cachePath);
+    smtc::cache::LyricCache cache(cachePath);
+    smtc::lyrics::LyricRepository repository(lyricsDir, cache);
+
+    std::filesystem::path matchedPath;
+    const auto bytes = repository.loadLocal(L"忘了你，忘了我 - 王杰", &matchedPath);
+    require(!bytes.empty(), "specific local krc should load");
+    require(matchedPath.filename() == path.filename(), "specific local krc should match requested file");
+
+    smtc::lyrics::LrcParser parser;
+    require(parser.parseBytes(bytes), "specific local krc should parse after repository preprocessing");
+    require(!parser.lines().empty(), "specific local krc should produce lyric lines");
+
+    std::filesystem::remove(cachePath);
 }
 
 void testQrcDecrypterFixture() {
@@ -333,6 +412,9 @@ void testCache() {
 int main() {
     try {
         testLrcParser();
+        testLyricRepositoryLocalPriority();
+        testLyricRepositoryLocalFallback();
+        testSpecificBase64WrappedLocalKrc();
         testQrcDecrypterFixture();
         testInflateZlib();
         testConfig();

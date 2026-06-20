@@ -29,7 +29,6 @@ public:
     std::vector<std::uint8_t> loadLocal(std::wstring_view keyword, std::filesystem::path* matchedPath = nullptr) const;
 
 private:
-    std::filesystem::path exactLocalPath(std::wstring_view keyword) const;
     std::vector<std::uint8_t> fetchOnline(LyricSource source, std::wstring_view keyword, const config::AppConfig& config) const;
 
     std::filesystem::path lyricsDirectory_;
