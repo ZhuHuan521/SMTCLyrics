@@ -40,6 +40,7 @@ public:
     void setSongOffset(int offsetMs);
     void syncLyricGeometry(const config::WindowConfig& window);
     void setStatusText(std::wstring text);
+    void setCurrentLyricSource(std::wstring text);
     HWND hwnd() const { return hwnd_; }
 
 private:

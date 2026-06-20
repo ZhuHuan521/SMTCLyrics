@@ -82,7 +82,8 @@ enum ControlId {
     IdKuwoStatus,
     IdWyStatus,
     IdLockStatus,
-    IdStatusText
+    IdStatusText,
+    IdCurrentSourceText
 };
 
 std::wstring intText(int value) {
@@ -205,6 +206,7 @@ bool ControlWindow::create(const config::AppConfig& config, ControlWindowCallbac
     populateControls();
     updateLockControls();
     setStatusText(L"就绪");
+    setCurrentLyricSource(L"未加载");
     return true;
 }
 
@@ -236,6 +238,11 @@ void ControlWindow::syncLyricGeometry(const config::WindowConfig& window) {
 void ControlWindow::setStatusText(std::wstring text) {
     // 底部状态栏文本更新。
     setText(IdStatusText, text);
+}
+
+void ControlWindow::setCurrentLyricSource(std::wstring text) {
+    if (text.empty()) text = L"未加载";
+    setText(IdCurrentSourceText, L"歌词源：" + std::move(text));
 }
 
 LRESULT CALLBACK ControlWindow::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -322,17 +329,17 @@ void ControlWindow::createControls() {
     addEdit(L"", 130, 148, 64, 28, IdSongOffset);
     addButton(L"保存歌曲微调", 210, 146, 124, 34, IdSaveSongOffset);
     addLabel(L"监视", 30, 194, 54, 24);
-    addRadio(L"SMTC1", 76, 190, 62, 26, IdSmtc1, true);
-    addRadio(L"SMTC2", 140, 190, 62, 26, IdSmtc2);
-    addRadio(L"Apple Music 内部", 204, 190, 132, 26, IdAppleMusicInternal);
+    addRadio(L"SMTC1", 76, 190, 72, 26, IdSmtc1, true);
+    addRadio(L"SMTC2", 152, 190, 72, 26, IdSmtc2);
+    addRadio(L"Apple Music 内部", 228, 190, 160, 26, IdAppleMusicInternal);
     addLabel(L"轮询", 30, 224, 54, 24);
     addEdit(L"", 86, 218, 64, 28, IdSmtcInterval);
     addButton(L"保存监视", 160, 216, 92, 32, IdSaveSmtc);
     addLabel(L"显示", 30, 254, 54, 24);
-    addRadio(L"一句", 86, 250, 64, 26, IdDisplay1, true);
-    addRadio(L"两句", 154, 250, 64, 26, IdDisplay2);
-    addRadio(L"两句向前", 222, 250, 92, 26, IdDisplay3);
-    addButton(L"保存", 318, 248, 48, 30, IdSaveDisplay);
+    addRadio(L"一句", 86, 250, 62, 26, IdDisplay1, true);
+    addRadio(L"两句", 150, 250, 62, 26, IdDisplay2);
+    addRadio(L"两句向前", 214, 250, 112, 26, IdDisplay3);
+    addButton(L"保存", 334, 248, 56, 30, IdSaveDisplay);
 
     // 歌词窗口
     addControl(L"BUTTON", L"歌词窗口", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 420, 12, 380, 252, 0);
@@ -413,7 +420,8 @@ void ControlWindow::createControls() {
     addButton(L"加载/卸载dll", 438, 702, 130, 34, IdToggleAppleMusicBridge);
 
     // 状态栏
-    addValueLabel(L"", 14, 750, 786, 28, IdStatusText);
+    addValueLabel(L"", 14, 750, 560, 28, IdStatusText);
+    addValueLabel(L"歌词源：未加载", 590, 750, 210, 28, IdCurrentSourceText);
 
     for (int comboId : {IdNormalGradient, IdHighlightGradient, IdHighlight2Gradient}) {
         // 初始化渐变模式下拉框。

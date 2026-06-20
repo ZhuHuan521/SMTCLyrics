@@ -1,4 +1,4 @@
-# SMTCLyrics
+﻿# SMTCLyrics
 
 SMTCLyrics 是一个 Windows 桌面歌词显示工具。它通过 SMTC（System Media Transport Controls）或 Apple Music 内部接口读取当前媒体的歌曲名、歌手、播放状态和进度，优先加载本地 `.lrc` 歌词，找不到时再从在线歌词源获取同步歌词，并用透明置顶窗口显示桌面歌词。
 
@@ -7,17 +7,20 @@ SMTCLyrics 是一个 Windows 桌面歌词显示工具。它通过 SMTC（System 
 ## 功能特性
 
 - 自动读取支持 SMTC 的播放器信息，包括标题、歌手、播放/暂停状态和播放进度。
-- 可选 Apple Music 内部模式，直接读取 Windows 版 Apple Music 的内部播放状态。
-- 支持本地歌词优先，默认读取运行目录或当前目录下的 `lyrics/`。
+- 可选 Apple Music 内部模式，通过注入 bridge DLL 直接读取 Windows 版 Apple Music 的内部播放状态，无需额外注册 Windows 身份包。
+- bridge DLL 在构建时嵌入到 `SMTCLyrics.exe` 资源中，运行时自动释放到临时目录并注入 Apple Music 进程，退出时自动卸载。
+- 支持本地歌词优先，默认读取运行目录下的 `lyrics/`。
 - 支持 QQ 音乐、酷狗音乐、酷我音乐、网易云音乐等在线歌词源。
 - 支持普通 LRC，以及 QRC、KRC、YRC 等带逐字时间轴的歌词格式。
 - 支持卡拉 OK 式逐字高亮，渲染定时器约 60 FPS，用于平滑高亮动画。
-- 支持单行、当前行加下一行、上一行加当前行等显示模式。
+- 支持单行、当前行加下一行、上一行加当前行等显示模式，双行模式下第二行使用独立的渐变颜色。
 - 控制窗口可调整字体、颜色、渐变、显示模式、歌词源优先级、SMTC 模式和轮询间隔。
+- 支持手动检测、加载或卸载 Apple Music bridge。
 - 支持桌面歌词窗口置顶显示、拖动定位、锁定位置和窗口位置记忆。
 - 支持全局歌词偏移和单曲偏移记忆。
 - 支持歌词源缓存：同一首歌再次播放时会优先尝试上次成功的在线来源。
 - 歌词加载在后台线程执行，避免在线请求或 QRC/KRC 解析阻塞界面。
+- 控制窗口提供歌词源可用性检测，一键探测四个在线源是否仍可返回可解析歌词。
 
 ## 项目结构
 
@@ -25,24 +28,25 @@ SMTCLyrics 是一个 Windows 桌面歌词显示工具。它通过 SMTC（System 
 SMTCLyrics/
 |-- cpp/                  # 当前 C++ 主工程
 |   |-- src/
-|   |   |-- app/          # 应用入口、定时器、歌词加载调度
+|   |   |-- app/          # 应用入口、播放轮询、渲染定时、歌词加载调度
+|   |   |-- applemusic/   # Apple Music bridge DLL 注入与内部播放状态读取
 |   |   |-- cache/        # 歌词源和单曲偏移缓存
 |   |   |-- config/       # INI 配置读写与旧配置迁移
 |   |   |-- http/         # WinHTTP 封装
 |   |   |-- lyrics/       # 歌词获取、解密和解析
+|   |   |-- playback/     # 播放状态结构体 MediaState
 |   |   |-- smtc/         # SMTC 媒体会话读取
 |   |   |-- ui/           # 控制窗口和桌面歌词窗口
 |   |   `-- util/         # 编码、路径、Base64、Inflate 等工具
 |   |-- tests/            # 核心逻辑测试
 |   |-- generated/        # C++/WinRT 生成头文件
+|   |-- cmake/            # CMake 辅助脚本
 |   |-- CMakeLists.txt
 |   `-- CMakePresets.json
 |-- e/                    # 早期易语言工程、配置、缓存、本地歌词资源
 |-- e-packager-master/    # 易语言工程解包工具及 nlohmann/json 头文件
-|-- qrckit-master/        # QQ 音乐 QRC 解密解析参考实现
-|-- LDDC-main/            # 歌词处理相关参考项目
-|-- 1.jpg
-|-- 2.jpg
+|-- qrckit-master/        # QQ 音乐 QRC 解密解析参考实现（Kotlin）
+|-- LDDC-main/            # 歌词处理相关参考项目（Python）
 `-- README.md
 ```
 
@@ -51,9 +55,9 @@ SMTCLyrics/
 - Windows 10 或 Windows 11
 - CMake 3.22+
 - 支持 C++20 的编译器
-- MinGW（仓库已提供 `mingw-debug` 和 `mingw-release` 预设）
+- MinGW（仓库已提供 `mingw-debug`、`mingw-release` 和 `mingw-size` 预设）
 
-工程使用的主要系统库包括 `gdiplus`、`winhttp`、`bcrypt`、`crypt32`、`shlwapi`、`runtimeobject`、`windowsapp`、`ole32`、`shell32`、`comdlg32` 等。第三方 JSON 依赖来自 `e-packager-master/thirdparty/json.hpp`，WinRT 投影头文件已放在 `cpp/generated/` 中。
+工程使用的主要系统库包括 `gdiplus`、`winhttp`、`bcrypt`、`crypt32`、`shlwapi`、`runtimeobject`、`windowsapp`、`ole32`、`shell32`、`comdlg32`、`advapi32`、`Shcore` 等。第三方 JSON 依赖来自 `e-packager-master/thirdparty/json.hpp`，WinRT 投影头文件已放在 `cpp/generated/` 中。
 
 ## 构建方法
 
@@ -71,6 +75,14 @@ Release 构建：
 cd cpp
 cmake --preset mingw-release
 cmake --build --preset mingw-release
+```
+
+体积优化构建（开启 LTO、strip 符号）：
+
+```powershell
+cd cpp
+cmake --preset mingw-size
+cmake --build --preset mingw-size
 ```
 
 常见产物位置：
@@ -93,14 +105,14 @@ cpp/build/mingw-release/SMTCLyricsTests.exe
 运行目录中常见文件：
 
 ```text
-SMTCLyrics.exe       # 主程序
+SMTCLyrics.exe       # 主程序（内置 Apple Music bridge 资源）
 SMTCLyricsTests.exe  # 核心测试程序
 config.ini           # 字体、颜色、窗口、歌词源和 SMTC 配置
 cache.json           # 歌词源缓存和单曲偏移缓存
 lyrics/              # 本地歌词目录
 ```
 
-Release 版 `SMTCLyrics.exe` 已内置方式 3 的 Apple Music bridge。运行时会把 bridge 释放到当前用户临时目录后加载到 Apple Music 进程中；同目录 `SMTCLyricsAppleMusicBridge.dll` 仅作为开发构建产物和资源缺失时的回退，不是发布时必需文件。Apple Music 内部模式不需要额外注册 Windows 身份包；方式 1/2 仍然使用 SMTC。正常退出 SMTCLyrics 时会通知 bridge 从 Apple Music 进程卸载。MinGW 的 C++/GCC/Winpthread 运行库已静态链接，不需要额外携带 `libstdc++-6.dll`、`libgcc_s_seh-1.dll` 或 `libwinpthread-1.dll`。
+Release 版 `SMTCLyrics.exe` 已将 Apple Music bridge DLL 作为资源嵌入。运行时程序会把 bridge 释放到当前用户临时目录后加载到 Apple Music 进程中；同目录 `SMTCLyricsAppleMusicBridge.dll` 仅作为开发构建产物和资源缺失时的回退，不是发布时必需文件。正常退出 SMTCLyrics 时会通知 bridge 从 Apple Music 进程卸载。MinGW 的 C++/GCC/Winpthread 运行库已静态链接，不需要额外携带 `libstdc++-6.dll`、`libgcc_s_seh-1.dll` 或 `libwinpthread-1.dll`。
 
 如果没有检测到 SMTC 媒体会话或 Apple Music 内部播放信息，桌面歌词窗口会显示等待提示。在线歌词源依赖第三方服务接口和网络状态，接口失效时建议优先使用本地歌词。
 
@@ -118,7 +130,7 @@ Release 版 `SMTCLyrics.exe` 已内置方式 3 的 Apple Music bridge。运行�
 夜空中最亮的星 - 逃跑计划.lrc
 ```
 
-如果没有精确匹配，程序会忽略空格、短横线、下划线和点号做一次简单模糊匹配。控制窗口中的“打开本地歌词”会按当前曲目在 `lyrics/` 中创建或打开对应 `.lrc` 文件。
+如果没有精确匹配，程序会忽略空格、短横线、下划线和点号做一次简单模糊匹配。控制窗口中的"打开本地歌词"会按当前曲目在 `lyrics/` 中创建或打开对应 `.lrc` 文件。
 
 ## 在线歌词源
 
@@ -183,6 +195,9 @@ height=150
 关键配置：
 
 - `Lyrics.offsetMs`：全局歌词偏移，单位毫秒。
+- `Lyrics.normal*`：未高亮歌词的渐变颜色和描边。
+- `Lyrics.highlight*`：当前高亮歌词的渐变颜色和描边。
+- `Lyrics.highlight2*`：双行显示模式下第二行的渐变颜色和描边。
 - `Sources.priority1` 到 `priority4`：在线歌词源优先级，`1=QQ`，`2=酷狗`，`3=酷我`，`4=网易云`。
 - `SMTC.mode`：播放信息来源/同步模式，`1=SMTC1`，`2=SMTC2`，`3=Apple Music 内部`。
 - `SMTC.pollIntervalMs`：SMTC 轮询间隔，程序会限制在 `500` 到 `2000` 毫秒。
@@ -210,6 +225,7 @@ cd cpp
 ## 开发备注
 
 - 主入口是 `cpp/src/main.cpp`，应用主循环在 `cpp/src/app/Application.cpp`。
+- `main.cpp` 同时包含 Apple Music bridge 探测的子命令入口，通过命令行开关区分。
 - 歌词加载由后台线程完成，并通过 `WM_APP` 消息回到主线程更新状态。
 - `LyricRepository` 的加载顺序是：本地歌词 -> 缓存的在线来源 -> 当前配置的在线来源优先级。
 - 桌面歌词窗口使用 GDI+ 绘制透明置顶窗口，并根据逐字时间轴计算高亮百分比。

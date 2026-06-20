@@ -83,6 +83,17 @@ std::vector<int> sourcePriorityAfter(const std::vector<int>& priority, lyrics::L
     return result;
 }
 
+std::wstring lyricSourceDisplayName(lyrics::LyricSource source) {
+    switch (source) {
+    case lyrics::LyricSource::Local: return L"本地歌词";
+    case lyrics::LyricSource::QQ: return L"QQ 音乐";
+    case lyrics::LyricSource::Kugou: return L"酷狗";
+    case lyrics::LyricSource::Kuwo: return L"酷我";
+    case lyrics::LyricSource::Netease: return L"网易云";
+    }
+    return L"未知";
+}
+
 }
 
 // 构造阶段只准备路径和轻量对象，真正的窗口/文件初始化放在 initialize。
@@ -181,6 +192,7 @@ void Application::playbackTick() {
                 parser_ = lyrics::LrcParser{};
                 smtc1TrackChangeCalibrationAtMs_ = 0;
                 isPlaying_ = false;
+                controlWindow_.setCurrentLyricSource(L"未加载");
                 showTextOnce(noPlaybackMessage());
                 return;
             }
@@ -242,6 +254,7 @@ void Application::playbackTick() {
             parser_ = lyrics::LrcParser{};
             smtc1TrackChangeCalibrationAtMs_ = 0;
             isPlaying_ = false;
+            controlWindow_.setCurrentLyricSource(L"未加载");
             showTextOnce(L"未检测到正在播放的 SMTC 媒体");
             return;
         }
@@ -361,6 +374,7 @@ void Application::loadLyricsForCurrentTrack(const playback::MediaState& state, b
     lastHighlightLine_ = -1;
     parser_ = lyrics::LrcParser{};
     currentSource_ = lyrics::LyricSource::Local;
+    controlWindow_.setCurrentLyricSource(L"加载中");
     const auto keyword = lyrics::makeKeyword(state.artist, state.title);
     currentKeyword_ = keyword;
     const auto keywordUtf8 = util::wideToUtf8(keyword);
@@ -418,6 +432,7 @@ void Application::handleLyricsLoadedMessage(LPARAM lParam) {
         // 加载失败时保持空解析器，窗口显示明确的失败提示。
         parser_ = lyrics::LrcParser{};
         currentSource_ = lyrics::LyricSource::Local;
+        controlWindow_.setCurrentLyricSource(L"未找到");
         showTextOnce(L"未找到歌词：" + result->keyword);
         controlWindow_.setStatusText(L"未找到歌词");
         return;
@@ -425,6 +440,7 @@ void Application::handleLyricsLoadedMessage(LPARAM lParam) {
 
     parser_ = std::move(result->parser);
     currentSource_ = result->source;
+    controlWindow_.setCurrentLyricSource(lyricSourceDisplayName(currentSource_));
     if (currentSource_ != lyrics::LyricSource::Local) {
         // 记住成功的在线源，下次同一首歌可优先走缓存源。
         const auto keywordUtf8 = util::wideToUtf8(result->keyword);
