@@ -7,6 +7,7 @@
 #include <winstring.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <string>
@@ -19,9 +20,20 @@ HMODULE gSelfModule = nullptr;
 
 constexpr GUID kIActivationFactoryGuid{0x00000035, 0x0000, 0x0000, {0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
 constexpr GUID kIPlayerStaticsGuid{0x34D100F9, 0x0F0A, 0x5980, {0x8F, 0x04, 0x7A, 0xF5, 0x7F, 0xDB, 0x29, 0xB0}};
-constexpr GUID kIPlayerGuid{0x958DA6F6, 0x2E93, 0x5BA7, {0xB6, 0x04, 0x28, 0xDD, 0x57, 0xFE, 0xB8, 0xE0}};
-constexpr GUID kINowPlayingItemGuid{0xE376ACB7, 0x0569, 0x56C5, {0x84, 0x43, 0xA2, 0x88, 0xAC, 0xD3, 0x62, 0xEA}};
 constexpr GUID kIPlayerStateGuid{0xBEFB99EB, 0x336F, 0x5199, {0x9F, 0xB2, 0x63, 0x63, 0x5B, 0xC4, 0x73, 0x19}};
+
+// WinRT 在接口成员变化时会重新生成接口 IID。Apple Music 1.1792.39682.0
+// 更新了 IPlayer 和 INowPlayingItem，但保留了需要读取的前缀成员布局。
+// 同时保留旧 IID，兼容仍使用旧版客户端的系统。
+constexpr GUID kIPlayerGuids[]{
+    {0xF807B158, 0xB2E7, 0x5CF7, {0xA5, 0x12, 0x8B, 0x0B, 0xE7, 0x67, 0xDF, 0x1B}},
+    {0x958DA6F6, 0x2E93, 0x5BA7, {0xB6, 0x04, 0x28, 0xDD, 0x57, 0xFE, 0xB8, 0xE0}},
+};
+
+constexpr GUID kINowPlayingItemGuids[]{
+    {0x2DC5F65C, 0x28F6, 0x58AA, {0x87, 0xCF, 0xE4, 0xA7, 0xDF, 0x9B, 0x9A, 0x4B}},
+    {0xE376ACB7, 0x0569, 0x56C5, {0x84, 0x43, 0xA2, 0x88, 0xAC, 0xD3, 0x62, 0xEA}},
+};
 
 struct InspectableVTable {
     HRESULT (__stdcall* QueryInterface)(void*, REFIID, void**) noexcept;
@@ -110,6 +122,20 @@ HRESULT queryInterface(void* object, REFIID iid, void** result) {
     if (!object || !result) return E_POINTER;
     *result = nullptr;
     return vtable<InspectableVTable>(object)->QueryInterface(object, iid, result);
+}
+
+template <std::size_t Size>
+HRESULT queryFirstInterface(void* object, const GUID (&iids)[Size], void** result) {
+    if (!object || !result) return E_POINTER;
+    *result = nullptr;
+
+    HRESULT lastResult = E_NOINTERFACE;
+    for (const auto& iid : iids) {
+        lastResult = queryInterface(object, iid, result);
+        if (SUCCEEDED(lastResult) && *result) return lastResult;
+    }
+    *result = nullptr;
+    return lastResult;
 }
 
 std::wstring hstringToWide(HSTRING value) {
@@ -221,7 +247,7 @@ bridge::SnapshotResponse readSnapshot() {
     }
 
     void* playerInterfaceRaw = nullptr;
-    hr = queryInterface(playerRaw, kIPlayerGuid, &playerInterfaceRaw);
+    hr = queryFirstInterface(playerRaw, kIPlayerGuids, &playerInterfaceRaw);
     if (FAILED(hr) || !playerInterfaceRaw) {
         releaseInspectable(playerRaw);
         releaseInspectable(playerStaticsRaw);
@@ -242,7 +268,7 @@ bridge::SnapshotResponse readSnapshot() {
     }
 
     void* nowPlayingRaw = nullptr;
-    hr = queryInterface(nowPlayingObjectRaw, kINowPlayingItemGuid, &nowPlayingRaw);
+    hr = queryFirstInterface(nowPlayingObjectRaw, kINowPlayingItemGuids, &nowPlayingRaw);
     if (FAILED(hr) || !nowPlayingRaw) {
         releaseInspectable(nowPlayingObjectRaw);
         releaseInspectable(playerInterfaceRaw);

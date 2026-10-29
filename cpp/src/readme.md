@@ -1,4 +1,4 @@
-﻿# SMTCLyrics C++ 源码架构说明
+# SMTCLyrics C++ 源码架构说明
 
 这份 C++ 代码实现的是一个 Windows 桌面歌词工具：从系统 SMTC 媒体会话或 Apple Music 内部接口读取当前播放歌曲，按"本地歌词优先、在线歌词兜底"的策略加载歌词，解析成时间轴，再用透明置顶窗口绘制桌面歌词和高亮进度。
 
@@ -57,7 +57,7 @@ Apple Music 内部模式（`SMTC.mode=3`）通过注入 bridge DLL 到 Apple Mus
 工作流程：
 
 1. `AppleMusicInternalProvider::loadBridge()` 从 exe 资源中提取嵌入的 bridge DLL，写入临时目录，然后通过 `CreateRemoteThread` + `LoadLibraryW` 注入到 Apple Music 进程。
-2. bridge DLL 加载后创建命名管道 `SMTCLyricsAppleMusicBridge3-<pid>`，等待主程序连接。
+2. bridge DLL 加载后创建命名管道 `SMTCLyricsAppleMusicBridge4-<pid>`，等待主程序连接。
 3. 主程序通过管道发送 `SnapshotRequest`（包含 magic、version、command），bridge 返回 `SnapshotResponse`（包含标题、歌手、专辑、位置、时长、播放状态等）。
 4. `AppleMusicInternalProvider::readState()` 将快照转换为 `MediaState`，与 SMTC 返回的格式统一。
 5. 退出时 `shutdown()` 发送 `kCommandShutdown` 命令，bridge 从 Apple Music 进程卸载。

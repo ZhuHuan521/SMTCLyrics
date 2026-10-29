@@ -6,10 +6,10 @@
 namespace smtc::applemusic::bridge {
 
 constexpr std::uint32_t kMagic = 0x534D5443; // SMTC
-constexpr std::uint32_t kVersion = 1;
+constexpr std::uint32_t kVersion = 2;
 constexpr std::uint32_t kCommandSnapshot = 1;
 constexpr std::uint32_t kCommandShutdown = 2;
-constexpr wchar_t kPipeNamePrefix[] = L"SMTCLyricsAppleMusicBridge3-";
+constexpr wchar_t kPipeNamePrefix[] = L"SMTCLyricsAppleMusicBridge4-";
 constexpr std::size_t kTextChars = 256;
 constexpr std::size_t kErrorChars = 512;
 
