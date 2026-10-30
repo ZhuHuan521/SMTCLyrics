@@ -57,10 +57,11 @@ Apple Music 内部模式（`SMTC.mode=3`）通过注入 bridge DLL 到 Apple Mus
 工作流程：
 
 1. `AppleMusicInternalProvider::loadBridge()` 从 exe 资源中提取嵌入的 bridge DLL，写入临时目录，然后通过 `CreateRemoteThread` + `LoadLibraryW` 注入到 Apple Music 进程。
-2. bridge DLL 加载后创建命名管道 `SMTCLyricsAppleMusicBridge4-<pid>`，等待主程序连接。
-3. 主程序通过管道发送 `SnapshotRequest`（包含 magic、version、command），bridge 返回 `SnapshotResponse`（包含标题、歌手、专辑、位置、时长、播放状态等）。
-4. `AppleMusicInternalProvider::readState()` 将快照转换为 `MediaState`，与 SMTC 返回的格式统一。
-5. 退出时 `shutdown()` 发送 `kCommandShutdown` 命令，bridge 从 Apple Music 进程卸载。
+2. bridge DLL 加载后创建命名管道 `SMTCLyricsAppleMusicBridge5-<pid>`，等待主程序连接。
+3. 主程序从当前 Apple Music 安装目录的 `AMP.Services.winmd` 读取 `IPlayer`、`IPlayerStatics`、`INowPlayingItem`、`IPlayerState` 的 GuidAttribute，把动态 IID 放进 `SnapshotRequest`；读取失败时使用 bridge 内置的新旧兼容 IID。
+4. 主程序通过管道发送 `SnapshotRequest`（包含 magic、version、command 和动态 IID），bridge 返回 `SnapshotResponse`（包含标题、歌手、专辑、位置、时长、播放状态等）。
+5. `AppleMusicInternalProvider::readState()` 将快照转换为 `MediaState`，与 SMTC 返回的格式统一。
+6. 退出时 `shutdown()` 发送 `kCommandShutdown` 命令，bridge 从 Apple Music 进程卸载。
 
 bridge 通过逆向 Apple Music 的 `AmpMusicLibrary` COM 接口实现，使用 `IAmpLibrary`、`INowPlayingItem`、`IPlayerState` 等内部接口读取播放状态。
 

@@ -5,7 +5,12 @@
 #include "util/Path.h"
 
 #include <windows.h>
+#include <appmodel.h>
 #include <tlhelp32.h>
+
+#include <cor.h>
+#include <roapi.h>
+#include <winstring.h>
 
 #include <algorithm>
 #include <chrono>
@@ -54,6 +59,62 @@ std::wstring hresultText(HRESULT hr) {
 
 std::wstring win32ErrorText(DWORD error) {
     return hresultText(HRESULT_FROM_WIN32(error));
+}
+
+std::wstring executableDirectoryOfProcess(DWORD pid) {
+    HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
+    if (!process) return {};
+    UniqueHandle processHandle(process);
+
+    wchar_t path[32768]{};
+    DWORD length = static_cast<DWORD>(std::size(path));
+    if (!QueryFullProcessImageNameW(process, 0, path, &length) || length == 0) return {};
+    return std::filesystem::path(std::wstring_view(path, length)).parent_path().wstring();
+}
+
+// 当前进程（主程序）不是打包应用，FindPackagesByPackageFamily 可能拿不到 AppX 路径；
+// 运行中的 AppleMusic.exe 的路径最可靠，且正好指向当前客户端版本。
+std::filesystem::path appleMusicPackageDirectory(DWORD appleMusicPid) {
+    const auto executableDir = executableDirectoryOfProcess(appleMusicPid);
+    if (executableDir.empty()) return {};
+
+    const auto directory = std::filesystem::path(executableDir);
+    if (!std::filesystem::is_regular_file(directory / L"AMP.Services.winmd")) return {};
+
+    const auto manifestPath = directory / L"AppxManifest.xml";
+    if (!std::filesystem::is_regular_file(manifestPath)) return {};
+    return directory;
+}
+
+using MetaDataGetDispenserFn = HRESULT (WINAPI*)(REFCLSID, REFIID, void**);
+
+GUID readGuidAttribute(IMetaDataImport* import, const wchar_t* typeName) {
+    mdTypeDef token = mdTypeDefNil;
+    if (FAILED(import->FindTypeDefByName(typeName, mdTokenNil, &token))) return {};
+
+    const void* data = nullptr;
+    ULONG size = 0;
+    if (FAILED(import->GetCustomAttributeByName(
+            token,
+            L"Windows.Foundation.Metadata.GuidAttribute",
+            &data,
+            &size)) ||
+        !data || size != 20) {
+        return {};
+    }
+
+    const auto* bytes = static_cast<const BYTE*>(data);
+    GUID guid{};
+    guid.Data1 = *reinterpret_cast<const DWORD*>(bytes + 2);
+    guid.Data2 = *reinterpret_cast<const WORD*>(bytes + 6);
+    guid.Data3 = *reinterpret_cast<const WORD*>(bytes + 8);
+    std::copy_n(bytes + 10, 8, guid.Data4);
+    return guid;
+}
+
+bool hasGuid(const GUID& guid) {
+    constexpr GUID empty{};
+    return !IsEqualGUID(guid, empty);
 }
 
 std::wstring hex64(std::uint64_t value) {
@@ -572,6 +633,75 @@ void AppleMusicInternalProvider::shutdown() {
     unloadBridge(ignored);
 }
 
+bool AppleMusicInternalProvider::resolveCurrentIids(bridge::SnapshotRequest& request, std::wstring* detail) const {
+    request.playerIid = {};
+    request.playerStaticsIid = {};
+    request.nowPlayingItemIid = {};
+    request.playerStateIid = {};
+
+    const DWORD pid = findAppleMusicProcessId();
+    if (!pid) {
+        if (detail) *detail = L"Apple Music 未运行";
+        return false;
+    }
+
+    const auto packageDir = appleMusicPackageDirectory(pid);
+    if (packageDir.empty()) {
+        if (detail) *detail = L"找不到当前 Apple Music 的 AMP.Services.winmd";
+        return false;
+    }
+
+    HMODULE metadata = LoadLibraryW(L"rometadata.dll");
+    if (!metadata) {
+        if (detail) *detail = L"无法加载 rometadata.dll: " + win32ErrorText(GetLastError());
+        return false;
+    }
+
+    auto getDispenser = reinterpret_cast<MetaDataGetDispenserFn>(GetProcAddress(metadata, "MetaDataGetDispenser"));
+    if (!getDispenser) {
+        if (detail) *detail = L"rometadata.dll 缺少 MetaDataGetDispenser";
+        FreeLibrary(metadata);
+        return false;
+    }
+
+    IMetaDataDispenserEx* dispenser = nullptr;
+    HRESULT hr = getDispenser(CLSID_CorMetaDataDispenser, IID_IMetaDataDispenserEx, reinterpret_cast<void**>(&dispenser));
+    if (FAILED(hr) || !dispenser) {
+        if (detail) *detail = L"打开 CLR 元数据分发器失败: " + hresultText(hr);
+        FreeLibrary(metadata);
+        return false;
+    }
+
+    const auto metadataPath = (packageDir / L"AMP.Services.winmd").wstring();
+    IUnknown* importUnknown = nullptr;
+    hr = dispenser->OpenScope(metadataPath.c_str(), 0, IID_IMetaDataImport, &importUnknown);
+    if (FAILED(hr) || !importUnknown) {
+        if (detail) *detail = L"打开 AMP.Services.winmd 失败: " + hresultText(hr);
+        dispenser->Release();
+        FreeLibrary(metadata);
+        return false;
+    }
+
+    auto* import = reinterpret_cast<IMetaDataImport*>(importUnknown);
+    request.playerIid = readGuidAttribute(import, L"AMP.Services.IPlayer");
+    request.playerStaticsIid = readGuidAttribute(import, L"AMP.Services.IPlayerStatics");
+    request.nowPlayingItemIid = readGuidAttribute(import, L"AMP.Services.CommonModels.INowPlayingItem");
+    request.playerStateIid = readGuidAttribute(import, L"AMP.Services.CommonModels.IPlayerState");
+
+    import->Release();
+    dispenser->Release();
+    FreeLibrary(metadata);
+
+    const bool complete = hasGuid(request.playerIid) &&
+                          hasGuid(request.playerStaticsIid) &&
+                          hasGuid(request.nowPlayingItemIid) &&
+                          hasGuid(request.playerStateIid);
+    if (!complete && detail) {
+        *detail = L"AMP.Services.winmd 中缺少必要的接口 IID，将使用 bridge 内置兼容值";
+    }
+    return complete;
+}
+
 bool AppleMusicInternalProvider::requestSnapshot(DWORD appleMusicPid, AppleMusicInternalSnapshot& snapshot, bool allowReload) {
     bridge::SnapshotResponse response;
     if (!sendBridgeCommand(appleMusicPid, bridge::kCommandSnapshot, response)) {
@@ -641,6 +771,10 @@ bool AppleMusicInternalProvider::sendBridgeCommand(DWORD appleMusicPid, std::uin
 
     bridge::SnapshotRequest request;
     request.command = command;
+    if (command == bridge::kCommandSnapshot) {
+        std::wstring ignored;
+        resolveCurrentIids(request, &ignored);
+    }
     DWORD written = 0;
     if (!WriteFile(pipe, &request, sizeof(request), &written, nullptr) || written != sizeof(request)) {
         lastError_ = L"发送 Apple Music 内部 bridge 请求失败: " + win32ErrorText(GetLastError());

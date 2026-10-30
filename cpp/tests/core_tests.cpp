@@ -231,6 +231,18 @@ void testConfig() {
     require(config.sourcePriority.size() == 4, "source priority should contain four sources");
 }
 
+void testAppleMusicBridgeDynamicIidRequest() {
+    smtc::applemusic::bridge::SnapshotRequest request;
+    constexpr GUID empty{};
+    require(IsEqualGUID(request.playerIid, empty), "new snapshot request should start without dynamic IID");
+    require(sizeof(request) == 80, "snapshot request should keep a stable five-pipe-protocol layout");
+
+    request.playerIid = {0xF807B158, 0xB2E7, 0x5CF7, {0xA5, 0x12, 0x8B, 0x0B, 0xE7, 0x67, 0xDF, 0x1B}};
+    request.nowPlayingItemIid = {0x2DC5F65C, 0x28F6, 0x58AA, {0x87, 0xCF, 0xE4, 0xA7, 0xDF, 0x9B, 0x9A, 0x4B}};
+    require(!IsEqualGUID(request.playerIid, empty), "dynamic player IID should occupy the request field");
+    require(!IsEqualGUID(request.nowPlayingItemIid, empty), "dynamic now-playing IID should occupy the request field");
+}
+
 void testAppleMusicInternalStateMapping() {
     smtc::applemusic::AppleMusicInternalSnapshot snapshot;
     snapshot.name = L"Song";
@@ -418,6 +430,7 @@ int main() {
         testQrcDecrypterFixture();
         testInflateZlib();
         testConfig();
+        testAppleMusicBridgeDynamicIidRequest();
         testAppleMusicInternalStateMapping();
         testEnglishConfigRoundTrip();
         testLegacyConfigMigration();

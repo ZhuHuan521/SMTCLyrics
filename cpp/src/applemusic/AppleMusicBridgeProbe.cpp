@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <iterator>
 #include <string>
 #include <string_view>
 
@@ -138,6 +139,36 @@ HRESULT queryFirstInterface(void* object, const GUID (&iids)[Size], void** resul
     return lastResult;
 }
 
+bool hasGuid(const GUID& guid) {
+    constexpr GUID empty{};
+    return !IsEqualGUID(guid, empty);
+}
+
+HRESULT queryFirstInterface(void* object, const GUID& preferred, const GUID* fallbacks, std::size_t fallbackCount, void** result) {
+    if (!object || !result) return E_POINTER;
+    *result = nullptr;
+
+    HRESULT lastResult = E_NOINTERFACE;
+    if (hasGuid(preferred)) {
+        lastResult = queryInterface(object, preferred, result);
+        if (SUCCEEDED(lastResult) && *result) return lastResult;
+    }
+    for (std::size_t i = 0; i < fallbackCount; ++i) {
+        lastResult = queryInterface(object, fallbacks[i], result);
+        if (SUCCEEDED(lastResult) && *result) return lastResult;
+    }
+    *result = nullptr;
+    return lastResult;
+}
+
+HRESULT queryPlayerInterface(void* object, const bridge::SnapshotRequest& request, void** result) {
+    return queryFirstInterface(object, request.playerIid, kIPlayerGuids, std::size(kIPlayerGuids), result);
+}
+
+HRESULT queryNowPlayingInterface(void* object, const bridge::SnapshotRequest& request, void** result) {
+    return queryFirstInterface(object, request.nowPlayingItemIid, kINowPlayingItemGuids, std::size(kINowPlayingItemGuids), result);
+}
+
 std::wstring hstringToWide(HSTRING value) {
     if (!value) return {};
     UINT32 length = 0;
@@ -153,10 +184,14 @@ std::wstring getHString(void* object, HRESULT (__stdcall* getter)(void*, HSTRING
     return hstringToWide(value);
 }
 
-std::int64_t getInt64(void* object, HRESULT (__stdcall* getter)(void*, std::int64_t*) noexcept) {
+std::int64_t getInt64(
+    void* object,
+    HRESULT (__stdcall* getter)(void*, std::int64_t*) noexcept,
+    bool* succeeded = nullptr) {
     std::int64_t value = 0;
-    if (!object || !getter || FAILED(getter(object, &value))) return 0;
-    return value;
+    const bool ok = object && getter && SUCCEEDED(getter(object, &value));
+    if (succeeded) *succeeded = ok;
+    return ok ? value : 0;
 }
 
 bool getBool(void* object, HRESULT (__stdcall* getter)(void*, bool*) noexcept) {
@@ -178,6 +213,12 @@ void setError(bridge::SnapshotResponse& response, bridge::Status status, HRESULT
     copyWide(response.error, message);
 }
 
+std::int64_t queryQpc() {
+    LARGE_INTEGER counter{};
+    QueryPerformanceCounter(&counter);
+    return counter.QuadPart;
+}
+
 void captureQpc(bridge::SnapshotResponse& response) {
     LARGE_INTEGER counter{};
     LARGE_INTEGER frequency{};
@@ -193,7 +234,7 @@ bool validRequest(const bridge::SnapshotRequest& request) {
            (request.command == bridge::kCommandSnapshot || request.command == bridge::kCommandShutdown);
 }
 
-bridge::SnapshotResponse readSnapshot() {
+bridge::SnapshotResponse readSnapshot(const bridge::SnapshotRequest& request) {
     bridge::SnapshotResponse response;
     response.magic = bridge::kMagic;
     response.version = bridge::kVersion;
@@ -230,7 +271,8 @@ bridge::SnapshotResponse readSnapshot() {
         return response;
     }
 
-    hr = queryInterface(factoryRaw, kIPlayerStaticsGuid, &playerStaticsRaw);
+    const GUID& playerStaticsGuid = hasGuid(request.playerStaticsIid) ? request.playerStaticsIid : kIPlayerStaticsGuid;
+    hr = queryInterface(factoryRaw, playerStaticsGuid, &playerStaticsRaw);
     if (FAILED(hr) || !playerStaticsRaw) {
         releaseInspectable(factoryRaw);
         setError(response, bridge::Status::InterfaceFailed, hr, L"获取 Apple Music IPlayerStatics 失败");
@@ -247,7 +289,7 @@ bridge::SnapshotResponse readSnapshot() {
     }
 
     void* playerInterfaceRaw = nullptr;
-    hr = queryFirstInterface(playerRaw, kIPlayerGuids, &playerInterfaceRaw);
+    hr = queryPlayerInterface(playerRaw, request, &playerInterfaceRaw);
     if (FAILED(hr) || !playerInterfaceRaw) {
         releaseInspectable(playerRaw);
         releaseInspectable(playerStaticsRaw);
@@ -268,7 +310,7 @@ bridge::SnapshotResponse readSnapshot() {
     }
 
     void* nowPlayingRaw = nullptr;
-    hr = queryFirstInterface(nowPlayingObjectRaw, kINowPlayingItemGuids, &nowPlayingRaw);
+    hr = queryNowPlayingInterface(nowPlayingObjectRaw, request, &nowPlayingRaw);
     if (FAILED(hr) || !nowPlayingRaw) {
         releaseInspectable(nowPlayingObjectRaw);
         releaseInspectable(playerInterfaceRaw);
@@ -284,14 +326,19 @@ bridge::SnapshotResponse readSnapshot() {
     copyWide(response.subtitle, getHString(nowPlayingRaw, now->get_Subtitle));
     copyWide(response.artist, getHString(nowPlayingRaw, now->get_Artist));
     copyWide(response.album, getHString(nowPlayingRaw, now->get_Album));
-    response.position100ns = getInt64(nowPlayingRaw, now->get_CurrentPosition);
+    bool positionRead = false;
+    response.position100ns = getInt64(nowPlayingRaw, now->get_CurrentPosition, &positionRead);
+    if (positionRead) {
+        response.queryQpc = queryQpc();
+    }
     response.duration100ns = getInt64(nowPlayingRaw, now->get_Duration);
 
     void* playerStateObjectRaw = nullptr;
     void* playerStateRaw = nullptr;
     hr = vtable<IPlayerVTable>(playerInterfaceRaw)->get_PlayerState(playerInterfaceRaw, &playerStateObjectRaw);
     if (SUCCEEDED(hr) && playerStateObjectRaw) {
-        if (SUCCEEDED(queryInterface(playerStateObjectRaw, kIPlayerStateGuid, &playerStateRaw)) && playerStateRaw) {
+        const GUID& playerStateGuid = hasGuid(request.playerStateIid) ? request.playerStateIid : kIPlayerStateGuid;
+        if (SUCCEEDED(queryInterface(playerStateObjectRaw, playerStateGuid, &playerStateRaw)) && playerStateRaw) {
             auto* state = vtable<IPlayerStateVTable>(playerStateRaw);
             response.playing = getBool(playerStateRaw, state->get_IsPlaying) ? 1 : 0;
             response.paused = getBool(playerStateRaw, state->get_IsPaused) ? 1 : 0;
@@ -338,7 +385,7 @@ bool servePipeClient(HANDLE pipe) {
     } else if (request.command == bridge::kCommandShutdown) {
         response.status = static_cast<std::uint32_t>(bridge::Status::Ok);
     } else {
-        response = readSnapshot();
+        response = readSnapshot(request);
     }
 
     DWORD written = 0;

@@ -52,6 +52,9 @@ public:
     void shutdown();
 
 private:
+    // 从当前 Apple Music 安装包的 AMP.Services.winmd 读取动态接口 IID。
+    // 读取失败时返回空结构，调用方继续使用 bridge 内置的已知 IID。
+    bool resolveCurrentIids(bridge::SnapshotRequest& request, std::wstring* detail = nullptr) const;
     bool requestSnapshot(DWORD appleMusicPid, AppleMusicInternalSnapshot& snapshot, bool allowReload);
     bool sendBridgeCommand(DWORD appleMusicPid, std::uint32_t command, bridge::SnapshotResponse& response);
     bool waitForBridgePipe(DWORD appleMusicPid);

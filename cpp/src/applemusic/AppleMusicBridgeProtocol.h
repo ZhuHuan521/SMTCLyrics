@@ -3,13 +3,15 @@
 #include <cstddef>
 #include <cstdint>
 
+#include <guiddef.h>
+
 namespace smtc::applemusic::bridge {
 
 constexpr std::uint32_t kMagic = 0x534D5443; // SMTC
-constexpr std::uint32_t kVersion = 2;
+constexpr std::uint32_t kVersion = 3;
 constexpr std::uint32_t kCommandSnapshot = 1;
 constexpr std::uint32_t kCommandShutdown = 2;
-constexpr wchar_t kPipeNamePrefix[] = L"SMTCLyricsAppleMusicBridge4-";
+constexpr wchar_t kPipeNamePrefix[] = L"SMTCLyricsAppleMusicBridge5-";
 constexpr std::size_t kTextChars = 256;
 constexpr std::size_t kErrorChars = 512;
 
@@ -24,11 +26,17 @@ enum class Status : std::uint32_t {
     InternalError = 7,
 };
 
+// 主程序从当前 Apple Music 的 AMP.Services.winmd 解析接口 IID 后，
+// 每次请求都带上这些 IID。0 表示没有动态值，bridge 回退到内置兼容值。
 struct SnapshotRequest {
     std::uint32_t magic = kMagic;
     std::uint32_t version = kVersion;
     std::uint32_t command = kCommandSnapshot;
     std::uint32_t reserved = 0;
+    GUID playerIid{};
+    GUID playerStaticsIid{};
+    GUID nowPlayingItemIid{};
+    GUID playerStateIid{};
 };
 
 struct SnapshotResponse {
@@ -49,6 +57,6 @@ struct SnapshotResponse {
     wchar_t error[kErrorChars]{};
 };
 
-static_assert(sizeof(SnapshotRequest) == 16);
+static_assert(sizeof(SnapshotRequest) == 80);
 
 }

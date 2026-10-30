@@ -57,7 +57,7 @@ target_include_directories(smtclyrics_core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/generated
     ${CMAKE_CURRENT_SOURCE_DIR}/../e-packager-master/thirdparty
 )
-target_link_libraries(smtclyrics_core PUBLIC gdiplus winhttp bcrypt crypt32 shlwapi runtimeobject windowsapp ole32 shell32 comdlg32 advapi32)
+target_link_libraries(smtclyrics_core PUBLIC gdiplus winhttp bcrypt crypt32 shlwapi runtimeobject windowsapp ole32 shell32 comdlg32 advapi32 rometadata)
 
 add_library(SMTCLyricsAppleMusicBridge SHARED src/applemusic/AppleMusicBridgeProbe.cpp)
 target_include_directories(SMTCLyricsAppleMusicBridge PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
