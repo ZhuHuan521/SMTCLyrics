@@ -398,6 +398,9 @@ AppleMusicInternalSnapshot snapshotFromResponse(const bridge::SnapshotResponse& 
     snapshot.subtitle = response.subtitle;
     snapshot.artist = response.artist;
     snapshot.album = response.album;
+    snapshot.playQueueItemId = response.playQueueItemId;
+    snapshot.adamId = response.adamId;
+    snapshot.canonicalId = response.canonicalId;
     snapshot.currentPosition100ns = response.position100ns;
     snapshot.duration100ns = response.duration100ns;
     snapshot.queryQpc = response.queryQpc;
@@ -463,6 +466,8 @@ playback::MediaState mapAppleMusicSnapshotToMediaState(const AppleMusicInternalS
     state.title = snapshot.name.empty() ? snapshot.subtitle : snapshot.name;
     state.artist = snapshot.artist;
     state.album = snapshot.album;
+    state.appleMusicCatalogId = snapshot.adamId.empty() ? snapshot.canonicalId : snapshot.adamId;
+    state.isrc = snapshot.isrc;
     state.durationMs = normalizeMediaTimeMs(snapshot.duration100ns);
     state.positionMs = snapshotPositionMs(snapshot);
     state.playing = snapshot.playing;
@@ -480,8 +485,13 @@ AppleMusicInternalProvider::~AppleMusicInternalProvider() {
 }
 
 playback::MediaState AppleMusicInternalProvider::readState() {
+    return connectState(true);
+}
+
+playback::MediaState AppleMusicInternalProvider::connectState(bool allowReload) {
     playback::MediaState state;
     lastError_.clear();
+    lastPipeMissing_ = false;
 
     const DWORD appleMusicPid = findAppleMusicProcessId();
     if (!appleMusicPid) {
@@ -491,7 +501,8 @@ playback::MediaState AppleMusicInternalProvider::readState() {
     }
 
     AppleMusicInternalSnapshot snapshot;
-    if (!requestSnapshot(appleMusicPid, snapshot, true)) {
+    // 首次连接且 bridge 尚未加载时允许注入一次；已加载但未响应时不替换模块。
+    if (!requestSnapshot(appleMusicPid, snapshot, allowReload)) {
         return state;
     }
 
@@ -638,6 +649,8 @@ bool AppleMusicInternalProvider::resolveCurrentIids(bridge::SnapshotRequest& req
     request.playerStaticsIid = {};
     request.nowPlayingItemIid = {};
     request.playerStateIid = {};
+    request.contentDescriptorDrivenIid = {};
+    request.contentDescriptorIid = {};
 
     const DWORD pid = findAppleMusicProcessId();
     if (!pid) {
@@ -687,6 +700,8 @@ bool AppleMusicInternalProvider::resolveCurrentIids(bridge::SnapshotRequest& req
     request.playerStaticsIid = readGuidAttribute(import, L"AMP.Services.IPlayerStatics");
     request.nowPlayingItemIid = readGuidAttribute(import, L"AMP.Services.CommonModels.INowPlayingItem");
     request.playerStateIid = readGuidAttribute(import, L"AMP.Services.CommonModels.IPlayerState");
+    request.contentDescriptorDrivenIid = readGuidAttribute(import, L"AMP.Services.CommonModels.IContentDescriptorDriven");
+    request.contentDescriptorIid = readGuidAttribute(import, L"AMP.Services.CommonModels.IContentDescriptor");
 
     import->Release();
     dispenser->Release();
@@ -707,14 +722,9 @@ bool AppleMusicInternalProvider::requestSnapshot(DWORD appleMusicPid, AppleMusic
     if (!sendBridgeCommand(appleMusicPid, bridge::kCommandSnapshot, response)) {
         if (!allowReload) return false;
 
-        if (isBridgeModuleLoaded(appleMusicPid)) {
-            std::wstring detail;
-            if (!unloadBridgeModules(appleMusicPid, &detail)) {
-                lastError_ = L"Apple Music 内部 bridge 已加载但无法重新加载: " + detail;
-                return false;
-            }
-        }
-
+        // 管道缺失时补加载。模块已存在但没有管道时也加载一次；
+        // 后续轮询不会卸载和重新注入一个正在工作的 bridge。
+        if (!lastPipeMissing_ && isBridgeModuleLoaded(appleMusicPid)) return false;
         if (!injectBridge(appleMusicPid, false)) {
             return false;
         }

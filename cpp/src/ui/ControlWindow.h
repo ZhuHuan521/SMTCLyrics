@@ -20,7 +20,9 @@ struct ControlWindowCallbacks {
     std::function<void()> switchSource;
     std::function<void()> clearCache;
     std::function<void()> openLocalLyric;
-    std::function<std::array<bool, 4>()> checkLyricSources;
+    // 主线程先读取当前播放快照；后台线程只使用值拷贝，不访问 SMTC bridge。
+    std::function<config::LyricSourceCheckContext()> prepareSourceCheck;
+    std::function<std::array<config::LyricSourceCheckResult, 5>(config::LyricSourceCheckContext)> checkLyricSources;
     std::function<void()> checkAppleMusicBridge;
     std::function<void()> toggleAppleMusicBridge;
     std::function<void(int)> saveSongOffset;
@@ -57,10 +59,14 @@ private:
     void applySmtcSettings();
     void applyDisplaySettings();
     void applySourceSettings();
+    void applyAppleMusicCredentials();
+
+
     void saveLyricGeometry();
     void toggleLock();
     void startSourceCheck();
-    void completeSourceCheck(const std::array<bool, 4>& status);
+    void processSourceCheck(const config::LyricSourceCheckContext& context);
+    void completeSourceCheck(const std::array<config::LyricSourceCheckResult, 5>& status);
     void chooseColor(int id);
     void updateLockControls();
     void updateColorSwatches() const;
@@ -96,6 +102,7 @@ private:
     COLORREF customColors_[16]{};
     bool lyricDraggable_ = false;
     bool sourceCheckRunning_ = false;
+
 };
 
 }

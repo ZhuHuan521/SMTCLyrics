@@ -66,6 +66,7 @@ HttpResponse HttpClient::request(std::wstring_view method, std::string_view url,
     components.dwUrlPathLength = static_cast<DWORD>(-1);
     components.dwExtraInfoLength = static_cast<DWORD>(-1);
     if (!WinHttpCrackUrl(wideUrl.c_str(), 0, 0, &components)) {
+        response.networkError = GetLastError();
         return response;
     }
 
@@ -76,14 +77,23 @@ HttpResponse HttpClient::request(std::wstring_view method, std::string_view url,
 
     // 每次请求创建独立 session/connect/request，简单可靠，适合低频歌词请求。
     InternetHandle session(WinHttpOpen(L"SMTCLyrics/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0));
-    if (!session) return response;
+    if (!session) {
+        response.networkError = GetLastError();
+        return response;
+    }
 
     InternetHandle connect(WinHttpConnect(session.get(), host.c_str(), components.nPort, 0));
-    if (!connect) return response;
+    if (!connect) {
+        response.networkError = GetLastError();
+        return response;
+    }
 
     const DWORD flags = components.nScheme == INTERNET_SCHEME_HTTPS ? WINHTTP_FLAG_SECURE : 0;
     InternetHandle req(WinHttpOpenRequest(connect.get(), std::wstring(method).c_str(), path.c_str(), nullptr, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, flags));
-    if (!req) return response;
+    if (!req) {
+        response.networkError = GetLastError();
+        return response;
+    }
 
     const DWORD timeout = 10000;
     WinHttpSetTimeouts(req.get(), timeout, timeout, timeout, timeout);
@@ -101,6 +111,7 @@ HttpResponse HttpClient::request(std::wstring_view method, std::string_view url,
         bodySize,
         0);
     if (!sent || !WinHttpReceiveResponse(req.get(), nullptr)) {
+        response.networkError = GetLastError();
         return response;
     }
 

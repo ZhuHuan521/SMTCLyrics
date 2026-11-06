@@ -6,7 +6,7 @@
 
 namespace smtc::cache {
 
-// 轻量歌词缓存：用 JSON 保存“歌曲关键字 -> 上次成功歌词源/单曲偏移”。
+// 轻量歌词缓存：用 JSON 保存“歌曲关键字 -> 用户手动选择的歌词源/单曲偏移”。
 class LyricCache {
 public:
     // path 通常是可执行文件旁的 cache.json。
@@ -15,7 +15,7 @@ public:
     // 从磁盘加载或保存当前 JSON 文本。
     void load();
     void save() const;
-    // 读取/写入某首歌上次成功命中的在线歌词源。
+    // 读取/写入用户手动“换源”后确认的在线歌词源。
     std::optional<int> sourceFor(std::string_view keywordUtf8) const;
     void setSource(std::string_view keywordUtf8, int sourceIndex);
     void removeSource(std::string_view keywordUtf8);

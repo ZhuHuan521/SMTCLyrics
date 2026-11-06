@@ -13,6 +13,8 @@ struct HttpResponse {
     unsigned statusCode = 0;
     std::vector<std::uint8_t> body;
     std::string rawHeaders;
+    // 传输失败时 WinHTTP 的具体错误码；HTTP 4xx/5xx 不算传输失败。
+    unsigned networkError = 0;
 
     // 在线歌词接口大多返回文本/JSON/XML，直接把 body 视作字节串。
     std::string text() const {

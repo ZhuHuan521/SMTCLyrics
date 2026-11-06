@@ -38,10 +38,12 @@ set(SMTCLYRICS_SOURCES
     src/cache/Cache.cpp
     src/config/Config.cpp
     src/http/HttpClient.cpp
+    src/lyrics/AppleMusicLyrics.cpp
     src/lyrics/LrcParser.cpp
     src/lyrics/LyricRepository.cpp
     src/lyrics/OnlineLyrics.cpp
     src/lyrics/QrcDecrypter.cpp
+    src/lyrics/TtmlParser.cpp
     src/smtc/SmtcProvider.cpp
     src/ui/ControlWindow.cpp
     src/ui/DesktopLyricsWindow.cpp

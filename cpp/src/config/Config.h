@@ -8,6 +8,26 @@
 
 namespace smtc::config {
 
+// 在线源检测的结果和失败原因，用于控制窗口准确显示 Apple Music 凭证状态。
+struct LyricSourceCheckResult {
+    bool ok = false;
+    std::wstring detail;
+};
+
+// 歌词源检测只传递可复制的曲目与凭证快照，避免后台线程访问 SMTC 或 Apple bridge。
+struct LyricSourceCheckContext {
+    std::wstring keyword;
+    std::wstring title;
+    std::wstring artist;
+    std::wstring album;
+    std::wstring appleMusicCatalogId;
+    std::wstring isrc;
+    std::int64_t durationMs = 0;
+    std::wstring appleMusicDeveloperToken;
+    std::wstring appleMusicMediaUserToken;
+    std::wstring appleMusicStorefront;
+};
+
 // 字体配置，对应歌词窗口绘制时创建的 GDI+ 字体。
 struct FontConfig {
     std::wstring name = L"楷体";
@@ -42,7 +62,12 @@ struct AppConfig {
     TextStyle highlight2{RGB(128, 128, 128), RGB(192, 192, 192), RGB(0, 0, 0), 1};  // 两句显示时第二行的颜色。
     WindowConfig window;
     int lyricOffsetMs = 0;
-    std::vector<int> sourcePriority{1, 2, 3, 4};
+    std::vector<int> sourcePriority{1, 2, 3, 4, 5};
+    // 凭证保存到本机 [AppleMusic] 段，由用户在设置窗口或 config.ini 自行填写。
+    std::wstring appleMusicDeveloperToken;
+    std::wstring appleMusicMediaUserToken;
+    // 留空时根据凭证自动读取 /me/storefront；填写时作为手动覆盖。
+    std::wstring appleMusicStorefront;
     int smtcMode = 1;
     int smtcPollIntervalMs = 1000;
     int displayMode = 1;

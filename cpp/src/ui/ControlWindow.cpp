@@ -66,6 +66,7 @@ enum ControlId {
     IdSource2,
     IdSource3,
     IdSource4,
+    IdSource5,
     IdSaveSource,
 
     IdLock = 701,
@@ -81,6 +82,12 @@ enum ControlId {
     IdKgStatus,
     IdKuwoStatus,
     IdWyStatus,
+    IdAmStatus,
+    IdDeveloperToken,
+    IdMediaUserToken,
+    IdStorefront,
+    IdSaveAppleMusicCredentials,
+
     IdLockStatus,
     IdStatusText,
     IdCurrentSourceText
@@ -92,14 +99,14 @@ std::wstring intText(int value) {
 }
 
 int sourceToCombo(int source) {
-    // 配置中的歌词源是 1..4，下拉框索引是 0..3。
-    if (source < 1 || source > 4) return 0;
+    // 配置中的歌词源是 1..5，下拉框索引是 0..4。
+    if (source < 1 || source > 5) return 0;
     return source - 1;
 }
 
 int comboToSource(int selection) {
     // 下拉框未选择时回到 QQ 音乐。
-    if (selection < 0 || selection > 3) return 1;
+    if (selection < 0 || selection > 4) return 1;
     return selection + 1;
 }
 
@@ -115,6 +122,7 @@ const wchar_t* sourceLabel(int index) {
     case 1: return L"酷狗";
     case 2: return L"酷我";
     case 3: return L"网易云";
+    case 4: return L"Apple Music";
     default: return L"QQ 音乐";
     }
 }
@@ -143,6 +151,7 @@ int sourceStatusId(int index) {
     case 1: return IdKgStatus;
     case 2: return IdKuwoStatus;
     case 3: return IdWyStatus;
+    case 4: return IdAmStatus;
     default: return IdQqStatus;
     }
 }
@@ -194,7 +203,7 @@ bool ControlWindow::create(const config::AppConfig& config, ControlWindowCallbac
         CW_USEDEFAULT,
         CW_USEDEFAULT,
         820,
-        830,
+        1000,
         nullptr,
         nullptr,
         GetModuleHandleW(nullptr),
@@ -270,6 +279,7 @@ LRESULT ControlWindow::handleMessage(UINT message, WPARAM wParam, LPARAM lParam)
         case IdSaveSmtc: applySmtcSettings(); return 0;
         case IdSaveDisplay: applyDisplaySettings(); return 0;
         case IdSaveSource: applySourceSettings(); return 0;
+        case IdSaveAppleMusicCredentials: applyAppleMusicCredentials(); return 0;
         case IdSaveWinPos: saveLyricGeometry(); return 0;
         case IdLock: toggleLock(); return 0;
         case IdReload: if (callbacks_.reloadLyrics) callbacks_.reloadLyrics(); return 0;
@@ -293,7 +303,7 @@ LRESULT ControlWindow::handleMessage(UINT message, WPARAM wParam, LPARAM lParam)
         break;
     case kSourceCheckCompleteMessage: {
         // 后台检测线程完成后把结果数组交回 UI 线程。
-        std::unique_ptr<std::array<bool, 4>> status(reinterpret_cast<std::array<bool, 4>*>(lParam));
+        std::unique_ptr<std::array<config::LyricSourceCheckResult, 5>> status(reinterpret_cast<std::array<config::LyricSourceCheckResult, 5>*>(lParam));
         completeSourceCheck(*status);
         return 0;
     }
@@ -390,7 +400,7 @@ void ControlWindow::createControls() {
     addButton(L"保存颜色", 660, 356, 104, 36, IdApplyColor);
 
     // 歌词源优先级
-    addControl(L"BUTTON", L"歌词源优先级", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 14, 506, 390, 188, 0);
+    addControl(L"BUTTON", L"歌词源优先级", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 14, 506, 390, 400, 0);
     addLabel(L"优先级 1", 30, 544, 70, 24);
     addCombo(112, 538, 140, 150, IdSource1);
     addLabel(L"优先级 2", 30, 584, 70, 24);
@@ -399,10 +409,20 @@ void ControlWindow::createControls() {
     addCombo(112, 618, 140, 150, IdSource3);
     addLabel(L"优先级 4", 30, 664, 70, 24);
     addCombo(112, 658, 140, 150, IdSource4);
-    addButton(L"保存优先级", 270, 616, 100, 36, IdSaveSource);
-
+    addLabel(L"优先级 5", 30, 704, 70, 24);
+    addCombo(112, 698, 140, 150, IdSource5);
+    addButton(L"保存优先级", 270, 630, 100, 36, IdSaveSource);
+    // The two credential labels use the exact request-header names.
+    addLabel(L"Authorization", 30, 750, 92, 24);
+    addEdit(L"", 124, 748, 264, 28, IdDeveloperToken);
+    addLabel(L"Media-User-Token", 30, 786, 112, 24);
+    addEdit(L"", 144, 784, 244, 28, IdMediaUserToken);
+    addLabel(L"地区", 30, 824, 54, 24);
+    addEdit(L"", 86, 821, 44, 28, IdStorefront);
+    addButton(L"保存 Apple Music 凭证", 150, 818, 194, 34, IdSaveAppleMusicCredentials);
+    addLabel(L"地区留空自动读取；凭证仅保存在本机", 30, 860, 330, 24);
     // 操作与检测
-    addControl(L"BUTTON", L"操作与检测", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 420, 506, 380, 228, 0);
+    addControl(L"BUTTON", L"操作与检测", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 420, 506, 380, 326, 0);
     addLabel(L"QQ 音乐", 438, 544, 64, 24);
     addValueLabel(L"待检测", 504, 540, 70, 28, IdQqStatus);
     addLabel(L"酷狗", 590, 544, 46, 24);
@@ -411,25 +431,27 @@ void ControlWindow::createControls() {
     addValueLabel(L"待检测", 504, 578, 70, 28, IdKuwoStatus);
     addLabel(L"网易云", 590, 582, 56, 24);
     addValueLabel(L"待检测", 638, 578, 70, 28, IdWyStatus);
-    addButton(L"检测歌词源", 438, 622, 110, 34, IdCheckSources);
-    addButton(L"重新获取", 558, 622, 92, 34, IdReload);
-    addButton(L"换源", 660, 622, 70, 34, IdSwitchSource);
-    addButton(L"本地歌词", 438, 662, 110, 34, IdLocalLyric);
-    addButton(L"清除缓存", 558, 662, 92, 34, IdClearCache);
-    addButton(L"检测dll", 660, 662, 70, 34, IdCheckAppleMusicBridge);
-    addButton(L"加载/卸载dll", 438, 702, 130, 34, IdToggleAppleMusicBridge);
+    addLabel(L"Apple Music", 438, 620, 90, 24);
+    addValueLabel(L"待检测", 528, 616, 110, 28, IdAmStatus);
+    addButton(L"检测歌词源", 438, 662, 110, 34, IdCheckSources);
+    addButton(L"重新获取", 558, 662, 92, 34, IdReload);
+    addButton(L"换源", 660, 662, 70, 34, IdSwitchSource);
+    addButton(L"本地歌词", 438, 702, 110, 34, IdLocalLyric);
+    addButton(L"清除缓存", 558, 702, 92, 34, IdClearCache);
+    addButton(L"检测dll", 660, 702, 70, 34, IdCheckAppleMusicBridge);
+    addButton(L"加载/卸载dll", 438, 742, 130, 34, IdToggleAppleMusicBridge);
 
     // 状态栏
-    addValueLabel(L"", 14, 750, 560, 28, IdStatusText);
-    addValueLabel(L"歌词源：未加载", 590, 750, 210, 28, IdCurrentSourceText);
+    addValueLabel(L"歌词源：未加载", 590, 902, 210, 24, IdCurrentSourceText);
+    addValueLabel(L"", 14, 930, 786, 28, IdStatusText);
 
     for (int comboId : {IdNormalGradient, IdHighlightGradient, IdHighlight2Gradient}) {
         // 初始化渐变模式下拉框。
         for (int i = 0; i < 3; ++i) SendMessageW(GetDlgItem(hwnd_, comboId), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(gradientLabel(i)));
     }
-    for (int comboId : {IdSource1, IdSource2, IdSource3, IdSource4}) {
+    for (int comboId : {IdSource1, IdSource2, IdSource3, IdSource4, IdSource5}) {
         // 初始化歌词源优先级下拉框。
-        for (int i = 0; i < 4; ++i) SendMessageW(GetDlgItem(hwnd_, comboId), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(sourceLabel(i)));
+        for (int i = 0; i < 5; ++i) SendMessageW(GetDlgItem(hwnd_, comboId), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(sourceLabel(i)));
     }
 }
 
@@ -441,6 +463,9 @@ void ControlWindow::populateControls() {
     setChecked(IdFontItalic, config_.font.italic);
     setChecked(IdFontUnderline, config_.font.underline);
     setText(IdOffset, intText(config_.lyricOffsetMs));
+    setText(IdDeveloperToken, config_.appleMusicDeveloperToken);
+    setText(IdMediaUserToken, config_.appleMusicMediaUserToken);
+    setText(IdStorefront, config_.appleMusicStorefront);
     setComboSelection(IdNormalGradient, config_.normal.gradientMode);
     setComboSelection(IdHighlightGradient, config_.highlight.gradientMode);
     setComboSelection(IdHighlight2Gradient, config_.highlight2.gradientMode);
@@ -448,7 +473,7 @@ void ControlWindow::populateControls() {
     setText(IdSmtcInterval, intText(config_.smtcPollIntervalMs));
     CheckRadioButton(hwnd_, IdDisplay1, IdDisplay3, IdDisplay1 + std::clamp(config_.displayMode, 1, 3) - 1);
     syncLyricGeometry(config_.window);
-    for (std::size_t i = 0; i < config_.sourcePriority.size() && i < 4; ++i) {
+    for (std::size_t i = 0; i < config_.sourcePriority.size() && i < 5; ++i) {
         setComboSelection(IdSource1 + static_cast<int>(i), sourceToCombo(config_.sourcePriority[i]));
     }
     updateColorSwatches();
@@ -500,6 +525,15 @@ void ControlWindow::applySourceSettings() {
     setStatusText(L"歌词源优先级已保存");
 }
 
+void ControlWindow::applyAppleMusicCredentials() {
+    // 两个凭证由用户原样填写并保存到本机 config.ini。
+    config_ = readConfigFromControls();
+    if (callbacks_.applyConfig) callbacks_.applyConfig(config_);
+    setStatusText(config_.appleMusicDeveloperToken.empty() || config_.appleMusicMediaUserToken.empty()
+        ? L"已保存；填写两项凭证后 Apple Music 源才可用"
+        : L"Apple Music 凭证已保存到 config.ini");
+}
+
 void ControlWindow::saveLyricGeometry() {
     // 用户手动输入的几何值会移动歌词窗口，再由回调保存位置。
     config_.window.left = getInt(IdWinLeft, config_.window.left);
@@ -520,21 +554,31 @@ void ControlWindow::toggleLock() {
 }
 
 void ControlWindow::startSourceCheck() {
-    // 歌词源检测会访问网络，放到后台线程避免卡住窗口。
     if (sourceCheckRunning_) return;
     sourceCheckRunning_ = true;
-    for (int i = 0; i < 4; ++i) setText(sourceStatusId(i), L"检测中");
-    setStatusText(L"正在搜索《关键词》检测歌词源...");
+    for (int i = 0; i < 5; ++i) setText(sourceStatusId(i), L"检测中");
+    config::LyricSourceCheckContext context;
+    if (callbacks_.prepareSourceCheck) context = callbacks_.prepareSourceCheck();
+    // 检测按钮直接使用当前输入框里的凭证，避免用户填完但尚未保存时误报不可用。
+    context.appleMusicDeveloperToken = getText(IdDeveloperToken);
+    context.appleMusicMediaUserToken = getText(IdMediaUserToken);
+    context.appleMusicStorefront = util::trim(getText(IdStorefront));
+    const auto keyword = context.keyword.empty() ? std::wstring(L"关键词") : context.keyword;
+    setStatusText(L"正在搜索《" + keyword + L"》检测歌词源...");
     EnableWindow(GetDlgItem(hwnd_, IdCheckSources), FALSE);
 
+    processSourceCheck(context);
+}
+
+void ControlWindow::processSourceCheck(const config::LyricSourceCheckContext& context) {
     HWND target = hwnd_;
     auto check = callbacks_.checkLyricSources;
-    std::thread([target, check = std::move(check)]() mutable {
+    std::thread([target, check = std::move(check), context]() mutable {
         // 结果数组通过 PostMessage 交回主线程；投递失败时 unique_ptr 自动释放。
-        auto result = std::make_unique<std::array<bool, 4>>();
-        result->fill(false);
+        auto result = std::make_unique<std::array<config::LyricSourceCheckResult, 5>>();
+        result->fill(config::LyricSourceCheckResult{});
         if (check) {
-            *result = check();
+            *result = check(context);
         }
         if (!PostMessageW(target, kSourceCheckCompleteMessage, 0, reinterpret_cast<LPARAM>(result.get()))) {
             return;
@@ -543,12 +587,12 @@ void ControlWindow::startSourceCheck() {
     }).detach();
 }
 
-void ControlWindow::completeSourceCheck(const std::array<bool, 4>& status) {
+void ControlWindow::completeSourceCheck(const std::array<config::LyricSourceCheckResult, 5>& status) {
     // 把四个源的可用性写回对应状态标签。
     sourceCheckRunning_ = false;
     EnableWindow(GetDlgItem(hwnd_, IdCheckSources), TRUE);
-    for (int i = 0; i < 4; ++i) {
-        setText(sourceStatusId(i), status[static_cast<std::size_t>(i)] ? L"可用" : L"不可用");
+    for (int i = 0; i < 5; ++i) {
+        setText(sourceStatusId(i), status[static_cast<std::size_t>(i)].ok ? L"可用" : L"不可用");
     }
     setStatusText(L"歌词源检测完成");
 }
@@ -606,6 +650,9 @@ bool ControlWindow::drawColorButton(const DRAWITEMSTRUCT& item) const {
 config::AppConfig ControlWindow::readConfigFromControls() const {
     // 从控件读取完整配置；无效数值回退到当前 config_。
     auto config = config_;
+    config.appleMusicDeveloperToken = getText(IdDeveloperToken);
+    config.appleMusicMediaUserToken = getText(IdMediaUserToken);
+    config.appleMusicStorefront = util::trim(getText(IdStorefront));
     config.font.name = getText(IdFontName);
     config.font.size = getInt(IdFontSize, config.font.size);
     config.font.bold = isChecked(IdFontBold);
@@ -624,7 +671,8 @@ config::AppConfig ControlWindow::readConfigFromControls() const {
         comboToSource(comboSelection(IdSource1)),
         comboToSource(comboSelection(IdSource2)),
         comboToSource(comboSelection(IdSource3)),
-        comboToSource(comboSelection(IdSource4))
+        comboToSource(comboSelection(IdSource4)),
+        comboToSource(comboSelection(IdSource5))
     };
     config.window.left = getInt(IdWinLeft, config.window.left);
     config.window.top = getInt(IdWinTop, config.window.top);
@@ -650,7 +698,8 @@ HWND ControlWindow::addValueLabel(const wchar_t* text, int x, int y, int width, 
 }
 
 HWND ControlWindow::addEdit(const std::wstring& text, int x, int y, int width, int height, int id) {
-    return addControl(L"EDIT", text.c_str(), WS_CHILD | WS_VISIBLE | WS_TABSTOP | ES_AUTOHSCROLL, x, y, width, height, id, WS_EX_CLIENTEDGE);
+    const DWORD style = WS_CHILD | WS_VISIBLE | WS_TABSTOP | ES_AUTOHSCROLL | ES_MULTILINE;
+    return addControl(L"EDIT", text.c_str(), style, x, y, width, height, id, WS_EX_CLIENTEDGE);
 }
 
 HWND ControlWindow::addButton(const wchar_t* text, int x, int y, int width, int height, int id) {

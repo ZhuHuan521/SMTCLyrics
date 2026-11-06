@@ -81,6 +81,26 @@ struct INowPlayingItemVTable : InspectableVTable {
     HRESULT (__stdcall* get_ScrubberMode)(void*, std::int32_t*) noexcept;
     HRESULT (__stdcall* get_CurrentPosition)(void*, std::int64_t*) noexcept;
     HRESULT (__stdcall* get_Duration)(void*, std::int64_t*) noexcept;
+    HRESULT (__stdcall* get_LoadTimeIsValid)(void*, bool*) noexcept;
+    HRESULT (__stdcall* get_LoadTime)(void*, std::int64_t*) noexcept;
+    HRESULT (__stdcall* get_MinLoadTime)(void*, std::int64_t*) noexcept;
+    HRESULT (__stdcall* get_CanBePositioned)(void*, bool*) noexcept;
+    HRESULT (__stdcall* get_LiveMode)(void*, std::int32_t*) noexcept;
+    HRESULT (__stdcall* get_CurrentDate)(void*, double*) noexcept;
+    HRESULT (__stdcall* get_AudioFormat)(void*, HSTRING*) noexcept;
+    HRESULT (__stdcall* get_AudioFormatSampleRate)(void*, HSTRING*) noexcept;
+    HRESULT (__stdcall* get_AudioFormatBitDepth)(void*, HSTRING*) noexcept;
+    HRESULT (__stdcall* get_HLSMetadata)(void*, HSTRING*) noexcept;
+    HRESULT (__stdcall* get_HasVideo)(void*, bool*) noexcept;
+    HRESULT (__stdcall* get_VideoPresentationSize)(void*, void**) noexcept;
+    HRESULT (__stdcall* get_VideoColorCapability)(void*, void**) noexcept;
+    HRESULT (__stdcall* get_PlayQueueItemID)(void*, double*) noexcept;
+    HRESULT (__stdcall* get_LyricsInfo)(void*, void**) noexcept;
+    HRESULT (__stdcall* get_AudibleAlternateTracks)(void*, void**) noexcept;
+    HRESULT (__stdcall* get_SelectedAudibleTrack)(void*, void**) noexcept;
+    HRESULT (__stdcall* get_LegibleAlternateTracks)(void*, void**) noexcept;
+    HRESULT (__stdcall* get_SelectedLegibleTrack)(void*, void**) noexcept;
+    HRESULT (__stdcall* get_VisualAlternateTracks)(void*, void**) noexcept;
 };
 
 struct IPlayerStateVTable : InspectableVTable {
@@ -326,6 +346,61 @@ bridge::SnapshotResponse readSnapshot(const bridge::SnapshotRequest& request) {
     copyWide(response.subtitle, getHString(nowPlayingRaw, now->get_Subtitle));
     copyWide(response.artist, getHString(nowPlayingRaw, now->get_Artist));
     copyWide(response.album, getHString(nowPlayingRaw, now->get_Album));
+    double playQueueId = 0;
+    if (nowPlayingRaw && SUCCEEDED(now->get_PlayQueueItemID(nowPlayingRaw, &playQueueId)) && playQueueId > 0) {
+        copyWide(response.playQueueItemId, std::to_wstring(static_cast<std::int64_t>(playQueueId)));
+    }
+    // The concrete NowPlayingItem exposes IContentDescriptor; INowPlayingItem itself does not.
+    struct IContentDescriptorVTable : InspectableVTable {
+        // Derived from AMP.Services.CommonModels.IContentDescriptor metadata.
+        HRESULT (__stdcall* get_HasCloudCatalogIdentifiers)(void*, bool*) noexcept;
+        HRESULT (__stdcall* get_HasCloudIdentifiers)(void*, bool*) noexcept;
+        HRESULT (__stdcall* get_HasCloudLibraryIdentifiers)(void*, bool*) noexcept;
+        HRESULT (__stdcall* get_HasLocalLibraryIdentifiers)(void*, bool*) noexcept;
+        HRESULT (__stdcall* HasMatchingIdentifiers)(void*, void*, bool*) noexcept;
+        HRESULT (__stdcall* get_IsAlbum)(void*, bool*) noexcept;
+        HRESULT (__stdcall* get_IsArtist)(void*, bool*) noexcept;
+        HRESULT (__stdcall* get_IsComposer)(void*, bool*) noexcept;
+        HRESULT (__stdcall* get_IsGenre)(void*, bool*) noexcept;
+        HRESULT (__stdcall* get_IsPlaylist)(void*, bool*) noexcept;
+        HRESULT (__stdcall* get_IsRadioStation)(void*, bool*) noexcept;
+        HRESULT (__stdcall* MakeIdentifier)(void*, HSTRING*) noexcept;
+        HRESULT (__stdcall* get_IsContainer)(void*, bool*) noexcept;
+        HRESULT (__stdcall* get_IsVideo)(void*, bool*) noexcept;
+        HRESULT (__stdcall* get_IsConcert)(void*, bool*) noexcept;
+        HRESULT (__stdcall* get_AdamId)(void*, HSTRING*) noexcept;
+        HRESULT (__stdcall* get_CanonicalId)(void*, HSTRING*) noexcept;
+    };
+    void* descriptorRaw = nullptr;
+    // First obtain IContentDescriptorDriven from the concrete NowPlayingItem;
+    // its GetContentDescriptor returns the IContentDescriptor object.
+    const auto runNowPlayingDescriptor = [&] {
+        if (FAILED(queryInterface(nowPlayingObjectRaw, request.contentDescriptorDrivenIid, &descriptorRaw)) || !descriptorRaw) {
+            return;
+        }
+        struct ContentDescriptorDrivenVTable : InspectableVTable {
+            HRESULT (__stdcall* get_ContentDescriptor)(void*, void**) noexcept;
+            HRESULT (__stdcall* get_ContainerContentDescriptor)(void*, void**) noexcept;
+        };
+        void* contentDescriptorObject = nullptr;
+        if (FAILED(vtable<ContentDescriptorDrivenVTable>(descriptorRaw)->get_ContentDescriptor(descriptorRaw, &contentDescriptorObject)) || !contentDescriptorObject) {
+            releaseInspectable(descriptorRaw);
+            return;
+        }
+        releaseInspectable(descriptorRaw);
+        descriptorRaw = nullptr;
+        if (FAILED(queryInterface(contentDescriptorObject, request.contentDescriptorIid, &descriptorRaw)) || !descriptorRaw) {
+            releaseInspectable(contentDescriptorObject);
+            return;
+        }
+        releaseInspectable(contentDescriptorObject);
+        auto* descriptor = vtable<IContentDescriptorVTable>(descriptorRaw);
+        copyWide(response.adamId, getHString(descriptorRaw, descriptor->get_AdamId));
+        copyWide(response.canonicalId, getHString(descriptorRaw, descriptor->get_CanonicalId));
+        releaseInspectable(descriptorRaw);
+    };
+    // 诊断只读当前对象的 IID 和运行时类型，便于确认是否存在可读取 ISRC 的扩展接口。
+    runNowPlayingDescriptor();
     bool positionRead = false;
     response.position100ns = getInt64(nowPlayingRaw, now->get_CurrentPosition, &positionRead);
     if (positionRead) {

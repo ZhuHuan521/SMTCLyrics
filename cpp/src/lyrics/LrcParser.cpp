@@ -1,8 +1,11 @@
 #include "lyrics/LrcParser.h"
 
+#include "lyrics/TtmlParser.h"
+
 #include "util/Encoding.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cwctype>
 #include <limits>
 #include <utility>
@@ -13,6 +16,11 @@ namespace {
 // 判断一行是否含有非空白字符，避免空行参与显示。
 bool hasVisibleText(std::wstring_view text) {
     return std::any_of(text.begin(), text.end(), [](wchar_t ch) { return !std::iswspace(ch); });
+}
+
+// 只有来源的真实逐字时间才插值；普通 LRC 必须保持整行扫光。
+bool reliableWordTiming(const LrcLine& line) {
+    return line.wordTiming && line.segments.size() >= 2;
 }
 
 // 对 string_view 做首尾空白裁剪，不分配新字符串。
@@ -283,6 +291,14 @@ bool parseQrcLineBody(std::int64_t lineStartMs, std::int64_t lineDurationMs, std
 bool LrcParser::parseUtf8(std::string_view lrcUtf8) {
     // 解析入口会依次尝试 YRC、QRC，最后回退到普通 LRC/KRC 行解析。
     lines_.clear();
+    // Apple Music official lyrics use TTML with namespaced tags and nested spans.
+    if (lrcUtf8.find("<tt") != std::string_view::npos) {
+        TtmlParser ttml;
+        if (ttml.parseUtf8(lrcUtf8)) {
+            lines_ = ttml.lines();
+            return true;
+        }
+    }
     const auto text = util::utf8ToWide(lrcUtf8);
     const std::wstring_view textView(text);
     lines_.reserve(static_cast<std::size_t>(std::count(text.begin(), text.end(), L'\n') + 1));
@@ -364,6 +380,7 @@ void LrcParser::frameAt(std::int64_t positionMs, int displayMode, LyricFrame& fr
     frame.text.clear();
     frame.highlightPercent = 0;
     frame.highlightLine = 0;
+    frame.drawWordHighlight = false;
     if (lines_.empty()) return;
 
     const auto adjusted = positionMs;
@@ -396,7 +413,10 @@ void LrcParser::frameAt(std::int64_t positionMs, int displayMode, LyricFrame& fr
     } else {
         frame.text.assign(current->text.begin(), current->text.end());
     }
-    frame.highlightPercent = highlightPercentForLine(current->index, adjusted);
+    const auto highlightPercent = highlightPercentForLine(current->index, adjusted);
+    frame.highlightPercent = static_cast<int>(std::clamp(
+        std::floor(highlightPercent * 100.0) / 100.0, 0.0, 10000.0));
+    frame.drawWordHighlight = reliableWordTiming(lines_[current->index]);
 }
 
 std::optional<std::int64_t> LrcParser::parseTimestamp(std::wstring_view token) {
@@ -531,6 +551,7 @@ bool LrcParser::parseYrcContent(std::wstring_view text, std::vector<LrcLine>& ou
     }
 
     if (!hasTimedWords) return false;
+    for (auto& line : parsed) line.wordTiming = !line.segments.empty();
     out = std::move(parsed);
     return !out.empty();
 }
@@ -556,6 +577,8 @@ bool LrcParser::parseQrcContent(std::wstring_view text, std::vector<LrcLine>& ou
     }
 
     if (!hasTimedWords) return false;
+    for (auto& line : parsed) line.wordTiming = !line.segments.empty();
+    for (auto& line : out) line.wordTiming = !line.segments.empty();
     out = std::move(parsed);
     return !out.empty();
 }
@@ -567,46 +590,47 @@ int LrcParser::findCurrentIndex(std::int64_t positionMs) const {
     return static_cast<int>(std::distance(lines_.begin(), std::prev(it)));
 }
 
-int LrcParser::highlightPercentForLine(int index, std::int64_t positionMs) const {
+double LrcParser::highlightPercentForLine(int index, std::int64_t positionMs) const {
     // 有词级片段时按片段内进度高亮，否则用整行 duration 估算。
     if (index < 0 || index >= static_cast<int>(lines_.size())) return 0;
     const auto& line = lines_[index];
     const auto textLength = line.text.size();
-    if (textLength == 0) return 0;
+    if (textLength == 0) return 0.0;
 
-    if (!line.segments.empty()) {
+    if (reliableWordTiming(line)) {
         const auto localMs = positionMs - line.timeMs;
-        if (localMs <= line.segments.front().offsetMs) return 0;
+        if (localMs <= line.segments.front().offsetMs) return 0.0;
 
+        // 只有来源完整标出了逐字结束时间，才能提前判定整行完成。
         const auto& lastSegment = line.segments.back();
-        if (localMs >= lastSegment.offsetMs + std::max<std::int64_t>(1, lastSegment.durationMs)) {
-            return 100;
+        if (lastSegment.beginMs > 0 && lastSegment.endMs > 0 &&
+            localMs >= lastSegment.endMs) {
+            return 10000.0;
         }
-
-        const auto next = std::upper_bound(
-            // 找到当前位置所在的词级片段。
-            line.segments.begin(),
-            line.segments.end(),
-            localMs,
-            [](std::int64_t value, const LyricSegment& segment) { return value < segment.offsetMs; });
-        const auto& segment = *std::prev(next);
-        const auto segmentStart = segment.offsetMs;
-        const auto segmentEnd = segment.offsetMs + std::max<std::int64_t>(1, segment.durationMs);
-        double coveredUnits = static_cast<double>(segment.textEnd);
-        if (localMs < segmentEnd) {
-            const auto segmentUnits = static_cast<double>(segment.textEnd - segment.textStart);
-            const double progress = static_cast<double>(localMs - segmentStart) / static_cast<double>(segmentEnd - segmentStart);
-            coveredUnits = static_cast<double>(segment.textStart) + segmentUnits * std::clamp(progress, 0.0, 1.0);
+        // Find the segment whose [begin, begin + dur) contains the current
+        // position. Do not use the following segment as an implicit end:
+        // a genuine gap must hold the previous glyph instead of jumping.
+        auto segment = line.segments.end();
+        for (auto it = line.segments.begin(); it != line.segments.end(); ++it) {
+            if (it->offsetMs > localMs) break;
+            segment = it;
         }
-        return std::clamp(static_cast<int>(coveredUnits * 100.0 / static_cast<double>(textLength) + 0.5), 0, 100);
+        if (segment == line.segments.end()) return 0.0;
+        const auto segmentStart = segment->offsetMs;
+        const auto segmentEnd = segmentStart + std::max<std::int64_t>(1, segment->durationMs);
+        const double segmentUnits = static_cast<double>(segment->textEnd - segment->textStart);
+        const double progress = static_cast<double>(std::clamp(localMs, segmentStart, segmentEnd) - segmentStart) /
+                                static_cast<double>(segmentEnd - segmentStart);
+        const double coveredUnits = static_cast<double>(segment->textStart) + segmentUnits * progress;
+        return std::clamp(coveredUnits * 10000.0 / static_cast<double>(textLength), 0.0, 10000.0);
     }
 
     if (line.durationMs > 0) {
         const auto localMs = std::clamp<std::int64_t>(positionMs - line.timeMs, 0, line.durationMs);
-        return std::clamp(static_cast<int>(localMs * 100 / line.durationMs), 0, 100);
+        return std::clamp(localMs * 10000.0 / static_cast<double>(line.durationMs), 0.0, 10000.0);
     }
 
-    return 0;
+    return 0.0;
 }
 
 std::optional<VisibleLyricLine> LrcParser::visibleLineNear(int index, int direction, int maxDistance, std::wstring_view excludedText) const {
@@ -622,4 +646,4 @@ std::optional<VisibleLyricLine> LrcParser::visibleLineNear(int index, int direct
     return std::nullopt;
 }
 
-}
+} // namespace smtc::lyrics

@@ -94,25 +94,33 @@ bool candidateMatches(const nlohmann::json& attrs, std::string_view title, std::
 const nlohmann::json* localizationFor(const nlohmann::json& localizations, std::string_view language) {
     if (localizations.is_string()) return &localizations;
     if (!localizations.is_object()) return nullptr;
+    const auto findKey = [&](std::string_view candidate) -> const nlohmann::json* {
+        const auto exact = localizations.find(std::string(candidate));
+        if (exact != localizations.end()) return &*exact;
+        for (auto it = localizations.begin(); it != localizations.end(); ++it) {
+            if (lowerAscii(it.key()) == lowerAscii(std::string(candidate))) return &*it;
+        }
+        return nullptr;
+    };
+    if (const auto* exact = findKey(language)) return exact;
     std::string key(language);
     const auto dash = key.find('-');
-    if (dash != std::string::npos) key.resize(dash);
-    auto found = localizations.find(key);
-    if (found == localizations.end()) {
-        for (auto it = localizations.begin(); it != localizations.end(); ++it) {
-            if (lowerAscii(it.key()) == lowerAscii(key)) {
-                found = it;
-                break;
-            }
-        }
+    if (dash != std::string::npos) {
+        const auto second = key.find('-', dash + 1);
+        if (second != std::string::npos) key.resize(second);
     }
-    return found == localizations.end() ? nullptr : &*found;
+    return findKey(key);
 }
 
 std::string pickTtml(const nlohmann::json& response, std::string_view requestedLanguage) {
     const auto* attrs = at(at(at(&response, "data"), std::size_t{0}), "attributes");
     if (!attrs) return {};
     const auto* localized = at(attrs, "ttmlLocalizations");
+    if (requestedLanguage.empty()) {
+        const auto original = jsonText(at(attrs, "ttml"));
+        if (!original.empty()) return original;
+        return localized && localized->is_string() ? localized->get<std::string>() : std::string{};
+    }
     if (localized && !localized->is_null() && !localized->empty()) {
         const auto* selected = localizationFor(*localized, requestedLanguage);
         return selected && selected->is_string() ? selected->get<std::string>() : std::string{};
@@ -144,6 +152,16 @@ std::string firstId(std::string_view json) {
     return jsonText(at(first, "id"));
 }
 bool authFailure(unsigned status) { return status == 401 || status == 403; }
+std::string networkFailureDetail(const http::HttpResponse& response) {
+    if (response.networkError == 0) return "无法连接 Apple Music";
+    return "网络请求失败 (WinHTTP " + std::to_string(response.networkError) + ")";
+}
+std::vector<http::HttpClient::Header> apiHeaders(std::string_view developerToken, std::string_view mediaUserToken) {
+    auto headers = browserHeaders();
+    headers.emplace_back("Authorization", "Bearer " + std::string(developerToken));
+    headers.emplace_back("Media-User-Token", std::string(mediaUserToken));
+    return headers;
+}
 bool verifiedCandidate(const OnlineTrackVerifier& candidate, const OnlineTrackVerifier& wanted) {
     if (normalizedName(util::utf8ToWide(candidate.title)) != normalizedName(util::utf8ToWide(wanted.title))) return false;
     if (!wanted.artist.empty() && !artistMatches(wanted.artist, candidate.artist)) return false;
@@ -165,6 +183,41 @@ std::string appleMusicLyricQuery(std::string_view language) {
     return query;
 }
 
+namespace {
+// Apple 对某些逐字翻译返回 itunes:timing="Word"，但整个译文只有一行或
+// 一个 span。保留该译文会掩盖同一声明中的原文逐字时间轴。
+bool hasLocalizedSpanTiming(const nlohmann::json& localizations, std::string_view language) {
+    std::string key(language);
+    const auto dash = key.find('-');
+    if (dash != std::string::npos) {
+        const auto second = key.find('-', dash + 1);
+        if (second != std::string::npos) key.resize(second);
+    }
+    if (!localizations.is_object()) return false;
+    const auto* exact = at(&localizations, language);
+    if (!exact) exact = at(&localizations, key);
+    if (!exact || !exact->is_string()) return false;
+    const auto xml = exact->get<std::string>();
+    LrcParser parser;
+    const bool parsed = parser.parseBytes({xml.begin(), xml.end()});
+    if (!parsed) return false;
+    return std::count_if(parser.lines().begin(), parser.lines().end(), [](const LrcLine& line) {
+        return line.segments.size() >= 2;
+    }) >= 2;
+}
+}
+std::string appleMusicTtmlForLanguage(std::string_view responseJson, std::string_view requestedLanguage) {
+    const auto response = parseJson(responseJson);
+    const auto* attrs = at(at(at(&response, "data"), std::size_t{0}), "attributes");
+    const auto* localizations = at(attrs, "ttmlLocalizations");
+    if (!localizations || hasLocalizedSpanTiming(*localizations, requestedLanguage)) {
+        return pickTtml(response, requestedLanguage);
+    }
+    // 中文只有整句时不能冒充逐字；保留中文展示文本，但时间轴改用原文
+    // 的真实逐字区间。subtitle 无法对位文字时，渲染层会降级为整行扫光。
+    return pickTtml(response, requestedLanguage);
+}
+
 std::optional<std::string> parseAppleMusicAccountStorefront(std::string_view json) {
     const auto body = parseJson(json);
     const auto* item = at(at(&body, "data"), std::size_t{0});
@@ -174,6 +227,18 @@ std::optional<std::string> parseAppleMusicAccountStorefront(std::string_view jso
         return std::nullopt;
     }
     return id;
+}
+
+std::string appleMusicStorefrontFailure(const AppleMusicFetchResult& result) {
+    if (!result.diagnostic.empty()) return result.diagnostic;
+    switch (result.status) {
+    case AppleMusicStatus::AuthRequired:
+        return "Apple Music 地区检测需要填写 Authorization 和 Media-User-Token";
+    case AppleMusicStatus::AuthRejected:
+        return "Apple Music 凭证被拒绝，无法读取账号地区";
+    default:
+        return "无法自动读取 Apple Music 账号地区";
+    }
 }
 
 std::int64_t appleMusicTokenExpiry(std::string_view token) {
@@ -224,26 +289,41 @@ bool appleMusicRecordingMatches(std::string_view title, std::string_view artist,
     const auto* attrs = at(item, "attributes");
     return attrs && candidateMatches(*attrs, title, artist, durationMs);
 }
-bool isLocalizedTtml(std::string_view ttml) {
-    return ttml.find("type=\"replacement\"") != std::string_view::npos ||
-           ttml.find("type=\"translation\"") != std::string_view::npos ||
-           ttml.find("type=\"subtitle\"") != std::string_view::npos ||
-           ttml.find("type=\"transliteration\"") != std::string_view::npos;
+AppleMusicLyricsClient::AppleMusicLyricsClient(http::HttpClient client) : client_(std::move(client)) {}
+
+AppleMusicFetchResult AppleMusicLyricsClient::detectStorefront(const AppleMusicTokenSettings& settings) const {
+    AppleMusicFetchResult result;
+    const auto developerToken = tokenBearer(settings.developerToken);
+    const auto mediaUserToken = trim(settings.mediaUserToken);
+    if (developerToken.empty() || mediaUserToken.empty()) {
+        result.status = AppleMusicStatus::AuthRequired;
+        result.diagnostic = "Apple Music 官方歌词需要在设置中填写 Authorization 和 Media-User-Token";
+        return result;
+    }
+    const auto account = client_.get(
+        std::string(kAppleMusicApi) + "/me/storefront", apiHeaders(developerToken, mediaUserToken));
+    if (authFailure(account.statusCode)) {
+        result.status = AppleMusicStatus::AuthRejected;
+        result.diagnostic = "Apple Music 凭证无法访问账号地区 (HTTP " + std::to_string(account.statusCode) + ")";
+        return result;
+    }
+    const auto detected = parseAppleMusicAccountStorefront(account.text());
+    if (!detected) {
+        result.diagnostic = account.statusCode == 0
+            ? "Apple Music 无法自动读取账号地区：" + networkFailureDetail(account)
+            : "Apple Music 账号地区响应无效 (HTTP " + std::to_string(account.statusCode) + ")";
+        return result;
+    }
+    result.status = AppleMusicStatus::Fetched;
+    result.detectedStorefront = *detected;
+    return result;
 }
 
-bool containsTargetLanguage(std::string_view ttml, std::string_view language) {
-    if (language.empty()) return true;
-    std::string primary(language);
-    const auto dash = primary.find('-');
-    if (dash != std::string::npos) primary.resize(dash);
-    std::string lower(ttml);
-    std::transform(lower.begin(), lower.end(), lower.begin(), [](unsigned char ch) {
-        return static_cast<char>(std::tolower(ch));
-    });
-    const auto marker = std::string("xml:lang=\"") + lowerAscii(primary);
-    return lower.find(marker) != std::string::npos;
+bool AppleMusicLyricsClient::validStorefront(std::string_view storefront) {
+    const auto value = trim(storefront);
+    return value.empty() || (value.size() >= 2 && value.size() <= 3 &&
+        std::all_of(value.begin(), value.end(), [](unsigned char ch) { return std::isalpha(ch) != 0; }));
 }
-AppleMusicLyricsClient::AppleMusicLyricsClient(http::HttpClient client) : client_(std::move(client)) {}
 
 AppleMusicFetchResult AppleMusicLyricsClient::fetch(std::string_view keywordUtf8, const OnlineTrackVerifier& track,
                                                     const AppleMusicTokenSettings& settings) const {
@@ -264,32 +344,27 @@ AppleMusicFetchResult AppleMusicLyricsClient::fetch(std::string_view keywordUtf8
     const auto mediaUserToken = trim(settings.mediaUserToken);
     if (developerToken.empty() || mediaUserToken.empty()) {
         result.status = AppleMusicStatus::AuthRequired;
-        result.diagnostic = "Apple Music 官方歌词需要在设置中填写开发者 Token 和 Media-User-Token";
+        result.diagnostic = "Apple Music 官方歌词需要在设置中填写 Authorization 和 Media-User-Token";
         return result;
     }
-    const auto apiHeaders = [&] {
-        auto headers = browserHeaders();
-        headers.emplace_back("Authorization", "Bearer " + developerToken);
-        headers.emplace_back("Media-User-Token", mediaUserToken);
-        return headers;
+    const auto requestHeaders = apiHeaders(developerToken, mediaUserToken);
+    const auto get = [&](std::string_view path) {
+        return client_.get(std::string(kAppleMusicApi) + std::string(path), requestHeaders);
     };
-    const auto get = [&](std::string_view path) { return client_.get(std::string(kAppleMusicApi) + std::string(path), apiHeaders()); };
     // 用户填写地区时使用该值；否则从当前账号读取真实曲库地区。
     // 不按公网 IP 或 cn 猜测，以免账号曲库中的 catalog ID 返回 404。
     auto storefront = storefrontName(settings.storefront);
+    std::string detectedStorefront;
     if (trim(settings.storefront).empty()) {
-        const auto account = get("/me/storefront");
-        if (authFailure(account.statusCode)) {
-            result.status = AppleMusicStatus::AuthRejected;
-            result.diagnostic = "无法读取 Apple Music 账号地区，凭证无效或已过期 (HTTP " + std::to_string(account.statusCode) + ")";
+        const auto detected = detectStorefront(settings);
+        if (detected.status != AppleMusicStatus::Fetched) {
+            result.status = detected.status;
+            result.diagnostic = detected.diagnostic + "；请在设置中填写地区（如 tr、cn、us）";
             return result;
         }
-        const auto detected = parseAppleMusicAccountStorefront(account.text());
-        if (!detected) {
-            result.diagnostic = "Apple Music 未返回有效账号地区，请在设置中填写地区";
-            return result;
-        }
-        storefront = *detected;
+        detectedStorefront = detected.detectedStorefront;
+        result.detectedStorefront = detectedStorefront;
+        storefront = detected.detectedStorefront;
     }
     OnlineTrackVerifier wanted = track;
     wanted.catalogId = normalizedCatalogId(track.catalogId).value_or(std::string{});
@@ -303,10 +378,8 @@ AppleMusicFetchResult AppleMusicLyricsClient::fetch(std::string_view keywordUtf8
     }
     std::string selectedId;
     std::vector<OnlineTrackVerifier> candidates;
-    // 若从内部播放对象获得 ISRC，先按 ISRC 精确反查；catalog ID 是公开 WinMD 能可靠取得的精确身份。
-    const bool bridgeIsrc = !wanted.catalogId.empty() && !wanted.isrc.empty();
-    // 专用模式传入 catalog ID，直接查询当前账号地区中的同一曲目。
-    if (!wanted.catalogId.empty() && !bridgeIsrc) {
+    // catalog ID 是内部播放对象的精确身份；先查询详情，作为后续匹配的锚点。
+    if (!wanted.catalogId.empty()) {
         const auto detail = get("/catalog/" + storefront + "/songs/" + wanted.catalogId);
         if (authFailure(detail.statusCode)) {
             result.status = AppleMusicStatus::AuthRejected;
@@ -316,9 +389,12 @@ AppleMusicFetchResult AppleMusicLyricsClient::fetch(std::string_view keywordUtf8
         if (detail) {
             selectedId = normalizedCatalogId(firstId(detail.text())).value_or(wanted.catalogId);
             candidates = parseAppleMusicTrackCandidates(detail.text());
+        } else if (detail.statusCode == 0) {
+            result.diagnostic = "Apple Music 无法验证当前曲目：" + networkFailureDetail(detail);
+            return result;
         }
     }
-    // ISRC 跨地区共享；若有 ISRC，优先用它精确对应同一录音。
+    // ISRC 跨地区共享；若查询成功，优先用它精确对应同一录音。
     if (!wanted.isrc.empty()) {
         const auto response = get("/catalog/" + storefront + "/songs?filter%5Bisrc%5D=" + util::urlEncode(wanted.isrc));
         if (authFailure(response.statusCode)) {
@@ -336,8 +412,8 @@ AppleMusicFetchResult AppleMusicLyricsClient::fetch(std::string_view keywordUtf8
             selectedId.clear();
         }
     }
-    // 普通 SMTC 才按名称搜索；专用模式已知身份时，不用同名候选顶替。
-    if (wanted.catalogId.empty() && wanted.isrc.empty()) {
+    // catalog/ISRC 都未命中时再按名称搜索；搜索结果仍须通过标题、艺人和版本校验。
+    if (candidates.empty() && selectedId.empty()) {
         const auto search = get("/catalog/" + storefront + "/search?term=" + util::urlEncode(keywordUtf8) + "&types=songs&limit=25");
         if (authFailure(search.statusCode)) {
             result.status = AppleMusicStatus::AuthRejected;
@@ -349,12 +425,16 @@ AppleMusicFetchResult AppleMusicLyricsClient::fetch(std::string_view keywordUtf8
     if (!candidates.empty()) {
         std::erase_if(candidates, [&](const OnlineTrackVerifier& item) { return !verifiedCandidate(item, wanted); });
         if (!candidates.empty()) selectedId = candidates.front().catalogId;
+        else selectedId.clear();
     }
-    if (selectedId.empty()) {
+    // catalog ID 是内部播放对象的精确身份。详情请求已通过凭证和地区验
+    // 证时，不应再因搜索结果的近似标题而丢掉这个明确的曲目 ID。
+    if (selectedId.empty() && wanted.catalogId.empty()) {
         result.status = AppleMusicStatus::NoMatch;
         result.diagnostic = "Apple Music 未找到经歌名、艺人及版本校验后一致的曲目";
         return result;
     }
+    if (selectedId.empty()) selectedId = wanted.catalogId;
     auto lyrics = get("/catalog/" + storefront + "/songs/" + selectedId + "/syllable-lyrics" + appleMusicLyricQuery(fixedLanguage));
     if (lyrics.statusCode == 404 && !wanted.isrc.empty()) {
         const auto response = get("/catalog/" + storefront + "/songs?filter%5Bisrc%5D=" + util::urlEncode(wanted.isrc));
@@ -370,31 +450,23 @@ AppleMusicFetchResult AppleMusicLyricsClient::fetch(std::string_view keywordUtf8
         return result;
     }
     if (lyrics.statusCode == 404) {
-        result.status = AppleMusicStatus::NoMatch;
+        result.status = AppleMusicStatus::Unavailable;
         result.diagnostic = "该曲目在当前 Apple Music 地区没有逐字歌词 (HTTP 404)";
+        result.detectedStorefront = detectedStorefront;
         return result;
     }
+    // 已检测到账号地区时，任何歌词请求结果都应带回该值；自动地区不能因首曲失败而丢失。
+    result.detectedStorefront = detectedStorefront;
     if (!lyrics) {
-        result.diagnostic = "Apple Music 歌词接口请求失败 (HTTP " + std::to_string(lyrics.statusCode) + ")";
+        result.diagnostic = lyrics.statusCode == 0
+            ? "Apple Music 歌词接口请求失败：" + networkFailureDetail(lyrics)
+            : "Apple Music 歌词接口请求失败 (HTTP " + std::to_string(lyrics.statusCode) + ")";
         return result;
     }
-    result.ttml = pickTtml(parseJson(lyrics.text()), fixedLanguage);
+    result.ttml = appleMusicTtmlForLanguage(lyrics.text(), fixedLanguage);
     if (result.ttml.empty() && !fixedLanguage.empty()) {
         result.status = AppleMusicStatus::NoMatch;
         result.diagnostic = "该曲目在此 Apple Music 地区没有请求语言的翻译";
-        return result;
-    }
-    if (fixedLanguage.empty() && !isLocalizedTtml(result.ttml)) {
-        // 原文不能冒充翻译；用户要求的是中文翻译，没有对应语言就继续下一源。
-        result.ttml.clear();
-        result.status = AppleMusicStatus::NoMatch;
-        result.diagnostic = "Apple Music 只返回了原文歌词，没有简体中文翻译";
-        return result;
-    }
-    if (fixedLanguage.empty() && !containsTargetLanguage(result.ttml, settings.preferredLyricsLanguage)) {
-        result.ttml.clear();
-        result.status = AppleMusicStatus::NoMatch;
-        result.diagnostic = "Apple Music 没有返回简体中文歌词";
         return result;
     }
     if (result.ttml.empty() || result.ttml.find("<tt") == std::string::npos) {
@@ -411,7 +483,7 @@ AppleMusicFetchResult AppleMusicLyricsClient::fetch(std::string_view keywordUtf8
         result.diagnostic = "Apple Music TTML 没有可显示歌词行";
         return result;
     }
-    result.status = TtmlParser::hasSyllableTiming(result.ttml) ? AppleMusicStatus::Fetched : AppleMusicStatus::LineOnly;
+    result.status = TtmlParser::hasUsableSyllableTiming(result.ttml) ? AppleMusicStatus::Fetched : AppleMusicStatus::LineOnly;
     return result;
 }
 }

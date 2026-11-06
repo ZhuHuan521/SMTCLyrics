@@ -100,7 +100,7 @@ void LyricCache::setSource(std::string_view keywordUtf8, int sourceIndex) {
 }
 
 void LyricCache::removeSource(std::string_view keywordUtf8) {
-    // 只删除指定歌曲的来源缓存，不影响单曲偏移。
+    // 只删除指定歌曲的手动来源记录，不影响单曲偏移。
     auto json = parseOrDefault(jsonText_);
     const auto key = keyFor(keywordUtf8);
     auto& songs = json["songs"];
