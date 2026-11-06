@@ -1,4 +1,7 @@
 #include "app/Application.h"
+#include "config/Config.h"
+#include "lyrics/AppleMusicLyrics.h"
+#include "lyrics/LrcParser.h"
 #include "applemusic/AppleMusicInternalProvider.h"
 #include "applemusic/AppleMusicBridgeProtocol.h"
 #include "util/Encoding.h"
@@ -30,6 +33,8 @@ namespace {
 constexpr wchar_t kProbeAppleMusicSwitch[] = L"--smtclyrics-probe-applemusic-internal";
 constexpr wchar_t kProbeAppleMusicCoreSwitch[] = L"--smtclyrics-probe-applemusic-core";
 constexpr wchar_t kProbeAppleMusicInjectSwitch[] = L"--smtclyrics-probe-applemusic-inject";
+constexpr wchar_t kProbeAppleMusicColdStartSwitch[] = L"--smtclyrics-probe-applemusic-cold-start";
+constexpr wchar_t kProbeAppleMusicLyricsSwitch[] = L"--smtclyrics-probe-applemusic-lyrics";
 constexpr wchar_t kAppleMusicPackageFamilyName[] = L"AppleInc.AppleMusicWin_nzyj5cx40ttqa";
 
 constexpr GUID kIUnknownGuid{0x00000000, 0x0000, 0x0000, {0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
@@ -326,12 +331,88 @@ int runAppleMusicInternalProbe(const std::filesystem::path& outputPath) {
     writeWide("title", state.title);
     writeWide("artist", state.artist);
     writeWide("album", state.album);
+    writeWide("appleMusicCatalogId", state.appleMusicCatalogId);
+    writeWide("isrc", state.isrc);
     writeInt("positionMs", state.positionMs);
     writeInt("durationMs", state.durationMs);
     writeWide("error", provider.lastError());
     return state.valid ? 0 : 2;
 }
 
+int runAppleMusicLyricsProbe(const std::filesystem::path& outputPath) {
+    std::ofstream out(outputPath, std::ios::binary);
+    if (!out) return 3;
+
+    const auto writeLine = [&out](std::string_view key, std::string_view value) {
+        out << key << "=" << value << "\n";
+    };
+    const auto writeWide = [&out](std::string_view key, const std::wstring& value) {
+        out << key << "=" << smtc::util::wideToUtf8(value) << "\n";
+    };
+    const auto writeBool = [&out](std::string_view key, bool value) {
+        out << key << "=" << (value ? "1" : "0") << "\n";
+    };
+
+    smtc::applemusic::AppleMusicInternalProvider provider;
+    std::wstring injectMessage;
+    if (!provider.loadBridge(injectMessage)) {
+        writeBool("valid", false);
+        writeWide("error", injectMessage);
+        return 2;
+    }
+    const auto state = provider.readState();
+    writeBool("valid", state.valid);
+    writeWide("title", state.title);
+    writeWide("artist", state.artist);
+    writeWide("catalogId", state.appleMusicCatalogId);
+    writeWide("bridgeIsrc", state.isrc);
+    if (!state.valid) {
+        writeWide("error", provider.lastError());
+        return 2;
+    }
+
+    const auto config = smtc::config::ConfigStore(smtc::util::executableDirectory() / L"config.ini").load();
+    if (config.appleMusicDeveloperToken.empty() || config.appleMusicMediaUserToken.empty()) {
+        writeLine("status", "authRequired");
+        writeLine("error", "config.ini is missing Apple Music credentials");
+        return 4;
+    }
+
+    smtc::lyrics::AppleMusicLyricsClient appleMusicClient;
+    smtc::lyrics::AppleMusicTokenSettings tokenSettings;
+    tokenSettings.developerToken = smtc::util::wideToUtf8(config.appleMusicDeveloperToken);
+    tokenSettings.mediaUserToken = smtc::util::wideToUtf8(config.appleMusicMediaUserToken);
+    // 只读探针用同一套运行时地区选择，但不回写配置。
+    tokenSettings.storefront = smtc::util::wideToUtf8(config.appleMusicStorefront);
+    smtc::lyrics::OnlineTrackVerifier lookup;
+    lookup.catalogId = smtc::util::wideToUtf8(state.appleMusicCatalogId);
+    lookup.isrc = smtc::util::wideToUtf8(state.isrc);
+    lookup.title = smtc::util::wideToUtf8(state.title);
+    lookup.artist = smtc::util::wideToUtf8(state.artist);
+    lookup.album = smtc::util::wideToUtf8(state.album);
+    lookup.durationMs = state.durationMs;
+    const auto lyrics = appleMusicClient.fetch(smtc::util::wideToUtf8(state.title), lookup, tokenSettings);
+    // 不写 config.ini；空地区只在本次请求中自动读取。
+    writeLine("storefront", lyrics.detectedStorefront.empty() ? smtc::util::wideToUtf8(config.appleMusicStorefront) : lyrics.detectedStorefront);
+    writeLine("status", std::to_string(static_cast<int>(lyrics.status)));
+    writeLine("diagnostic", lyrics.diagnostic);
+    writeLine("ttmlLength", std::to_string(lyrics.ttml.size()));
+    if (!lyrics.ttml.empty()) {
+        smtc::lyrics::LrcParser parser;
+        const std::vector<std::uint8_t> ttmlBytes(lyrics.ttml.begin(), lyrics.ttml.end());
+        const bool parsed = parser.parseBytes(ttmlBytes);
+        writeLine("lineCount", std::to_string(parser.lines().size()));
+        writeBool("parsed", parsed && !parser.lines().empty());
+        writeLine("firstLine", smtc::util::wideToUtf8(parser.lines().empty() ? L"" : parser.lines().front().text));
+        writeLine("firstSegmentCount", std::to_string(parser.lines().empty() ? 0 : parser.lines().front().segments.size()));
+    const auto ttmlPath = outputPath;
+    auto textPath = ttmlPath;
+    textPath += L".ttml";
+    std::ofstream ttmlFile(textPath, std::ios::binary);
+    ttmlFile << lyrics.ttml;
+    }
+    return lyrics.status == smtc::lyrics::AppleMusicStatus::Fetched ? 0 : 2;
+}
 int runAppleMusicInjectProbe(const std::filesystem::path& outputPath) {
     std::ofstream out(outputPath, std::ios::binary);
     if (!out) return 3;
@@ -371,10 +452,52 @@ int runAppleMusicInjectProbe(const std::filesystem::path& outputPath) {
     writeWide("title", state.title);
     writeWide("artist", state.artist);
     writeWide("album", state.album);
+    writeWide("appleMusicCatalogId", state.appleMusicCatalogId);
+    writeWide("isrc", state.isrc);
     writeInt("positionMs", state.positionMs);
     writeInt("durationMs", state.durationMs);
     writeWide("error", provider.lastError());
     return loaded && state.valid ? 0 : 2;
+}
+
+int runAppleMusicColdStartProbe(const std::filesystem::path& outputPath) {
+    std::ofstream out(outputPath, std::ios::binary);
+    if (!out) return 3;
+    const auto writeWide = [&out](std::string_view key, const std::wstring& value) {
+        out << key << "=" << smtc::util::wideToUtf8(value) << "\n";
+    };
+    const auto writeBool = [&out](std::string_view key, bool value) {
+        out << key << "=" << (value ? "1" : "0") << "\n";
+    };
+    const auto writeInt = [&out](std::string_view key, long long value) {
+        out << key << "=" << value << "\n";
+    };
+
+    smtc::applemusic::AppleMusicInternalProvider provider;
+    std::wstring unloadMessage;
+    const bool unloaded = provider.unloadBridge(unloadMessage);
+    const auto before = provider.detectBridge();
+    // 模拟应用启动首次连接：读取失败时由 connectState(true) 自动加载 bridge。
+    const auto first = provider.connectState(true);
+    const auto second = provider.readState();
+    const auto after = provider.detectBridge();
+
+    writeBool("unloaded", unloaded);
+    writeWide("unloadMessage", unloadMessage);
+    writeWide("unloadError", provider.lastError());
+    writeBool("bridgeRespondingBefore", before.bridgeResponding);
+    writeBool("bridgeLoadedBefore", before.bridgeModuleLoaded);
+    writeWide("bridgeStatusBefore", before.message);
+    writeBool("firstValid", first.valid);
+    writeWide("firstError", first.valid ? std::wstring{} : provider.lastError());
+    writeBool("secondValid", second.valid);
+    writeBool("bridgeRespondingAfter", after.bridgeResponding);
+    writeWide("bridgeStatusAfter", after.message);
+    writeWide("title", second.title);
+    writeWide("artist", second.artist);
+    writeInt("positionMs", second.positionMs);
+    writeInt("durationMs", second.durationMs);
+    return !before.bridgeResponding && first.valid && second.valid && after.bridgeResponding ? 0 : 2;
 }
 
 int runAppleMusicCoreProbe(const std::filesystem::path& outputPath) {
@@ -742,6 +865,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     }
     if (const auto probeOutputPath = outputPathFromCommandLine(kProbeAppleMusicInjectSwitch)) {
         return runAppleMusicInjectProbe(*probeOutputPath);
+    }
+    if (const auto probeOutputPath = outputPathFromCommandLine(kProbeAppleMusicColdStartSwitch)) {
+        return runAppleMusicColdStartProbe(*probeOutputPath);
+    }
+    if (const auto probeOutputPath = outputPathFromCommandLine(kProbeAppleMusicLyricsSwitch)) {
+        return runAppleMusicLyricsProbe(*probeOutputPath);
     }
     if (const auto probeOutputPath = outputPathFromCommandLine(kProbeAppleMusicCoreSwitch)) {
         return runAppleMusicCoreProbe(*probeOutputPath);

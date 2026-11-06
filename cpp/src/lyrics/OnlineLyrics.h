@@ -17,6 +17,7 @@ enum class LyricSource {
     Kugou = 2,
     Kuwo = 3,
     Netease = 4,
+    AppleMusic = 5,
 };
 
 // 枚举与配置/缓存中保存的字符串或数字之间的转换。

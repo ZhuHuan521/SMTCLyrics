@@ -38,6 +38,8 @@ struct AsyncLyricLoadResult {
     lyrics::LyricSource source = lyrics::LyricSource::Local;
     lyrics::LrcParser parser;
     bool success = false;
+    // 只有用户明确点击“换源”后的成功结果才写入 cache.json。
+    bool recordSource = false;
 };
 
 // 控制窗口允许配置轮询间隔，这里做最终边界保护。
@@ -59,11 +61,11 @@ std::filesystem::path chooseLyricsDirectory(const std::filesystem::path& exeDir)
 std::vector<int> normalizedSourcePriority(const std::vector<int>& priority) {
     std::vector<int> result;
     for (int source : priority) {
-        if (source >= 1 && source <= 4 && std::find(result.begin(), result.end(), source) == result.end()) {
+        if (source >= 1 && source <= 5 && std::find(result.begin(), result.end(), source) == result.end()) {
             result.push_back(source);
         }
     }
-    for (int source = 1; source <= 4; ++source) {
+    for (int source = 1; source <= 5; ++source) {
         if (std::find(result.begin(), result.end(), source) == result.end()) {
             result.push_back(source);
         }
@@ -90,6 +92,7 @@ std::wstring lyricSourceDisplayName(lyrics::LyricSource source) {
     case lyrics::LyricSource::Kugou: return L"酷狗";
     case lyrics::LyricSource::Kuwo: return L"酷我";
     case lyrics::LyricSource::Netease: return L"网易云";
+    case lyrics::LyricSource::AppleMusic: return L"Apple Music 官方";
     }
     return L"未知";
 }
@@ -160,7 +163,10 @@ void Application::initialize() {
     callbacks.switchSource = [this] { switchLyricsSource(); };
     callbacks.clearCache = [this] { clearLyricCache(); };
     callbacks.openLocalLyric = [this] { openLocalLyric(); };
-    callbacks.checkLyricSources = [] { return checkLyricSources(); };
+    callbacks.prepareSourceCheck = [this] { return prepareSourceCheck(); };
+    callbacks.checkLyricSources = [this](config::LyricSourceCheckContext context) {
+        return checkLyricSources(std::move(context));
+    };
     callbacks.checkAppleMusicBridge = [this] { checkAppleMusicBridge(); };
     callbacks.toggleAppleMusicBridge = [this] { toggleAppleMusicBridge(); };
     callbacks.saveSongOffset = [this](int ms) { saveSongOffset(ms); };
@@ -341,8 +347,10 @@ void Application::applyConfig(const config::AppConfig& config) {
     const int previousSmtcMode = config_.smtcMode;
     config_ = config;
     configStore_.save(config_);
-    if (previousSmtcMode != config_.smtcMode) {
+    if (previousSmtcMode == 3 && config_.smtcMode != 3) {
         appleMusic_.shutdown();
+    } else if (previousSmtcMode != 3 && config_.smtcMode == 3) {
+        // 切回内部模式时建立新连接；普通歌词源保存不会卸载正在使用的 bridge。
     }
     if (config_.smtcMode != 1 && config_.smtcMode != 3) {
         smtc1TrackChangeCalibrationAtMs_ = 0;
@@ -384,13 +392,20 @@ void Application::loadLyricsForCurrentTrack(const playback::MediaState& state, b
     controlWindow_.setStatusText(L"正在解析歌词...");
 
     const auto asyncConfig = configOverride ? *configOverride : config_;
+    lyrics::OnlineTrackVerifier appleMusicLookup;
+    appleMusicLookup.catalogId = util::wideToUtf8(state.appleMusicCatalogId);
+    appleMusicLookup.isrc = util::wideToUtf8(state.isrc);
+    appleMusicLookup.title = util::wideToUtf8(state.title);
+    appleMusicLookup.artist = util::wideToUtf8(state.artist);
+    appleMusicLookup.album = util::wideToUtf8(state.album);
+    appleMusicLookup.durationMs = state.durationMs;
     const auto requestId = ++lyricLoadRequestId_;
     const auto hwnd = window_.hwnd();
     const auto exeDir = exeDir_;
     const auto lyricsDir = lyricsDir_;
 
     // 在线请求可能阻塞，所以放到后台线程；结果只通过 PostMessage 回到主线程。
-    std::thread([requestId, hwnd, exeDir, lyricsDir, keyword, asyncConfig, ignoreCache] {
+    std::thread([requestId, hwnd, exeDir, lyricsDir, keyword, asyncConfig, ignoreCache, appleMusicLookup] {
         auto asyncResult = std::make_unique<AsyncLyricLoadResult>();
         asyncResult->requestId = requestId;
         asyncResult->keyword = keyword;
@@ -400,7 +415,7 @@ void Application::loadLyricsForCurrentTrack(const playback::MediaState& state, b
             cache::LyricCache cache(exeDir / L"cache.json");
             cache.load();
             lyrics::LyricRepository repository(lyricsDir, cache);
-            const auto result = repository.loadForKeyword(keyword, asyncConfig, ignoreCache);
+            const auto result = repository.loadForKeyword(keyword, asyncConfig, ignoreCache, appleMusicLookup);
             asyncResult->source = result.source;
             asyncResult->success = !result.lrcBytes.empty() && asyncResult->parser.parseBytes(result.lrcBytes);
         } catch (...) {
@@ -441,8 +456,8 @@ void Application::handleLyricsLoadedMessage(LPARAM lParam) {
     parser_ = std::move(result->parser);
     currentSource_ = result->source;
     controlWindow_.setCurrentLyricSource(lyricSourceDisplayName(currentSource_));
-    if (currentSource_ != lyrics::LyricSource::Local) {
-        // 记住成功的在线源，下次同一首歌可优先走缓存源。
+    if (result->recordSource && currentSource_ != lyrics::LyricSource::Local) {
+        // 自动加载只影响本次显示；手动换源才记住新的在线源。
         const auto keywordUtf8 = util::wideToUtf8(result->keyword);
         cache_.setSource(keywordUtf8, static_cast<int>(currentSource_));
         cache_.save();
@@ -478,9 +493,7 @@ void Application::switchLyricsSource() {
             controlWindow_.setStatusText(noPlaybackMessage());
             return;
         }
-        auto config = config_;
-        config.sourcePriority = sourcePriorityAfter(config_.sourcePriority, currentSource_);
-        loadLyricsForCurrentTrack(state, true, &config);
+        switchToNextOnlineSource(state);
         return;
     }
     // 换源不改写当前配置，只用临时优先级重新加载当前歌曲。
@@ -489,9 +502,59 @@ void Application::switchLyricsSource() {
         controlWindow_.setStatusText(L"未检测到正在播放的 SMTC 媒体");
         return;
     }
+    switchToNextOnlineSource(state);
+}
+
+void Application::switchToNextOnlineSource(const playback::MediaState& state) {
+    // 换源是用户明确要求跳过当前结果：不重新命中本地文件或缓存源。
+    // 从当前在线源的下一个位置开始；目标源只有逐行歌词也采用。
+    const auto previousSource = currentSource_;
+    const auto previousKeyword = currentKeyword_;
+    lastShownText_.clear();
+    lastHighlightPercent_ = -1;
+    lastHighlightLine_ = -1;
+    parser_ = lyrics::LrcParser{};
+    currentSource_ = lyrics::LyricSource::Local;
+    controlWindow_.setCurrentLyricSource(L"加载中");
+    const auto keyword = lyrics::makeKeyword(state.artist, state.title);
+    currentKeyword_ = keyword;
+    const auto keywordUtf8 = util::wideToUtf8(keyword);
+    currentSongOffsetMs_ = cache_.offsetFor(keywordUtf8).value_or(0);
+    controlWindow_.setSongOffset(currentSongOffsetMs_);
+    controlWindow_.setStatusText(L"正在切换歌词源...");
+
     auto config = config_;
-    config.sourcePriority = sourcePriorityAfter(config_.sourcePriority, currentSource_);
-    loadLyricsForCurrentTrack(state, true, &config);
+    config.sourcePriority = sourcePriorityAfter(config_.sourcePriority, previousSource);
+    lyrics::OnlineTrackVerifier appleMusicLookup;
+    appleMusicLookup.catalogId = util::wideToUtf8(state.appleMusicCatalogId);
+    appleMusicLookup.isrc = util::wideToUtf8(state.isrc);
+    appleMusicLookup.title = util::wideToUtf8(state.title);
+    appleMusicLookup.artist = util::wideToUtf8(state.artist);
+    appleMusicLookup.album = util::wideToUtf8(state.album);
+    appleMusicLookup.durationMs = state.durationMs;
+    const auto requestId = ++lyricLoadRequestId_;
+    const auto hwnd = window_.hwnd();
+    const auto exeDir = exeDir_;
+    const auto lyricsDir = lyricsDir_;
+    std::thread([requestId, hwnd, exeDir, lyricsDir, keyword, config, appleMusicLookup] {
+        auto asyncResult = std::make_unique<AsyncLyricLoadResult>();
+        asyncResult->requestId = requestId;
+        asyncResult->keyword = keyword;
+        try {
+            cache::LyricCache cache(exeDir / L"cache.json");
+            cache.load();
+            lyrics::LyricRepository repository(lyricsDir, cache);
+            const auto result = repository.loadNextOnlineSource(keyword, config, appleMusicLookup);
+            asyncResult->source = result.source;
+            asyncResult->recordSource = result.recordSource;
+            asyncResult->success = !result.lrcBytes.empty() && asyncResult->parser.parseBytes(result.lrcBytes);
+        } catch (...) {
+            asyncResult->success = false;
+        }
+        if (PostMessageW(hwnd, kLyricsLoadedMessage, 0, reinterpret_cast<LPARAM>(asyncResult.get()))) {
+            asyncResult.release();
+        }
+    }).detach();
 }
 
 void Application::clearLyricCache() {
@@ -582,21 +645,69 @@ void Application::rememberLyricWindow(const config::WindowConfig& window) {
     controlWindow_.syncLyricGeometry(window);
 }
 
-std::array<bool, 4> Application::checkLyricSources() {
-    // 用一个固定中文关键字分别测试四个在线源，结果显示在控制窗口。
-    std::array<bool, 4> result{};
-    const auto keywordUtf8 = util::wideToUtf8(L"关键词");
-    lyrics::OnlineLyrics online;
+config::LyricSourceCheckContext Application::prepareSourceCheck() {
+    config::LyricSourceCheckContext context;
+    context.appleMusicDeveloperToken = config_.appleMusicDeveloperToken;
+    context.appleMusicMediaUserToken = config_.appleMusicMediaUserToken;
+    context.appleMusicStorefront = config_.appleMusicStorefront;
+    try {
+        const auto state = readPlaybackState();
+        if (state.valid) {
+            context.title = state.title;
+            context.artist = state.artist;
+            context.album = state.album;
+            context.appleMusicCatalogId = state.appleMusicCatalogId;
+            context.isrc = state.isrc;
+            context.durationMs = state.durationMs;
+            context.keyword = lyrics::makeKeyword(state.artist, state.title);
+        }
+    } catch (...) {
+        // 没有当前播放快照时保留配置凭证，后台检测会显示具体不可用原因。
+    }
+    return context;
+}
 
-    for (int sourceIndex = 1; sourceIndex <= 4; ++sourceIndex) {
+
+std::array<config::LyricSourceCheckResult, 5> Application::checkLyricSources(config::LyricSourceCheckContext context) {
+    // 在线检测可能较慢；逐个运行并保存失败原因，不把缺少凭证误报为可用。
+    std::array<config::LyricSourceCheckResult, 5> result{};
+    const auto keywordUtf8 = util::wideToUtf8(context.keyword.empty() ? L"关键词" : context.keyword);
+    lyrics::OnlineLyrics online;
+    lyrics::AppleMusicLyricsClient appleMusicClient;
+    lyrics::AppleMusicTokenSettings tokenSettings;
+    tokenSettings.developerToken = util::wideToUtf8(context.appleMusicDeveloperToken);
+    tokenSettings.mediaUserToken = util::wideToUtf8(context.appleMusicMediaUserToken);
+    tokenSettings.storefront = util::wideToUtf8(context.appleMusicStorefront);
+
+    for (int sourceIndex = 1; sourceIndex <= 5; ++sourceIndex) {
         try {
             const auto source = lyrics::sourceFromIndex(sourceIndex);
             if (!source) continue;
-            const auto bytes = online.fetch(*source, keywordUtf8);
+            std::vector<std::uint8_t> bytes;
+            if (*source == lyrics::LyricSource::AppleMusic) {
+                // 与正常加载共用 catalog ID、ISRC 与曲目校验，不用虚构关键词代替当前歌曲。
+                lyrics::OnlineTrackVerifier lookup;
+                lookup.catalogId = util::wideToUtf8(context.appleMusicCatalogId);
+                lookup.isrc = util::wideToUtf8(context.isrc);
+                lookup.title = util::wideToUtf8(context.title);
+                lookup.artist = util::wideToUtf8(context.artist);
+                lookup.album = util::wideToUtf8(context.album);
+                lookup.durationMs = context.durationMs;
+                const auto fetched = appleMusicClient.fetch(keywordUtf8, lookup, tokenSettings);
+                bytes.assign(fetched.ttml.begin(), fetched.ttml.end());
+                result[static_cast<std::size_t>(sourceIndex - 1)].detail = util::utf8ToWide(fetched.diagnostic);
+            } else {
+                bytes = online.fetch(*source, keywordUtf8);
+            }
             lyrics::LrcParser parser;
-            result[static_cast<std::size_t>(sourceIndex - 1)] = bytes.size() >= 10 && parser.parseBytes(bytes);
+            result[static_cast<std::size_t>(sourceIndex - 1)].ok =
+                bytes.size() >= 10 && parser.parseBytes(bytes);
+            if (result[static_cast<std::size_t>(sourceIndex - 1)].detail.empty() &&
+                !result[static_cast<std::size_t>(sourceIndex - 1)].ok) {
+                result[static_cast<std::size_t>(sourceIndex - 1)].detail = L"未返回可解析歌词";
+            }
         } catch (...) {
-            result[static_cast<std::size_t>(sourceIndex - 1)] = false;
+            result[static_cast<std::size_t>(sourceIndex - 1)].detail = L"请求异常";
         }
     }
 
@@ -605,9 +716,13 @@ std::array<bool, 4> Application::checkLyricSources() {
 
 playback::MediaState Application::readPlaybackState() {
     if (config_.smtcMode == 3) {
-        return appleMusic_.readState();
+        return readAppleMusicState();
     }
     return smtc_.readState(config_.smtcMode);
+}
+
+playback::MediaState Application::readAppleMusicState() {
+    return appleMusic_.connectState(/* allowReload = */ true);
 }
 
 std::wstring Application::noPlaybackMessage() const {
@@ -622,7 +737,7 @@ std::wstring Application::noPlaybackMessage() const {
 void Application::showTextOnce(const std::wstring& text) {
     // 状态提示不需要重复刷同一段文本。
     if (text != lastShownText_) {
-        window_.updateLyrics(text, 0);
+        window_.updateLyrics(text, 0, 0, false);
         lastShownText_ = text;
         lastHighlightPercent_ = 0;
         lastHighlightLine_ = 0;
@@ -635,7 +750,7 @@ void Application::showFrameIfChanged(const lyrics::LyricFrame& frame) {
         return;
     }
 
-    window_.updateLyrics(frame.text, frame.highlightPercent, frame.highlightLine);
+    window_.updateLyrics(frame.text, frame.highlightPercent, frame.highlightLine, frame.drawWordHighlight);
     if (frame.text != lastShownText_) {
         lastShownText_ = frame.text;
     }

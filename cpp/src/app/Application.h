@@ -39,6 +39,7 @@ private:
     void restartTimers();
     // 为当前曲目异步加载歌词；可选择绕过缓存或使用临时配置。
     void loadLyricsForCurrentTrack(const playback::MediaState& state, bool ignoreCache = false, const config::AppConfig* configOverride = nullptr);
+    void switchToNextOnlineSource(const playback::MediaState& state);
     // 接收后台歌词加载线程发回主线程的结果。
     void handleLyricsLoadedMessage(LPARAM lParam);
     // 手动重新获取当前曲目的歌词。
@@ -57,9 +58,12 @@ private:
     void saveSongOffset(int offsetMs);
     // 保存歌词窗口的位置和尺寸，供下次启动恢复。
     void rememberLyricWindow(const config::WindowConfig& window);
-    // 用固定关键字探测四个在线歌词源是否还能返回可解析歌词。
-    static std::array<bool, 4> checkLyricSources();
+    // 主线程读取当前歌曲；实际网络检测只使用这份值拷贝。
+    config::LyricSourceCheckContext prepareSourceCheck();
+    std::array<config::LyricSourceCheckResult, 5> checkLyricSources(config::LyricSourceCheckContext context);
     playback::MediaState readPlaybackState();
+    // Apple Music 仅首次连接和连接失联时注入 bridge；连接建立后不替换模块。
+    playback::MediaState readAppleMusicState();
     std::wstring noPlaybackMessage() const;
     // 只在文本变化时刷新歌词窗口，减少无意义重绘。
     void showTextOnce(const std::wstring& text);

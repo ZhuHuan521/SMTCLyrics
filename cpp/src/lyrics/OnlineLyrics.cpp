@@ -671,6 +671,7 @@ std::string sourceName(LyricSource source) {
     case LyricSource::Kugou: return "kg";
     case LyricSource::Kuwo: return "kuwo";
     case LyricSource::Netease: return "wy";
+    case LyricSource::AppleMusic: return "am";
     }
     return "unknown";
 }
@@ -683,6 +684,7 @@ std::optional<LyricSource> sourceFromIndex(int index) {
     case 2: return LyricSource::Kugou;
     case 3: return LyricSource::Kuwo;
     case 4: return LyricSource::Netease;
+    case 5: return LyricSource::AppleMusic;
     default: return std::nullopt;
     }
 }
@@ -696,6 +698,7 @@ std::vector<std::uint8_t> OnlineLyrics::fetch(LyricSource source, std::string_vi
     case LyricSource::Kugou: return fetchKugou(keywordUtf8);
     case LyricSource::Kuwo: return fetchKuwo(keywordUtf8);
     case LyricSource::Netease: return fetchNetease(keywordUtf8);
+    case LyricSource::AppleMusic: return {};
     case LyricSource::Local: break;
     }
     return {};

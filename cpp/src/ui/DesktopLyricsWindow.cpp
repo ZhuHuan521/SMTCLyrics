@@ -138,11 +138,13 @@ void DesktopLyricsWindow::applyConfig(const config::AppConfig& config) {
     redraw();
 }
 
-void DesktopLyricsWindow::updateLyrics(std::wstring_view text, int highlightPercent, int highlightLine) {
+void DesktopLyricsWindow::updateLyrics(std::wstring_view text, int highlightPercent, int highlightLine,
+                                       bool drawWordHighlight) {
     // 同一帧内容不重复绘制；高亮值也限制在合法范围。
-    const auto clampedHighlight = std::clamp(highlightPercent, 0, 100);
+    const auto clampedHighlight = std::clamp(highlightPercent, 0, 10000);
     const auto clampedLine = std::max(0, highlightLine);
-    if (text_ == text && highlightPercent_ == clampedHighlight && highlightLine_ == clampedLine) {
+    if (text_ == text && highlightPercent_ == clampedHighlight && highlightLine_ == clampedLine &&
+        drawWordHighlight_ == drawWordHighlight) {
         return;
     }
     const bool textChanged = text_ != text;
@@ -151,6 +153,7 @@ void DesktopLyricsWindow::updateLyrics(std::wstring_view text, int highlightPerc
     }
     highlightPercent_ = clampedHighlight;
     highlightLine_ = clampedLine;
+    drawWordHighlight_ = drawWordHighlight;
     if (textChanged) {
         invalidateLayout();
     }
@@ -277,11 +280,25 @@ void DesktopLyricsWindow::redraw() {
                     auto brush = makeBrush(lineNormalStyle, line.bounds);
                     graphics.FillPath(brush.get(), line.textPath.get());
 
-                    if (highlightPercent_ > 0 && isActiveLine) {
-                        // 通过水平裁剪区域叠加高亮画刷，实现从左到右的扫光效果。
+                    if (drawWordHighlight_ && highlightPercent_ > 0 && isActiveLine) {
+                        // 仅真实逐字歌词按字形前缀裁剪；逐行歌词保持普通颜色。
                         Gdiplus::GraphicsState state = graphics.Save();
-                        Gdiplus::RectF clip(line.bounds.X, line.bounds.Y, line.bounds.Width * highlightPercent_ / 100.0f, line.bounds.Height);
-                        graphics.SetClip(clip);
+                        const auto prefixIndex = static_cast<std::size_t>(
+                            static_cast<long long>(highlightPercent_) * static_cast<long long>(line.prefixWidths.size() - 1) / 10000);
+                        if (prefixIndex + 1 < line.prefixWidths.size() &&
+                            line.prefixWidths[prefixIndex + 1] > line.prefixWidths[prefixIndex]) {
+                            const auto scaledPosition = static_cast<long long>(highlightPercent_) *
+                                                        static_cast<long long>(line.prefixWidths.size() - 1);
+                            const auto range = static_cast<int>(scaledPosition % 10000);
+                            const auto glyphWidth = line.prefixWidths[prefixIndex + 1] - line.prefixWidths[prefixIndex];
+                            const auto partialWidth = glyphWidth * range / 10000.0f;
+                            Gdiplus::RectF clip(line.bounds.X, line.bounds.Y,
+                                line.prefixWidths[prefixIndex] + partialWidth, line.bounds.Height);
+                            graphics.SetClip(clip);
+                        } else {
+                            Gdiplus::RectF clip(line.bounds.X, line.bounds.Y, line.prefixWidths[prefixIndex], line.bounds.Height);
+                            graphics.SetClip(clip);
+                        }
                         Gdiplus::Pen highlightOutline(colorFromColorRef(config_.highlight.border), 1.0f);
                         graphics.DrawPath(&highlightOutline, line.textPath.get());
                         auto highlightBrush = makeBrush(config_.highlight, line.bounds);
@@ -413,6 +430,19 @@ bool DesktopLyricsWindow::rebuildLayoutCache() {
         cached.shadowPath->AddString(lineText.data(), static_cast<INT>(lineText.size()), family, style, fontSize, shadowLayout, &format);
         cached.textPath->AddString(lineText.data(), static_cast<INT>(lineText.size()), family, style, fontSize, layout, &format);
         cached.textPath->GetBounds(&cached.bounds);
+        cached.prefixWidths.reserve(lineText.size() + 1);
+        for (std::size_t end = 0; end <= lineText.size(); ++end) {
+            if (end == 0) {
+                cached.prefixWidths.push_back(0.0f);
+                continue;
+            }
+            Gdiplus::GraphicsPath prefixPath;
+            prefixPath.AddString(lineText.data(), static_cast<INT>(end), family, style, fontSize, layout, &format);
+            Gdiplus::RectF prefixBounds;
+            prefixPath.GetBounds(&prefixBounds);
+            const float width = end == lineText.size() ? cached.bounds.Width : prefixBounds.Width;
+            cached.prefixWidths.push_back(std::clamp(width, 0.0f, cached.bounds.Width));
+        }
         layoutCache_.push_back(std::move(cached));
     }
     return true;

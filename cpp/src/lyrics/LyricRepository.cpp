@@ -22,8 +22,16 @@ constexpr std::array<std::uint8_t, 10> kQrcLocalMagic{
     0x98, 0x25, 0xB0, 0xAC, 0xE3, 0x02, 0x83, 0x68, 0xE8, 0xFC
 };
 
+bool parsableLyrics(const std::vector<std::uint8_t>& bytes);
+
 bool usefulLyrics(const std::vector<std::uint8_t>& bytes) {
     return bytes.size() >= 10;
+}
+
+bool parsableLyrics(const std::vector<std::uint8_t>& bytes) {
+    if (!usefulLyrics(bytes)) return false;
+    LrcParser parser;
+    return parser.parseBytes(bytes) && !parser.lines().empty();
 }
 
 std::wstring lowerNoSpace(std::wstring text) {
@@ -212,45 +220,87 @@ bool tryFuzzyLocalFiles(
 LyricRepository::LyricRepository(std::filesystem::path lyricsDirectory, cache::LyricCache& cache, OnlineLyrics online)
     : lyricsDirectory_(std::move(lyricsDirectory)), cache_(cache), online_(std::move(online)) {}
 
-LyricLoadResult LyricRepository::loadForKeyword(std::wstring_view keyword, const config::AppConfig& config, bool ignoreCache) {
-    LyricLoadResult result;
-    const auto keywordUtf8 = util::wideToUtf8(keyword);
+void LyricRepository::setAppleMusicClient(AppleMusicLyricsClient client) {
+    appleMusicClient_ = std::move(client);
+}
 
+LyricLoadResult LyricRepository::loadForKeyword(std::wstring_view keyword, const config::AppConfig& config, bool ignoreCache,
+    const OnlineTrackVerifier& appleMusic) {
+    LyricLoadResult result;
     result.lrcBytes = loadLocal(keyword, &result.localPath);
     result.source = LyricSource::Local;
-    if (usefulLyrics(result.lrcBytes)) {
-        return result;
-    }
+    if (!result.lrcBytes.empty()) return result;
     result.localPath.clear();
 
     if (!ignoreCache) {
-        if (auto cached = cache_.sourceFor(keywordUtf8)) {
-            if (auto source = sourceFromIndex(*cached)) {
-                if (*source != LyricSource::Local) {
-                    result.lrcBytes = fetchOnline(*source, keyword, config);
-                    if (usefulLyrics(result.lrcBytes)) {
-                        result.source = *source;
-                        result.fromCache = true;
-                        return result;
-                    }
-                }
-            }
-        }
+        auto cached = loadCachedOnline(keyword, config, appleMusic);
+        if (!cached.lrcBytes.empty()) return cached;
     }
 
+    // 第一遍按配置顺序寻找真正的词级时间轴。任何只有行级时间的源都
+    // 先暂存为可显示回退，继续检查后续源是否提供逐字歌词。
+    LyricLoadResult fallback;
+    int fallbackSourceIndex = 0;
     for (const auto sourceIndex : config.sourcePriority) {
         const auto source = sourceFromIndex(sourceIndex);
         if (!source || *source == LyricSource::Local) continue;
-        auto bytes = fetchOnline(*source, keyword, config);
-        if (usefulLyrics(bytes)) {
-            result.lrcBytes = std::move(bytes);
-            result.source = *source;
-            cache_.setSource(keywordUtf8, sourceIndex);
-            return result;
+        LyricLoadResult candidate;
+        candidate.lrcBytes = fetchOnline(*source, keyword, config, appleMusic);
+        candidate.source = *source;
+        if (!parsableLyrics(candidate.lrcBytes)) continue;
+        if (!hasWordLevelTiming(candidate.lrcBytes)) {
+            if (fallback.lrcBytes.empty()) {
+                fallback = std::move(candidate);
+                fallbackSourceIndex = sourceIndex;
+            }
+            continue;
         }
+        return candidate;
     }
 
+    // 第二遍没有找到逐字歌词，使用配置中最高优先的可显示结果。
+    if (!fallback.lrcBytes.empty()) {
+        return fallback;
+    }
     result.lrcBytes.clear();
+    return result;
+}
+
+LyricLoadResult LyricRepository::loadNextOnlineSource(std::wstring_view keyword, const config::AppConfig& config,
+    const OnlineTrackVerifier& appleMusic) {
+    LyricLoadResult result;
+    for (const auto sourceIndex : config.sourcePriority) {
+        const auto source = sourceFromIndex(sourceIndex);
+        if (!source || *source == LyricSource::Local) continue;
+        result.lrcBytes = fetchOnline(*source, keyword, config, appleMusic);
+        if (!parsableLyrics(result.lrcBytes)) continue;
+        result.source = *source;
+        result.recordSource = true;
+        return result;
+    }
+    result.lrcBytes.clear();
+    return result;
+}
+
+LyricLoadResult LyricRepository::loadCachedOnline(std::wstring_view keyword, const config::AppConfig& config,
+    const OnlineTrackVerifier& appleMusic) const {
+    LyricLoadResult result;
+    const auto sourceIndex = cache_.sourceFor(util::wideToUtf8(keyword));
+    if (!sourceIndex) return result;
+    const auto source = sourceFromIndex(*sourceIndex);
+    if (!source || *source == LyricSource::Local) return result;
+    result.lrcBytes = fetchOnline(*source, keyword, config, appleMusic);
+    if (!parsableLyrics(result.lrcBytes)) {
+        result.lrcBytes.clear();
+        return result;
+    }
+    if (!hasWordLevelTiming(result.lrcBytes)) {
+        // 行级缓存不能抢占配置中更低优先级的逐字歌词源。
+        result.lrcBytes.clear();
+        return result;
+    }
+    result.source = *source;
+    result.fromCache = true;
     return result;
 }
 
@@ -274,10 +324,18 @@ std::vector<std::uint8_t> LyricRepository::loadLocal(std::wstring_view keyword, 
     return {};
 }
 
-std::vector<std::uint8_t> LyricRepository::fetchOnline(LyricSource source, std::wstring_view keyword, const config::AppConfig& config) const {
+std::vector<std::uint8_t> LyricRepository::fetchOnline(LyricSource source, std::wstring_view keyword, const config::AppConfig& config,
+    const OnlineTrackVerifier& appleMusic) const {
     try {
         const auto keywordUtf8 = util::wideToUtf8(keyword);
-        (void)config;
+        if (source == LyricSource::AppleMusic) {
+            AppleMusicTokenSettings settings;
+            settings.developerToken = util::wideToUtf8(config.appleMusicDeveloperToken);
+            settings.mediaUserToken = util::wideToUtf8(config.appleMusicMediaUserToken);
+            settings.storefront = util::wideToUtf8(config.appleMusicStorefront);
+            const auto ttml = appleMusicClient_.fetch(keywordUtf8, appleMusic, settings).ttml;
+            return {ttml.begin(), ttml.end()};
+        }
         return online_.fetch(source, keywordUtf8);
     } catch (...) {
         return {};
@@ -291,6 +349,16 @@ std::wstring makeKeyword(std::wstring_view artist, std::wstring_view title) {
         return cleanTitle + L" - " + cleanArtist;
     }
     return cleanTitle.empty() ? cleanArtist : cleanTitle;
+}
+
+bool hasWordLevelTiming(const std::vector<std::uint8_t>& bytes) {
+    LrcParser parser;
+    if (!parser.parseBytes(bytes)) return false;
+    int wordTimedLines = 0;
+    for (const auto& line : parser.lines()) {
+        if (line.segments.size() >= 2 && ++wordTimedLines >= 2) return true;
+    }
+    return false;
 }
 
 }

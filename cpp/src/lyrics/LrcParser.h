@@ -8,12 +8,17 @@
 
 namespace smtc::lyrics {
 
+// Apple Music official TTML is parsed by a dedicated parser (lyrics/TtmlParser.h).
+
 // 逐字/逐词歌词片段：记录某一段文本在本行内的高亮时间范围。
 struct LyricSegment {
     std::int64_t offsetMs = 0;
     std::int64_t durationMs = 0;
     std::size_t textStart = 0;
     std::size_t textEnd = 0;
+    // 官方 TTML 的原始起止时间；失败或未知时为 0，不应参与内部进度插值。
+    std::int64_t beginMs = 0;
+    std::int64_t endMs = 0;
 };
 
 // 已解析的一行歌词；segments 为空时按整行时间估算高亮进度。
@@ -22,13 +27,18 @@ struct LrcLine {
     std::int64_t durationMs = 0;
     std::wstring text;
     std::vector<LyricSegment> segments;
+    // true 表示片段由来源提供真实字级时间，而不是按整行估算。
+    bool wordTiming = false;
 };
 
 // 当前播放位置对应的渲染帧：要显示的文本、百分比高亮和高亮行号。
 struct LyricFrame {
     std::wstring text;
+    // 0..10000；仅有真实逐字时间时绘制部分字形。
     int highlightPercent = 0;
     int highlightLine = 0;
+    // 逐行歌词不做扫光，使用正常歌词样式显示整行。
+    bool drawWordHighlight = false;
 };
 
 // 寻找当前行附近可见歌词时返回的轻量视图。
@@ -57,7 +67,7 @@ private:
     static bool parseQrcContent(std::wstring_view text, std::vector<LrcLine>& out);
     // 时间轴查询和高亮计算。
     int findCurrentIndex(std::int64_t positionMs) const;
-    int highlightPercentForLine(int index, std::int64_t positionMs) const;
+    double highlightPercentForLine(int index, std::int64_t positionMs) const;
     std::optional<VisibleLyricLine> visibleLineNear(int index, int direction, int maxDistance, std::wstring_view excludedText = {}) const;
 
     std::vector<LrcLine> lines_;

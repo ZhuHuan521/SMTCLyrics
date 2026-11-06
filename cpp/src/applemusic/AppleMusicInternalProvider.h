@@ -17,6 +17,10 @@ struct AppleMusicInternalSnapshot {
     std::wstring subtitle;
     std::wstring artist;
     std::wstring album;
+    std::wstring playQueueItemId;
+    std::wstring adamId;
+    std::wstring canonicalId;
+    std::wstring isrc;
     std::int64_t currentPosition100ns = 0;
     std::int64_t duration100ns = 0;
     std::int64_t queryQpc = 0;
@@ -45,6 +49,8 @@ public:
     ~AppleMusicInternalProvider();
 
     playback::MediaState readState();
+    // 仅在启动首次连接或连接失联时调用；成功连接后的普通轮询不得注入模块。
+    playback::MediaState connectState(bool allowReload);
     AppleMusicBridgeStatus detectBridge();
     bool loadBridge(std::wstring& message);
     bool unloadBridge(std::wstring& message);
@@ -66,6 +72,8 @@ private:
     DWORD bridgePid_ = 0;
     std::filesystem::path bridgeDllPath_;
     std::wstring lastError_;
+    // 最近一次管道连接是否明确返回 ERROR_FILE_NOT_FOUND（即 0x80070002）。
+    bool lastPipeMissing_ = false;
     std::chrono::steady_clock::time_point lastInjectAttempt_{};
 };
 

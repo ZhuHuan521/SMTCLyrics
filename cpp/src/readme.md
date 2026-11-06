@@ -32,11 +32,11 @@ WinMain
 
 `playback/` 定义了 `MediaState` 结构体，是 `SmtcProvider` 和 `AppleMusicInternalProvider` 共用的播放状态模型，包含 `artist`、`title`、`album`、`positionMs`、`durationMs`、`valid`、`playing` 字段。
 
-`lyrics/` 是歌词核心层。`LyricRepository` 决定从哪里加载歌词；`OnlineLyrics` 处理各平台搜索、下载、解密和格式转换；`LrcParser` 把普通 LRC、酷狗 KRC、QQ QRC、网易云 YRC 统一解析成 `LrcLine` 和 `LyricSegment`；`QrcDecrypter` 专门处理 QQ QRC 的 3DES 解密和 zlib 解压。
+`lyrics/` 是歌词核心层。`LyricRepository` 决定从哪里加载歌词；`OnlineLyrics` 处理其它在线平台搜索、下载、解密和格式转换；`AppleMusicLyricsClient` 通过官方 amp-api 获取逐字 TTML，`TtmlParser` 保留毫秒时间；`LrcParser` 把普通 LRC、酷狗 KRC、QQ QRC、网易云 YRC、Apple TTML 统一解析成 `LrcLine` 和 `LyricSegment`；`QrcDecrypter` 专门处理 QQ QRC 的 3DES 解密和 zlib 解压。
 
 `ui/` 是 Win32 界面层。`ControlWindow` 是控制面板，负责配置输入、颜色选择、歌词源检测、换源、清缓存、本地歌词编辑、Apple Music bridge 检测/加载/卸载等操作；`DesktopLyricsWindow` 是透明置顶歌词窗口，使用 GDI+ 绘制描边、渐变和百分比高亮。
 
-`config/` 和 `cache/` 是持久化层。`ConfigStore` 读写 `config.ini`，并兼容旧版易语言中文 section/key；`LyricCache` 读写 `cache.json`，保存每首歌上次成功的歌词源和单曲偏移。
+`config/` 和 `cache/` 是持久化层。`ConfigStore` 读写 `config.ini`，并兼容旧版易语言中文 section/key；`LyricCache` 读写 `cache.json`，只保存用户手动选择的歌词源和单曲微调偏移，自动加载不写来源记录。
 
 `http/` 和 `util/` 是基础设施。`HttpClient` 是同步 WinHTTP 封装；`util` 提供编码转换（UTF-8/UTF-16/ANSI）、Base64、纯 C++ zlib/Deflate 解压（不依赖外部 zlib）、路径和文件工具。
 
@@ -57,7 +57,7 @@ Apple Music 内部模式（`SMTC.mode=3`）通过注入 bridge DLL 到 Apple Mus
 工作流程：
 
 1. `AppleMusicInternalProvider::loadBridge()` 从 exe 资源中提取嵌入的 bridge DLL，写入临时目录，然后通过 `CreateRemoteThread` + `LoadLibraryW` 注入到 Apple Music 进程。
-2. bridge DLL 加载后创建命名管道 `SMTCLyricsAppleMusicBridge5-<pid>`，等待主程序连接。
+2. bridge DLL 加载后创建命名管道 `SMTCLyricsAppleMusicBridge6-<pid>`，等待主程序连接。
 3. 主程序从当前 Apple Music 安装目录的 `AMP.Services.winmd` 读取 `IPlayer`、`IPlayerStatics`、`INowPlayingItem`、`IPlayerState` 的 GuidAttribute，把动态 IID 放进 `SnapshotRequest`；读取失败时使用 bridge 内置的新旧兼容 IID。
 4. 主程序通过管道发送 `SnapshotRequest`（包含 magic、version、command 和动态 IID），bridge 返回 `SnapshotResponse`（包含标题、歌手、专辑、位置、时长、播放状态等）。
 5. `AppleMusicInternalProvider::readState()` 将快照转换为 `MediaState`，与 SMTC 返回的格式统一。
@@ -65,19 +65,35 @@ Apple Music 内部模式（`SMTC.mode=3`）通过注入 bridge DLL 到 Apple Mus
 
 bridge 通过逆向 Apple Music 的 `AmpMusicLibrary` COM 接口实现，使用 `IAmpLibrary`、`INowPlayingItem`、`IPlayerState` 等内部接口读取播放状态。
 
-## 五、歌词加载策略
+## 五、Apple Music 官方歌词凭证
+
+官方接口需要两项本地凭证，均在控制窗口「Apple Music 凭证」区域填写，或直接编辑 `config.ini`：
+
+```ini
+[AppleMusic]
+developerToken=eyJ...
+mediaUserToken=0.Avks...
+storefront=
+```
+
+凭证只在本机保存，仅用于请求 `music.apple.com` / `amp-api.music.apple.com`；不会自动抓取、替换或上传到第三方。Token 过期后需重新填写。超过 1023 字符的 Token 请直接写入 `config.ini`。地区留空时通过 `/v1/me/storefront` 读取账号地区。专用模式下，bridge 读取的 catalog ID 用于精确取词；普通 SMTC 模式才按歌名与艺人搜索，并要求时长和录音版本一致。
+
+Apple Music 歌词语言依次请求 `zh-Hans-CN`、`zh-Hant-TW`、`zh-Hant-HK`。请求带 `extend=ttmlLocalizations`，脚本参数按语言主标签自动推导；响应含简体 replacement 或简体翻译时显示对应文本。歌曲没有简体中文版本时直接使用原文，并继续按配置尝试其他源。解析时丢弃音译、翻译字幕和背景歌词，逐字 span 的毫秒时间保留为 `LyricSegment`。
+## 六、歌词加载策略
 
 `LyricRepository::loadForKeyword()` 的顺序是：
 
 1. 查本地 `lyrics/<标题 - 歌手>.lrc`。
 2. 如果没有精确文件，再在 `lyrics` 目录里做宽松文件名匹配。
-3. 如果没有本地歌词，并且没有要求忽略缓存，则读取 `cache.json` 中该歌曲上次成功的在线源。
-4. 如果缓存源失败或没有缓存，就按 `AppConfig::sourcePriority` 依次尝试 QQ、酷狗、酷我、网易云。
-5. 在线源成功后会写回缓存，下次同一首歌可以更快命中。
+3. 如果没有本地歌词，并且没有要求忽略缓存，则读取 `cache.json` 中该歌曲由用户手动选择过的在线源；自动搜索结果不写回来源。
+4. 如果没有本地歌词，就按 `AppConfig::sourcePriority` 依次尝试 QQ、酷狗、酷我、网易云、Apple Music 官方。Apple Music 失败时继续下一源。Apple 只有逐行 TTML 时先记为回退候选，继续寻找逐字歌词；所有源都没有逐字歌词时，回到配置中最高优先的可显示歌词。
+5. 自动加载和自动播放换歌不记录来源。只有用户手动“换源”，或保存当前歌曲的微调偏移时，才会写入 `cache.json`。行级 Apple TTML 缓存不会阻止更高优先的可用源，也不会挡住逐字歌词搜索。
 
 用户点击"换源"时，`Application::switchLyricsSource()` 不会永久改配置，而是临时把当前源放到队尾，再强制忽略缓存重新加载。
 
-## 六、歌词解析模型
+Apple Music 内部模式的首次播放状态读取会在 bridge 管道尚未建立时自动加载 bridge，修复启动时只有 `0x80070002` 而没有播放进度的问题。已有 bridge 模块但暂不响应时不会反复卸载并重新注入。
+
+## 七、歌词解析模型
 
 解析后的核心结构是：
 
@@ -93,7 +109,7 @@ LrcLine
 
 `LrcParser::frameAt()` 根据当前播放位置和显示模式输出 `LyricFrame`（包含文本、高亮百分比和高亮行号）。显示模式 1 是当前一句，模式 2 是当前句加下一句，模式 3 是上一句加当前句。
 
-## 七、时间同步设计
+## 八、时间同步设计
 
 SMTC 的时间轴更新频率和不同播放器行为并不完全一致，所以代码里有两层同步：
 
@@ -103,13 +119,13 @@ SMTC 的时间轴更新频率和不同播放器行为并不完全一致，所以
 
 全局歌词偏移 `config_.lyricOffsetMs` 和单曲偏移 `currentSongOffsetMs_` 会叠加成 `totalOffsetMs()`，用于修正解析帧时的播放位置。
 
-## 八、界面与绘制
+## 九、界面与绘制
 
 控制窗口是传统 Win32 子控件布局，所有按钮和输入框通过 `ControlId` 枚举分组管理。它不直接操作歌词仓库或 SMTC，而是通过 `ControlWindowCallbacks` 把操作交给 `Application`。回调集合包括：应用配置、获取/移动歌词窗口、设置拖动、重载歌词、换源、清缓存、打开本地歌词、检测歌词源可用性、检测/切换 Apple Music bridge、保存单曲偏移。
 
 桌面歌词窗口是 `WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW` 的透明置顶窗口。绘制时先在 32 位 DIB 后备缓冲上用 GDI+ 画文字路径，再用 `UpdateLayeredWindow` 一次性提交到屏幕。高亮效果通过裁剪区域叠加高亮画刷实现。窗口支持布局缓存（`layoutCache_`），只在文本或配置变化时重建路径，减少每帧重绘开销。
 
-## 九、建议阅读顺序
+## 十、建议阅读顺序
 
 1. 先读 `main.cpp` 和 `app/Application.h`，建立程序入口和成员关系。
 2. 再读 `Application::initialize()`、`playbackTick()`、`renderTick()`，理解主流程。

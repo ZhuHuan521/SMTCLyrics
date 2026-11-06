@@ -26,7 +26,8 @@ public:
     // 应用样式配置并刷新绘制。
     void applyConfig(const config::AppConfig& config);
     // 更新歌词文本与高亮状态。
-    void updateLyrics(std::wstring_view text, int highlightPercent = 0, int highlightLine = 0);
+    void updateLyrics(std::wstring_view text, int highlightPercent = 0, int highlightLine = 0,
+                      bool drawWordHighlight = false);
     // 控制是否允许鼠标拖动歌词窗口。
     void setDraggable(bool draggable);
     void setGeometryChangedCallback(std::function<void(const config::WindowConfig&)> callback);
@@ -54,6 +55,8 @@ private:
         std::unique_ptr<Gdiplus::GraphicsPath> shadowPath;
         std::unique_ptr<Gdiplus::GraphicsPath> textPath;
         Gdiplus::RectF bounds;
+        // Width of the rendered prefix from 0 through text.size().
+        std::vector<float> prefixWidths;
     };
 
     HWND hwnd_ = nullptr;
@@ -61,7 +64,9 @@ private:
     int height_ = 0;
     bool draggable_ = true;
     std::wstring text_;
+    // Fixed point 0..10000: one CJK glyph positions in a normal lyric line.
     int highlightPercent_ = 0;
+    bool drawWordHighlight_ = false;
     int highlightLine_ = 0;
     config::AppConfig config_;
     std::function<void(const config::WindowConfig&)> geometryChanged_;

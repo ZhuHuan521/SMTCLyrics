@@ -8,10 +8,10 @@
 namespace smtc::applemusic::bridge {
 
 constexpr std::uint32_t kMagic = 0x534D5443; // SMTC
-constexpr std::uint32_t kVersion = 3;
+constexpr std::uint32_t kVersion = 4;
 constexpr std::uint32_t kCommandSnapshot = 1;
 constexpr std::uint32_t kCommandShutdown = 2;
-constexpr wchar_t kPipeNamePrefix[] = L"SMTCLyricsAppleMusicBridge5-";
+constexpr wchar_t kPipeNamePrefix[] = L"SMTCLyricsAppleMusicBridge6-";
 constexpr std::size_t kTextChars = 256;
 constexpr std::size_t kErrorChars = 512;
 
@@ -37,6 +37,8 @@ struct SnapshotRequest {
     GUID playerStaticsIid{};
     GUID nowPlayingItemIid{};
     GUID playerStateIid{};
+    GUID contentDescriptorDrivenIid{};
+    GUID contentDescriptorIid{};
 };
 
 struct SnapshotResponse {
@@ -54,9 +56,13 @@ struct SnapshotResponse {
     wchar_t subtitle[kTextChars]{};
     wchar_t artist[kTextChars]{};
     wchar_t album[kTextChars]{};
+    wchar_t playQueueItemId[kTextChars]{};
+    wchar_t adamId[kTextChars]{};
+    wchar_t canonicalId[kTextChars]{};
+    wchar_t contentProperties[8192]{};
     wchar_t error[kErrorChars]{};
 };
 
-static_assert(sizeof(SnapshotRequest) == 80);
+static_assert(sizeof(SnapshotRequest) == 112);
 
 }
