@@ -23,6 +23,9 @@ public:
     // 读取/写入某首歌独立的毫秒级歌词偏移。
     std::optional<int> offsetFor(std::string_view keywordUtf8) const;
     void setOffset(std::string_view keywordUtf8, int offsetMs);
+    // 用户手动选择的原文/译文显示状态；空值表示还没有为这首歌做过选择。
+    std::optional<bool> translationVisibleFor(std::string_view keywordUtf8) const;
+    void setTranslationVisible(std::string_view keywordUtf8, bool visible);
     // 清空内存中的缓存内容；ensureExists 只负责创建默认文件。
     void clear();
     void ensureExists() const;

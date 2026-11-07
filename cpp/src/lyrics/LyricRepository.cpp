@@ -245,7 +245,7 @@ LyricLoadResult LyricRepository::loadForKeyword(std::wstring_view keyword, const
         const auto source = sourceFromIndex(sourceIndex);
         if (!source || *source == LyricSource::Local) continue;
         LyricLoadResult candidate;
-        candidate.lrcBytes = fetchOnline(*source, keyword, config, appleMusic);
+        candidate.lrcBytes = fetchOnline(*source, keyword, config, appleMusic, &candidate.translatedLrcBytes);
         candidate.source = *source;
         if (!parsableLyrics(candidate.lrcBytes)) continue;
         if (!hasWordLevelTiming(candidate.lrcBytes)) {
@@ -272,13 +272,14 @@ LyricLoadResult LyricRepository::loadNextOnlineSource(std::wstring_view keyword,
     for (const auto sourceIndex : config.sourcePriority) {
         const auto source = sourceFromIndex(sourceIndex);
         if (!source || *source == LyricSource::Local) continue;
-        result.lrcBytes = fetchOnline(*source, keyword, config, appleMusic);
+        result.lrcBytes = fetchOnline(*source, keyword, config, appleMusic, &result.translatedLrcBytes);
         if (!parsableLyrics(result.lrcBytes)) continue;
         result.source = *source;
         result.recordSource = true;
         return result;
     }
     result.lrcBytes.clear();
+    result.translatedLrcBytes.clear();
     return result;
 }
 
@@ -289,7 +290,7 @@ LyricLoadResult LyricRepository::loadCachedOnline(std::wstring_view keyword, con
     if (!sourceIndex) return result;
     const auto source = sourceFromIndex(*sourceIndex);
     if (!source || *source == LyricSource::Local) return result;
-    result.lrcBytes = fetchOnline(*source, keyword, config, appleMusic);
+    result.lrcBytes = fetchOnline(*source, keyword, config, appleMusic, &result.translatedLrcBytes);
     if (!parsableLyrics(result.lrcBytes)) {
         result.lrcBytes.clear();
         return result;
@@ -325,16 +326,20 @@ std::vector<std::uint8_t> LyricRepository::loadLocal(std::wstring_view keyword, 
 }
 
 std::vector<std::uint8_t> LyricRepository::fetchOnline(LyricSource source, std::wstring_view keyword, const config::AppConfig& config,
-    const OnlineTrackVerifier& appleMusic) const {
+    const OnlineTrackVerifier& appleMusic, std::vector<std::uint8_t>* translatedBytes) const {
     try {
+        if (translatedBytes) translatedBytes->clear();
         const auto keywordUtf8 = util::wideToUtf8(keyword);
         if (source == LyricSource::AppleMusic) {
             AppleMusicTokenSettings settings;
             settings.developerToken = util::wideToUtf8(config.appleMusicDeveloperToken);
             settings.mediaUserToken = util::wideToUtf8(config.appleMusicMediaUserToken);
             settings.storefront = util::wideToUtf8(config.appleMusicStorefront);
-            const auto ttml = appleMusicClient_.fetch(keywordUtf8, appleMusic, settings).ttml;
-            return {ttml.begin(), ttml.end()};
+            const auto fetched = appleMusicClient_.fetch(keywordUtf8, appleMusic, settings);
+            if (translatedBytes && !fetched.translatedTtml.empty()) {
+                *translatedBytes = {fetched.translatedTtml.begin(), fetched.translatedTtml.end()};
+            }
+            return {fetched.ttml.begin(), fetched.ttml.end()};
         }
         return online_.fetch(source, keywordUtf8);
     } catch (...) {

@@ -58,6 +58,16 @@ public:
     void frameAt(std::int64_t positionMs, int displayMode, LyricFrame& frame) const;
     bool empty() const { return lines_.empty(); }
     const std::vector<LrcLine>& lines() const { return lines_; }
+    // 原文与译文各自保留自己的行和时间轴；空译文表示没有可显示的翻译。
+    void setLines(std::vector<LrcLine> lines, std::vector<LrcLine> translatedLines = {},
+                  std::vector<LrcLine> originalLines = {});
+    const std::vector<LrcLine>& originalLines() const { return originalLines_.empty() ? lines_ : originalLines_; }
+    const std::vector<LrcLine>& translatedLines() const { return translatedLines_; }
+    bool hasTranslation() const { return !translatedLines_.empty(); }
+    // 同一 TTML 被误传为译文时不算“可切换”，避免按钮只重复显示同一行。
+    bool hasDistinctTranslation() const;
+    void setTranslationVisible(bool visible) { translationVisible_ = visible; }
+    bool translationVisible() const { return translationVisible_ && hasTranslation(); }
 
 private:
     // 解析不同歌词格式的内部工具。
@@ -71,6 +81,13 @@ private:
     std::optional<VisibleLyricLine> visibleLineNear(int index, int direction, int maxDistance, std::wstring_view excludedText = {}) const;
 
     std::vector<LrcLine> lines_;
+    std::vector<LrcLine> translatedLines_;
+    std::vector<LrcLine> originalLines_;
+    bool translationVisible_ = false;
 };
+
+// 判断歌词原文是否为中日韩主文本。白空格、标点和拉丁文字不计入字符数。
+bool mostlyCjkLyrics(const std::vector<LrcLine>& lines);
+std::vector<LrcLine> alwaysOriginalLines(const std::vector<LrcLine>& lines);
 
 }

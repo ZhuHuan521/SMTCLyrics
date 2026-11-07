@@ -18,6 +18,7 @@ struct ControlWindowCallbacks {
     std::function<void(bool)> setLyricDraggable;
     std::function<void()> reloadLyrics;
     std::function<void()> switchSource;
+    std::function<void()> toggleTranslation;
     std::function<void()> clearCache;
     std::function<void()> openLocalLyric;
     // 主线程先读取当前播放快照；后台线程只使用值拷贝，不访问 SMTC bridge。

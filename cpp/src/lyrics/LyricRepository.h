@@ -16,6 +16,8 @@ namespace smtc::lyrics {
 // 一次歌词加载的结果，可能来自本地文件、缓存命中的在线源或按优先级搜索的在线源。
 struct LyricLoadResult {
     std::vector<std::uint8_t> lrcBytes;
+    // Apple Music 译文为单独的一套 TTML；其他歌词源通常为空。
+    std::vector<std::uint8_t> translatedLrcBytes;
     LyricSource source = LyricSource::Local;
     std::filesystem::path localPath;
     bool fromCache = false;
@@ -44,7 +46,7 @@ public:
 
 private:
     std::vector<std::uint8_t> fetchOnline(LyricSource source, std::wstring_view keyword, const config::AppConfig& config,
-        const OnlineTrackVerifier& appleMusic) const;
+        const OnlineTrackVerifier& appleMusic, std::vector<std::uint8_t>* translatedBytes = nullptr) const;
 
     std::filesystem::path lyricsDirectory_;
     cache::LyricCache& cache_;

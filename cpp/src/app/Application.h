@@ -40,6 +40,8 @@ private:
     // 为当前曲目异步加载歌词；可选择绕过缓存或使用临时配置。
     void loadLyricsForCurrentTrack(const playback::MediaState& state, bool ignoreCache = false, const config::AppConfig* configOverride = nullptr);
     void switchToNextOnlineSource(const playback::MediaState& state);
+    // 在当前原文/译文之间切换显示，不重新下载歌词。
+    void toggleTranslation();
     // 接收后台歌词加载线程发回主线程的结果。
     void handleLyricsLoadedMessage(LPARAM lParam);
     // 手动重新获取当前曲目的歌词。
@@ -87,6 +89,8 @@ private:
     ui::DesktopLyricsWindow window_;
     ui::ControlWindow controlWindow_;
     lyrics::LrcParser parser_;
+    bool translationAvailable_ = false;
+    bool translationVisible_ = false;
     // 当前歌曲、歌词源和渲染去重状态。
     lyrics::LyricSource currentSource_ = lyrics::LyricSource::Local;
     std::wstring currentKeyword_;

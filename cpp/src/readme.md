@@ -36,7 +36,7 @@ WinMain
 
 `ui/` 是 Win32 界面层。`ControlWindow` 是控制面板，负责配置输入、颜色选择、歌词源检测、换源、清缓存、本地歌词编辑、Apple Music bridge 检测/加载/卸载等操作；`DesktopLyricsWindow` 是透明置顶歌词窗口，使用 GDI+ 绘制描边、渐变和百分比高亮。
 
-`config/` 和 `cache/` 是持久化层。`ConfigStore` 读写 `config.ini`，并兼容旧版易语言中文 section/key；`LyricCache` 读写 `cache.json`，只保存用户手动选择的歌词源和单曲微调偏移，自动加载不写来源记录。
+`config/` 和 `cache/` 是持久化层。`ConfigStore` 读写 `config.ini`，并兼容旧版易语言中文 section/key；`LyricCache` 读写 `cache.json`，保存用户手动选择的歌词源、单曲微调偏移和原文/译文显示偏好，自动加载不写来源记录。
 
 `http/` 和 `util/` 是基础设施。`HttpClient` 是同步 WinHTTP 封装；`util` 提供编码转换（UTF-8/UTF-16/ANSI）、Base64、纯 C++ zlib/Deflate 解压（不依赖外部 zlib）、路径和文件工具。
 
@@ -80,7 +80,11 @@ Media-User-Token=
 
 凭证只在本机保存，仅用于请求 `music.apple.com` / `amp-api.music.apple.com`；不会自动抓取、替换或上传到第三方。Token 过期后需重新填写。超过 1023 字符的 Token 请直接写入 `config.ini`。地区留空时在请求中通过账号接口临时获取地区，不自动回填或保存到 `config.ini`；手动填写地区后使用填写值。专用模式下，bridge 读取的 catalog ID 用于精确取词；普通 SMTC 模式才按歌名与艺人搜索，并要求时长和录音版本一致。
 
-Apple Music 歌词语言依次请求 `zh-Hans-CN`、`zh-Hant-TW`、`zh-Hant-HK`。请求带 `extend=ttmlLocalizations`，脚本参数按语言主标签自动推导；响应含简体 replacement 或简体翻译时显示对应文本。歌曲没有中文版本时直接使用原文。解析时丢弃音译、字形脚本、翻译字幕和背景歌词，逐字 span 的毫秒时间保留为 `LyricSegment`。
+程序先按原文 TTML 的中日韩字符比例（至少 75%）区分中外文。外文歌直接使用原文；中文歌依次请求 `zh-Hans-CN`、`zh-Hant-TW`、`zh-Hant-HK`。请求带 `extend=ttmlLocalizations`，语言和 script 参数按语言主标签自动推导；没有中文歌词时使用原文。解析时丢弃音译、字形脚本和背景歌词，逐字 span 的毫秒时间保留为 `LyricSegment`。
+
+`TtmlParser` 把正文保存到 `originalLines_`，把独立的本地化 translation 保存到 `translatedLines_`。`LrcParser::frameAt()` 根据 `translationVisible` 在两套各自按时间排序的 `LrcLine` 间选择，不使用原文时间轴去套译文。只有译文 span 具有真实词级时间时才启用扫光，否则按译文自己的整行起止时间显示高亮。
+
+“操作与检测”中的“显示/隐藏翻译”不重新下载歌词。没有可切换的独立译文时只提示“音源无翻译”，不改变缓存；成功切换后把当前歌曲的布尔偏好写入 `cache.json`。原文至少 75% 为中日韩文字时默认显示简体译文，外文歌默认显示原文，已有手动偏好优先。只有原文和译文内容确实不同才允许切换，避免重复显示同一份歌词。
 ## 六、歌词加载策略
 
 `LyricRepository::loadForKeyword()` 的顺序是：
@@ -89,7 +93,7 @@ Apple Music 歌词语言依次请求 `zh-Hans-CN`、`zh-Hant-TW`、`zh-Hant-HK`�
 2. 如果没有精确文件，再在 `lyrics` 目录里做宽松文件名匹配。
 3. 如果没有本地歌词，并且没有要求忽略缓存，则读取 `cache.json` 中该歌曲由用户手动选择过的在线源；自动搜索结果不写回来源。
 4. 如果没有本地歌词，就按 `AppConfig::sourcePriority` 依次尝试 QQ、酷狗、酷我、网易云、Apple Music 官方。Apple Music 失败时继续下一源。Apple 只有逐行 TTML 时先记为回退候选，继续寻找逐字歌词；所有源都没有逐字歌词时，回到配置中最高优先的可显示歌词。
-5. 自动加载和自动播放换歌不记录来源。只有用户手动“换源”，或保存当前歌曲的微调偏移时，才会写入 `cache.json`。行级 Apple TTML 缓存不会阻止更高优先的可用源，也不会挡住逐字歌词搜索。
+5. 自动加载和自动播放换歌不记录来源。只有用户手动“换源”、保存当前歌曲微调偏移，或手动切换翻译显示时，才会写入 `cache.json`。行级 Apple TTML 缓存不会阻止更高优先的可用源，也不会挡住逐字歌词搜索。
 
 用户点击"换源"时，`Application::switchLyricsSource()` 不会永久改配置，而是临时把当前源放到队尾，再强制忽略缓存重新加载。
 

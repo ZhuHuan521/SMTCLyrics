@@ -18,11 +18,19 @@ public:
     static bool hasUsableSyllableTiming(std::string_view xml);
     // Replacement/subtitle are displayed text; x-bg and transliteration are not.
     const std::vector<LrcLine>& lines() const { return lines_; }
+    // 去掉 TTML 内嵌的语言字幕，只保留正文时间轴。
+    std::vector<LrcLine> originalLines() const;
+    // ttmlLocalizations 中的独立译文字形；无翻译时为空。
+    std::vector<LrcLine> translatedLines() const;
+    bool hasTranslationsBlock() const { return hasTranslationsBlock_; }
     bool empty() const { return lines_.empty(); }
     int wordTimedLineCount() const { return wordTimedLineCount_; }
 
 private:
     std::vector<LrcLine> lines_;
+    std::vector<LrcLine> originalLines_;
+    std::vector<LrcLine> translatedLines_;
+    bool hasTranslationsBlock_ = false;
     bool hasWordTiming_ = false;
     int wordTimedLineCount_ = 0;
 };

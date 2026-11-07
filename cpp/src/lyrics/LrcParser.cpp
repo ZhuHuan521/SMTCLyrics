@@ -296,6 +296,9 @@ bool LrcParser::parseUtf8(std::string_view lrcUtf8) {
         TtmlParser ttml;
         if (ttml.parseUtf8(lrcUtf8)) {
             lines_ = ttml.lines();
+            originalLines_ = ttml.originalLines();
+            translatedLines_ = ttml.translatedLines();
+            translationVisible_ = false;
             return true;
         }
     }
@@ -381,18 +384,35 @@ void LrcParser::frameAt(std::int64_t positionMs, int displayMode, LyricFrame& fr
     frame.highlightPercent = 0;
     frame.highlightLine = 0;
     frame.drawWordHighlight = false;
-    if (lines_.empty()) return;
+    const auto& activeLines = translationVisible() ? translatedLines_
+        : (originalLines_.empty() ? lines_ : originalLines_);
+    if (activeLines.empty()) return;
 
     const auto adjusted = positionMs;
-    const int index = findCurrentIndex(adjusted);
+    auto it = std::upper_bound(activeLines.begin(), activeLines.end(), adjusted,
+                               [](std::int64_t value, const LrcLine& line) { return value < line.timeMs; });
+    if (it == activeLines.begin()) return;
+    const int index = static_cast<int>(std::distance(activeLines.begin(), std::prev(it)));
     if (index < 0) return;
 
-    const auto current = visibleLineNear(index, +1, 2);
+    const auto visibleNear = [&](int start, int direction, int maxDistance, std::wstring_view excluded = {})
+        -> std::optional<VisibleLyricLine> {
+        for (int i = 0; i <= maxDistance; ++i) {
+            const int candidate = start + i * direction;
+            if (candidate < 0 || candidate >= static_cast<int>(activeLines.size())) continue;
+            const auto text = trimView(activeLines[static_cast<std::size_t>(candidate)].text);
+            if (!text.empty() && text != excluded) {
+                return VisibleLyricLine{candidate, text};
+            }
+        }
+        return std::nullopt;
+    };
+    const auto current = visibleNear(index, +1, 2);
     if (!current) return;
 
     if (displayMode == 2) {
         // 两句向后：当前行高亮，下一句用第二行样式显示。
-        if (auto next = visibleLineNear(current->index + 1, +1, 3, current->text)) {
+        if (auto next = visibleNear(current->index + 1, +1, 3, current->text)) {
             frame.text.reserve(current->text.size() + 1 + next->text.size());
             frame.text.append(current->text.begin(), current->text.end()).push_back(L'\n');
             frame.text.append(next->text.begin(), next->text.end());
@@ -402,7 +422,7 @@ void LrcParser::frameAt(std::int64_t positionMs, int displayMode, LyricFrame& fr
         }
     } else if (displayMode == 3) {
         // 两句向前：上一句在第一行，当前行在第二行高亮。
-        if (auto previous = visibleLineNear(current->index - 1, -1, 3, current->text)) {
+        if (auto previous = visibleNear(current->index - 1, -1, 3, current->text)) {
             frame.text.reserve(previous->text.size() + 1 + current->text.size());
             frame.text.append(previous->text.begin(), previous->text.end()).push_back(L'\n');
             frame.text.append(current->text.begin(), current->text.end());
@@ -413,10 +433,92 @@ void LrcParser::frameAt(std::int64_t positionMs, int displayMode, LyricFrame& fr
     } else {
         frame.text.assign(current->text.begin(), current->text.end());
     }
-    const auto highlightPercent = highlightPercentForLine(current->index, adjusted);
+    const auto& currentLine = activeLines[static_cast<std::size_t>(current->index)];
+    double highlightPercent = 0.0;
+    if (reliableWordTiming(currentLine)) {
+        const auto localMs = adjusted - currentLine.timeMs;
+        if (localMs > currentLine.segments.front().offsetMs) {
+            const auto& last = currentLine.segments.back();
+            if (last.beginMs > 0 && last.endMs > 0 && localMs >= last.endMs) {
+                highlightPercent = 10000.0;
+            } else {
+                auto segment = currentLine.segments.end();
+                for (auto segmentIt = currentLine.segments.begin(); segmentIt != currentLine.segments.end(); ++segmentIt) {
+                    if (segmentIt->offsetMs > localMs) break;
+                    segment = segmentIt;
+                }
+                if (segment != currentLine.segments.end()) {
+                    const auto segmentStart = segment->offsetMs;
+                    const auto segmentEnd = segmentStart + std::max<std::int64_t>(1, segment->durationMs);
+                    const double progress = static_cast<double>(std::clamp(localMs, segmentStart, segmentEnd) - segmentStart) /
+                                            static_cast<double>(segmentEnd - segmentStart);
+                    const double covered = static_cast<double>(segment->textStart) +
+                        static_cast<double>(segment->textEnd - segment->textStart) * progress;
+                    highlightPercent = covered * 10000.0 / static_cast<double>(currentLine.text.size());
+                }
+            }
+        }
+    } else if (currentLine.durationMs > 0) {
+        highlightPercent = static_cast<double>(std::clamp<std::int64_t>(adjusted - currentLine.timeMs, 0, currentLine.durationMs)) *
+                           10000.0 / static_cast<double>(currentLine.durationMs);
+    }
     frame.highlightPercent = static_cast<int>(std::clamp(
         std::floor(highlightPercent * 100.0) / 100.0, 0.0, 10000.0));
-    frame.drawWordHighlight = reliableWordTiming(lines_[current->index]);
+    frame.drawWordHighlight = reliableWordTiming(currentLine);
+}
+
+void LrcParser::setLines(std::vector<LrcLine> lines, std::vector<LrcLine> translatedLines,
+                         std::vector<LrcLine> originalLines) {
+    const auto byTime = [](const LrcLine& a, const LrcLine& b) { return a.timeMs < b.timeMs; };
+    std::stable_sort(lines.begin(), lines.end(), byTime);
+    std::stable_sort(translatedLines.begin(), translatedLines.end(), byTime);
+    std::stable_sort(originalLines.begin(), originalLines.end(), byTime);
+    lines_ = std::move(lines);
+    translatedLines_ = std::move(translatedLines);
+    originalLines_ = std::move(originalLines);
+    if (!hasDistinctTranslation()) translatedLines_.clear();
+    translationVisible_ = false;
+}
+
+bool LrcParser::hasDistinctTranslation() const {
+    if (translatedLines_.empty()) return false;
+    const auto& source = lines_;
+    if (source.empty() || source.size() != translatedLines_.size()) return !source.empty();
+    for (std::size_t i = 0; i < source.size(); ++i) {
+        const auto& original = source[i];
+        const auto& translated = translatedLines_[i];
+        if (original.timeMs != translated.timeMs || original.durationMs != translated.durationMs ||
+            original.text != translated.text) {
+            return true;
+        }
+    }
+    return false;
+}
+
+std::vector<LrcLine> alwaysOriginalLines(const std::vector<LrcLine>& lines) {
+    auto result = lines;
+    for (auto& line : result) {
+        line.segments.clear();
+        line.wordTiming = false;
+    }
+    return result;
+}
+
+bool mostlyCjkLyrics(const std::vector<LrcLine>& lines) {
+    std::size_t cjk = 0;
+    std::size_t letters = 0;
+    for (const auto& line : lines) {
+        for (const wchar_t ch : line.text) {
+            if (std::iswalpha(ch) == 0 || std::iswspace(ch) != 0) continue;
+            ++letters;
+            if ((ch >= 0x4E00 && ch <= 0x9FFF) || (ch >= 0x3400 && ch <= 0x4DBF) ||
+                (ch >= 0xF900 && ch <= 0xFAFF) || (ch >= 0xAC00 && ch <= 0xD7AF) ||
+                (ch >= 0x3040 && ch <= 0x30FF)) {
+                ++cjk;
+            }
+        }
+    }
+    return letters > 0 && cjk * 4 >= letters * 3;
 }
 
 std::optional<std::int64_t> LrcParser::parseTimestamp(std::wstring_view token) {

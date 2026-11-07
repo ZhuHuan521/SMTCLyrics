@@ -161,6 +161,7 @@ void Application::initialize() {
     callbacks.setLyricDraggable = [this](bool draggable) { window_.setDraggable(draggable); };
     callbacks.reloadLyrics = [this] { reloadLyrics(true); };
     callbacks.switchSource = [this] { switchLyricsSource(); };
+    callbacks.toggleTranslation = [this] { toggleTranslation(); };
     callbacks.clearCache = [this] { clearLyricCache(); };
     callbacks.openLocalLyric = [this] { openLocalLyric(); };
     callbacks.prepareSourceCheck = [this] { return prepareSourceCheck(); };
@@ -196,6 +197,8 @@ void Application::playbackTick() {
                 currentKeyword_.clear();
                 currentSource_ = lyrics::LyricSource::Local;
                 parser_ = lyrics::LrcParser{};
+                translationAvailable_ = false;
+                translationVisible_ = false;
                 smtc1TrackChangeCalibrationAtMs_ = 0;
                 isPlaying_ = false;
                 controlWindow_.setCurrentLyricSource(L"未加载");
@@ -258,6 +261,8 @@ void Application::playbackTick() {
             currentKeyword_.clear();
             currentSource_ = lyrics::LyricSource::Local;
             parser_ = lyrics::LrcParser{};
+            translationAvailable_ = false;
+            translationVisible_ = false;
             smtc1TrackChangeCalibrationAtMs_ = 0;
             isPlaying_ = false;
             controlWindow_.setCurrentLyricSource(L"未加载");
@@ -381,6 +386,8 @@ void Application::loadLyricsForCurrentTrack(const playback::MediaState& state, b
     lastHighlightPercent_ = -1;
     lastHighlightLine_ = -1;
     parser_ = lyrics::LrcParser{};
+    translationAvailable_ = false;
+    translationVisible_ = false;
     currentSource_ = lyrics::LyricSource::Local;
     controlWindow_.setCurrentLyricSource(L"加载中");
     const auto keyword = lyrics::makeKeyword(state.artist, state.title);
@@ -417,7 +424,23 @@ void Application::loadLyricsForCurrentTrack(const playback::MediaState& state, b
             lyrics::LyricRepository repository(lyricsDir, cache);
             const auto result = repository.loadForKeyword(keyword, asyncConfig, ignoreCache, appleMusicLookup);
             asyncResult->source = result.source;
-            asyncResult->success = !result.lrcBytes.empty() && asyncResult->parser.parseBytes(result.lrcBytes);
+            if (!result.lrcBytes.empty() && asyncResult->parser.parseBytes(result.lrcBytes)) {
+                std::vector<lyrics::LrcLine> translatedLines;
+                lyrics::LrcParser translatedParser;
+                if (!result.translatedLrcBytes.empty() &&
+                    translatedParser.parseBytes(result.translatedLrcBytes)) {
+                    translatedLines = translatedParser.lines();
+                }
+                auto displayLines = asyncResult->parser.lines();
+                auto originalLines = asyncResult->parser.originalLines();
+                if (!translatedLines.empty()) {
+                    // TTML 的 subtitle 属于正文；译文用独立 translation 文本。
+                    displayLines = originalLines;
+                }
+                asyncResult->parser.setLines(std::move(displayLines), std::move(translatedLines),
+                                             std::move(originalLines));
+                asyncResult->success = true;
+            }
         } catch (...) {
             asyncResult->success = false;
         }
@@ -446,6 +469,8 @@ void Application::handleLyricsLoadedMessage(LPARAM lParam) {
     if (!result->success) {
         // 加载失败时保持空解析器，窗口显示明确的失败提示。
         parser_ = lyrics::LrcParser{};
+        translationAvailable_ = false;
+        translationVisible_ = false;
         currentSource_ = lyrics::LyricSource::Local;
         controlWindow_.setCurrentLyricSource(L"未找到");
         showTextOnce(L"未找到歌词：" + result->keyword);
@@ -454,6 +479,15 @@ void Application::handleLyricsLoadedMessage(LPARAM lParam) {
     }
 
     parser_ = std::move(result->parser);
+    translationAvailable_ = parser_.hasTranslation();
+    translationVisible_ = false;
+    if (translationAvailable_) {
+        // 适配旧版本：原文含 75% 以上中日韩字符时默认显示简体译文，外文歌保持原文。
+        const bool sourceIsChinese = translationAvailable_ && lyrics::mostlyCjkLyrics(parser_.originalLines());
+        translationVisible_ = cache_.translationVisibleFor(util::wideToUtf8(result->keyword))
+                                  .value_or(sourceIsChinese);
+        parser_.setTranslationVisible(translationVisible_);
+    }
     currentSource_ = result->source;
     controlWindow_.setCurrentLyricSource(lyricSourceDisplayName(currentSource_));
     if (result->recordSource && currentSource_ != lyrics::LyricSource::Local) {
@@ -464,7 +498,9 @@ void Application::handleLyricsLoadedMessage(LPARAM lParam) {
     }
 
     showTextOnce(L"已载入歌词：" + result->keyword);
-    controlWindow_.setStatusText(L"已载入歌词");
+    controlWindow_.setStatusText(translationAvailable_
+        ? (translationVisible_ ? L"已载入歌词（显示翻译）" : L"已载入歌词（显示原文）")
+        : L"已载入歌词");
 }
 
 void Application::reloadLyrics(bool ignoreCache) {
@@ -514,6 +550,8 @@ void Application::switchToNextOnlineSource(const playback::MediaState& state) {
     lastHighlightPercent_ = -1;
     lastHighlightLine_ = -1;
     parser_ = lyrics::LrcParser{};
+    translationAvailable_ = false;
+    translationVisible_ = false;
     currentSource_ = lyrics::LyricSource::Local;
     controlWindow_.setCurrentLyricSource(L"加载中");
     const auto keyword = lyrics::makeKeyword(state.artist, state.title);
@@ -547,7 +585,22 @@ void Application::switchToNextOnlineSource(const playback::MediaState& state) {
             const auto result = repository.loadNextOnlineSource(keyword, config, appleMusicLookup);
             asyncResult->source = result.source;
             asyncResult->recordSource = result.recordSource;
-            asyncResult->success = !result.lrcBytes.empty() && asyncResult->parser.parseBytes(result.lrcBytes);
+            if (!result.lrcBytes.empty() && asyncResult->parser.parseBytes(result.lrcBytes)) {
+                std::vector<lyrics::LrcLine> translatedLines;
+                lyrics::LrcParser translatedParser;
+                if (!result.translatedLrcBytes.empty() &&
+                    translatedParser.parseBytes(result.translatedLrcBytes)) {
+                    translatedLines = translatedParser.lines();
+                }
+                auto displayLines = asyncResult->parser.lines();
+                auto originalLines = asyncResult->parser.originalLines();
+                if (!translatedLines.empty()) {
+                    displayLines = originalLines;
+                }
+                asyncResult->parser.setLines(std::move(displayLines), std::move(translatedLines),
+                                             std::move(originalLines));
+                asyncResult->success = true;
+            }
         } catch (...) {
             asyncResult->success = false;
         }
@@ -555,6 +608,25 @@ void Application::switchToNextOnlineSource(const playback::MediaState& state) {
             asyncResult.release();
         }
     }).detach();
+}
+
+void Application::toggleTranslation() {
+    if (!translationAvailable_ || !parser_.hasTranslation()) {
+        controlWindow_.setStatusText(L"音源无翻译");
+        return;
+    }
+    translationVisible_ = !parser_.translationVisible();
+    parser_.setTranslationVisible(translationVisible_);
+    if (!currentKeyword_.empty()) {
+        cache_.setTranslationVisible(util::wideToUtf8(currentKeyword_), translationVisible_);
+        cache_.save();
+    }
+    lastShownText_.clear();
+    lastHighlightPercent_ = -1;
+    lastHighlightLine_ = -1;
+    parser_.frameAt(estimatedPositionMs(currentTimeMs()), config_.displayMode, scratchFrame_);
+    showFrameIfChanged(scratchFrame_);
+    controlWindow_.setStatusText(translationVisible_ ? L"已显示翻译" : L"已显示原文");
 }
 
 void Application::clearLyricCache() {

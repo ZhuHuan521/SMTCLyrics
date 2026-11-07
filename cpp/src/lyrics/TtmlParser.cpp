@@ -324,10 +324,23 @@ bool hasExplicitDescendantTiming(const XmlElement& element) {
     }
     return false;
 }
-void collectReplacementTexts(const XmlElement& element, std::map<std::string, ReplacementText>& replacements) {
+std::string localizedLanguage(const XmlElement& element) {
+    return lowerAscii(attributeValue(element, "xml:lang"));
+}
+
+void collectReplacementTexts(const XmlElement& element, std::map<std::string, ReplacementText>& replacements,
+                             std::string_view language = {}) {
     if (localName(element.name) == "translations") {
         for (const auto& translation : element.children) {
             if (translation.name == kTextNodeName || localName(translation.name) != "translation") continue;
+            if (!language.empty()) {
+                const auto actual = localizedLanguage(translation).empty()
+                    ? localizedLanguage(element) : localizedLanguage(translation);
+                const auto requested = lowerAscii(language);
+                const auto primary = requested.substr(0, requested.find('-'));
+                const auto isChinese = actual == "zh-hans" || actual == "zh-hant";
+                if (actual != requested && actual != primary && !(isChinese && requested.starts_with("zh"))) continue;
+            }
             const auto type = lowerAscii(attributeValue(translation, "type"));
             if (type != "replacement" && type != "subtitle") continue;
             for (const auto& text : translation.children) {
@@ -346,7 +359,7 @@ void collectReplacementTexts(const XmlElement& element, std::map<std::string, Re
         return;
     }
     for (const auto& child : element.children) {
-        if (child.name != kTextNodeName) collectReplacementTexts(child, replacements);
+        if (child.name != kTextNodeName) collectReplacementTexts(child, replacements, language);
     }
 }
 
@@ -411,6 +424,9 @@ bool TtmlParser::hasUsableSyllableTiming(std::string_view xml) {
 
 bool TtmlParser::parseUtf8(std::string_view xml) {
     lines_.clear();
+    originalLines_.clear();
+    translatedLines_.clear();
+    hasTranslationsBlock_ = false;
     hasWordTiming_ = false;
     wordTimedLineCount_ = 0;
     if (xml.empty() || xml.size() > 8 * 1024 * 1024) return false;
@@ -419,8 +435,8 @@ bool TtmlParser::parseUtf8(std::string_view xml) {
     if (!parseXmlTree(xml, root)) return false;
 
     std::map<std::string, ReplacementText> replacements;
+    hasTranslationsBlock_ = findElement(root, "translations") != nullptr;
     collectReplacementTexts(root, replacements);
-
     const auto* body = findElement(root, "body");
     if (!body) return false;
     std::vector<const XmlElement*> paragraphs;
@@ -488,10 +504,141 @@ bool TtmlParser::parseUtf8(std::string_view xml) {
         lines_.push_back(std::move(line));
     }
 
+    // 保存不含本地化字幕的正文；外文歌曲只使用这份时间轴。
+    std::vector<std::int64_t> originalLineTimes;
+    for (const auto& info : infos) {
+        LrcLine line;
+        line.timeMs = info.startMs;
+        line.durationMs = std::max<std::int64_t>(0, info.endMs - info.startMs);
+        bool ignoredWordTiming = false;
+        collectContent(*info.element, Timing{true, info.startMs, info.endMs}, info.startMs, info.endMs,
+                       line, false, ignoredWordTiming);
+        const bool lineHasWordTiming = line.segments.size() >= 2 && hasExplicitDescendantTiming(*info.element);
+        trimLineText(line);
+        if (!hasVisibleText(line.text)) continue;
+        std::stable_sort(line.segments.begin(), line.segments.end(), [](const LyricSegment& a, const LyricSegment& b) {
+            return a.offsetMs < b.offsetMs;
+        });
+        line.wordTiming = lineHasWordTiming;
+        if (!line.wordTiming) line.segments.clear();
+        if (originalLines_.empty()) originalLineTimes.push_back(line.timeMs);
+        originalLines_.push_back(std::move(line));
+    }
+    std::stable_sort(originalLines_.begin(), originalLines_.end(), [](const LrcLine& a, const LrcLine& b) {
+        return a.timeMs < b.timeMs;
+    });
+
+    // 语言替换字形单独保留，不能与原文正文合并。原文没有语言标记时，
+    // TTML 内的替换译文可作为可选译文；外文原文优先选择中文简繁替换。
+    std::map<std::string, ReplacementText> translatedReplacements;
+    const auto rootLanguage = localizedLanguage(root);
+    collectReplacementTexts(root, translatedReplacements, rootLanguage);
+    if (translatedReplacements.empty() && !rootLanguage.empty()) {
+        collectReplacementTexts(root, translatedReplacements);
+    }
+    if (translatedReplacements.empty()) translatedReplacements = replacements;
+    if (translatedReplacements.empty()) {
+        // 本地化 TTML 的 text 可能连 for 都没有；仅在确实没有真实行 key
+        // 时按声明顺序编号，绝不让内部序号冒充正文的 itunes:key。
+        std::vector<const XmlElement*> translationTexts;
+        const auto* translations = findElement(root, "translations");
+        if (translations) {
+            const auto collectTexts = [&](const auto& self, const XmlElement& element) -> void {
+                for (const auto& child : element.children) {
+                    if (child.name == kTextNodeName) continue;
+                    if (localName(child.name) == "text") translationTexts.push_back(&child);
+                    else self(self, child);
+                }
+            };
+            collectTexts(collectTexts, *translations);
+        }
+        for (std::size_t i = 0; i < translationTexts.size(); ++i) {
+            translatedReplacements[std::to_string(i)] = ReplacementText{translationTexts[i], false};
+        }
+    }
+    // 只有带 itunes:key 的正文才能按行匹配；无 key 的本地化 TTML 保持按声明顺序。
+    const bool originalHasKeys = std::any_of(infos.begin(), infos.end(), [](const ParagraphInfo& info) {
+        return !attributeValue(*info.element, "itunes:key").empty();
+    });
+    if (originalHasKeys && translatedReplacements.size() <= 1) {
+        // 没有 itunes:key 的 translation 只有一份整篇文本；按正文行切分，
+        // 再把每个切片放回对应的原始行起点，避免把整篇译文放到第一行。
+        std::wstring wholeText;
+        ReplacementText source;
+        if (!translatedReplacements.empty()) source = translatedReplacements.begin()->second;
+        bool unused = false;
+        LrcLine aggregate;
+        if (source.element) {
+            collectContent(*source.element, Timing{true, 0, 0}, 0, 0, aggregate, source.subtitle, unused);
+        }
+        wholeText = aggregate.text;
+        std::vector<std::wstring> pieces(originalLines_.size());
+        std::size_t cursor = 0;
+        for (std::size_t i = 0; i < pieces.size(); ++i) {
+            std::size_t next = i + 1 < pieces.size() ? wholeText.find_first_of(L"\r\n", cursor) : std::wstring::npos;
+            if (next == std::wstring::npos) next = wholeText.size();
+            while (next > cursor && std::iswspace(wholeText[next - 1]) != 0) --next;
+            pieces[i] = wholeText.substr(cursor, next - cursor);
+            while (next < wholeText.size() && std::iswspace(wholeText[next]) != 0) ++next;
+            cursor = next;
+        }
+        if (pieces.size() == originalLines_.size() && std::any_of(pieces.begin(), pieces.end(),
+                [](const std::wstring& text) { return !text.empty(); })) {
+            for (std::size_t i = 0; i < pieces.size(); ++i) {
+                LrcLine line;
+                line.timeMs = originalLines_[i].timeMs;
+                line.durationMs = originalLines_[i].durationMs;
+                line.text = pieces[i];
+                translatedLines_.push_back(std::move(line));
+            }
+            translatedReplacements.clear();
+            translatedLines_.erase(std::remove_if(translatedLines_.begin(), translatedLines_.end(),
+                [](const LrcLine& line) { return line.text.empty(); }), translatedLines_.end());
+        }
+    }
+    for (std::size_t visibleIndex = 0; visibleIndex < infos.size(); ++visibleIndex) {
+        const auto& info = infos[visibleIndex];
+        const auto key = attributeValue(*info.element, "itunes:key");
+        auto replacement = key.empty() ? translatedReplacements.end() : translatedReplacements.find(key);
+        if (key.empty()) {
+            // 无 key 的正文不能与任意真实 key 误配。译文按 text 声明顺序
+            // 对应可见段落；完全同序、同数量的真实 key 也按此顺序兜底。
+            replacement = translatedReplacements.find(std::to_string(visibleIndex));
+            if (replacement == translatedReplacements.end() && translatedReplacements.size() == infos.size()) {
+                replacement = std::next(translatedReplacements.begin(), static_cast<std::ptrdiff_t>(visibleIndex));
+            }
+        }
+        if (replacement == translatedReplacements.end()) continue;
+        LrcLine line;
+        line.timeMs = info.startMs;
+        line.durationMs = std::max<std::int64_t>(0, info.endMs - info.startMs);
+        bool ignoredWordTiming = false;
+        const bool replacementWordTiming = !replacement->second.subtitle &&
+            hasExplicitDescendantTiming(*replacement->second.element);
+        collectContent(*replacement->second.element, Timing{true, info.startMs, info.endMs}, info.startMs,
+                       info.endMs, line, replacement->second.subtitle || !replacementWordTiming, ignoredWordTiming);
+        const bool lineHasWordTiming = line.segments.size() >= 2 && replacementWordTiming;
+        trimLineText(line);
+        line.wordTiming = lineHasWordTiming;
+        if (!lineHasWordTiming) line.segments.clear();
+        if (hasVisibleText(line.text)) translatedLines_.push_back(std::move(line));
+    }
+    std::stable_sort(translatedLines_.begin(), translatedLines_.end(), [](const LrcLine& a, const LrcLine& b) {
+        return a.timeMs < b.timeMs;
+    });
+
     std::stable_sort(lines_.begin(), lines_.end(), [](const LrcLine& a, const LrcLine& b) {
         return a.timeMs < b.timeMs;
     });
     return !lines_.empty();
+}
+
+std::vector<LrcLine> TtmlParser::originalLines() const {
+    return originalLines_;
+}
+
+std::vector<LrcLine> TtmlParser::translatedLines() const {
+    return translatedLines_;
 }
 
 } // namespace smtc::lyrics

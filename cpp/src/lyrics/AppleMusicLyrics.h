@@ -39,6 +39,8 @@ struct AppleMusicTokenSettings {
 
 struct AppleMusicFetchResult {
     std::string ttml;
+    // 译文必须保留独立时间轴，不能覆盖原文 TTML。
+    std::string translatedTtml;
     std::string diagnostic;
     AppleMusicStatus status = AppleMusicStatus::Unavailable;
     // 地区留空时由账号接口自动读取的值；仅供当前运行使用，不自动写配置。
@@ -65,7 +67,7 @@ std::int64_t appleMusicTokenExpiry(std::string_view token);
 
 // 使用 Apple Music 官方 amp-api 获取逐字 TTML。catalogId 是精确身份；
 // 普通 SMTC 才允许搜索，并且必须通过 title、artist、时长等校验。
-// Apple Music 歌词跟随系统语言：简中 -> 台湾繁中 -> 香港繁中 -> 原文。
+// 中文歌曲优先使用简体翻译；外文歌曲只请求原文，避免自动替换成中文翻译。
 constexpr std::string_view kAppleMusicLyricsLanguages[] = {
     "zh-Hans-CN",
     "zh-Hant-TW",
@@ -73,10 +75,19 @@ constexpr std::string_view kAppleMusicLyricsLanguages[] = {
     ""
 };
 
+struct AppleMusicLyricSelection {
+    std::string originalTtml;
+    std::string translatedTtml;
+    std::string requestedLanguage;
+    bool originalHasEmbeddedTranslation = false;
+};
+
 std::string appleMusicLyricQuery(std::string_view language);
 
 // 从 Apple Music 歌词响应中选取指定语言的 TTML；language 为空时返回原文。
 std::string appleMusicTtmlForLanguage(std::string_view responseJson, std::string_view requestedLanguage);
+std::string appleMusicOriginalTtml(std::string_view responseJson);
+AppleMusicLyricSelection selectAppleMusicLyrics(std::string_view responseJson, std::string_view requestedLanguage);
 
 class AppleMusicLyricsClient {
 public:

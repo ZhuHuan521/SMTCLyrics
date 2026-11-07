@@ -77,6 +77,7 @@ enum ControlId {
     IdToggleAppleMusicBridge,
     IdSwitchSource,
     IdClearCache,
+    IdToggleTranslation,
 
     IdQqStatus = 801,
     IdKgStatus,
@@ -284,6 +285,7 @@ LRESULT ControlWindow::handleMessage(UINT message, WPARAM wParam, LPARAM lParam)
         case IdLock: toggleLock(); return 0;
         case IdReload: if (callbacks_.reloadLyrics) callbacks_.reloadLyrics(); return 0;
         case IdSwitchSource: if (callbacks_.switchSource) callbacks_.switchSource(); return 0;
+        case IdToggleTranslation: if (callbacks_.toggleTranslation) callbacks_.toggleTranslation(); return 0;
         case IdClearCache: if (callbacks_.clearCache) callbacks_.clearCache(); return 0;
         case IdLocalLyric: if (callbacks_.openLocalLyric) callbacks_.openLocalLyric(); return 0;
         case IdCheckSources: startSourceCheck(); return 0;
@@ -440,6 +442,7 @@ void ControlWindow::createControls() {
     addButton(L"清除缓存", 558, 702, 92, 34, IdClearCache);
     addButton(L"检测dll", 660, 702, 70, 34, IdCheckAppleMusicBridge);
     addButton(L"加载/卸载dll", 438, 742, 130, 34, IdToggleAppleMusicBridge);
+    addButton(L"显示/隐藏翻译", 578, 742, 152, 34, IdToggleTranslation);
 
     // 状态栏
     addValueLabel(L"歌词源：未加载", 590, 902, 210, 24, IdCurrentSourceText);

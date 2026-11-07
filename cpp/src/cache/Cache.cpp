@@ -140,4 +140,21 @@ void LyricCache::setOffset(std::string_view keywordUtf8, int offsetMs) {
     jsonText_ = json.dump();
 }
 
+std::optional<bool> LyricCache::translationVisibleFor(std::string_view keywordUtf8) const {
+    const auto json = parseOrDefault(jsonText_);
+    const auto key = keyFor(keywordUtf8);
+    const auto& songs = json["songs"];
+    const auto songIt = songs.find(key);
+    if (songIt == songs.end() || !songIt->is_object()) return std::nullopt;
+    const auto field = songIt->find("translationVisible");
+    if (field == songIt->end() || !field->is_boolean()) return std::nullopt;
+    return field->get<bool>();
+}
+
+void LyricCache::setTranslationVisible(std::string_view keywordUtf8, bool visible) {
+    auto json = parseOrDefault(jsonText_);
+    songEntry(json, keyFor(keywordUtf8))["translationVisible"] = visible;
+    jsonText_ = json.dump();
+}
+
 }

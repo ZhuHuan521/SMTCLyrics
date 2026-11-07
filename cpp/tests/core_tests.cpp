@@ -296,6 +296,25 @@ void testTtmlReplacementLanguage() {
     smtc::lyrics::TtmlParser bgParser;
     require(bgParser.parseUtf8(bg) && bgParser.lines()[0].text == L"main", "background lyrics should not be shown as the main lyric");
 }
+void testTtmlChineseTranslationWithoutBodyKeys() {
+    const std::string ttml = std::string(R"keys(<tt xmlns="http://www.w3.org/ns/ttml" xml:lang="zh-Hans"><head><metadata><translations><translation type="replacement" xml:lang="zh-Hans"><text for="L1"><span begin="1" end="1.5">简</span><span begin="1.5" end="2">体</span></text><text for="L2"><span begin="3" end="3.5">歌</span><span begin="3.5" end="4">词</span></text></translation></translations></metadata></head><body><div><p begin="1" end="2">原文</p><p begin="3" end="4">原文二</p></div></body></tt>)keys");
+    smtc::lyrics::TtmlParser parser;
+    require(parser.parseUtf8(ttml), "localized Chinese TTML without body keys should parse");
+    require(parser.translatedLines().size() == 2 && parser.translatedLines()[0].text == L"简体",
+            "localized Chinese replacement text should retain its own line text and timeline");
+    require(parser.originalLines().size() == 2 && parser.originalLines()[0].text == L"原文",
+            "localized Chinese original lines should not inherit replacement text");
+}
+
+void testTtmlUnkeyedBodyDoesNotMatchTranslationKey() {
+    const std::string ttml = std::string(R"regression(<tt xmlns="http://www.w3.org/ns/ttml"><head><metadata><translations><translation type="replacement" xml:lang="zh-Hans"><text for="L1">译文一</text><text for="L2">译文二</text></translation></translations></metadata></head><body><div><p begin="1" end="2">原文一</p><p begin="3" end="4">原文二</p></div></body></tt>)regression");
+    smtc::lyrics::TtmlParser parser;
+    require(parser.parseUtf8(ttml), "unkeyed body with keyed translations should parse");
+    require(parser.originalLines().size() == 2 && parser.originalLines()[0].text == L"原文一",
+            "unkeyed body must not be overwritten by translation keys");
+    require(parser.translatedLines().size() == 2 && parser.translatedLines()[1].text == L"译文二",
+            "unkeyed body should map translations in visible paragraph order");
+}
 
 void testTtmlReplacementUsesItsOwnTimeline() {
     const std::string ttml = std::string(R"replacement(<tt xmlns="http://www.w3.org/ns/ttml" xmlns:itunes="http://music.apple.com/lyric-ttml-internal" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" itunes:timing="Word"><head><metadata><translations><translation type="replacement" xml:lang="zh-Hans"><text for="L1"><span begin="10.000" end="10.100">在</span><span begin="10.100" end="10.500">无穷无尽</span><span begin="10.500" end="10.700">之</span><span begin="10.700" end="10.900">间</span> <span ttm:role="x-bg"><span begin="10.000" end="10.200">(在)</span></span></text><text for="L2"><span begin="12.000" end="12.200">和</span><span begin="12.200" end="12.400">和</span></text></translation></translations></metadata></head><body><div><p begin="10.000" end="10.900" itunes:key="L1"><span begin="10.000" end="10.100">在</span><span begin="10.100" end="10.500">無窮無盡</span><span begin="10.500" end="10.700">之</span><span begin="10.700" end="10.900">間</span> <span ttm:role="x-bg"><span begin="10.000" end="10.200">(在)</span></span></p><p begin="12.000" end="12.400" itunes:key="L2"><span begin="12.000" end="12.200">和</span><span begin="12.200" end="12.400">和</span></p></div></body></tt>)replacement");
@@ -336,6 +355,35 @@ void testTtmlEnglishSpanSpacing() {
     require(contiguousParser.parseUtf8(contiguous) && contiguousParser.lines()[0].text == L"calling",
             "adjacent word spans should not introduce spaces that are absent from the TTML");
 }
+void testEnglishEmbeddedSubtitleUsesOriginalLines() {
+    const std::string ttml = std::string(R"embed(<tt xmlns="http://www.w3.org/ns/ttml" xmlns:itunes="http://music.apple.com/lyric-ttml-internal"><head><metadata><translations><translation type="subtitle" xml:lang="zh-Hans"><text for="L1">中文翻译</text></translation></translations></metadata></head><body><div><p begin="1" end="2" itunes:key="L1"><span begin="1" end="1.5">Hello</span><span begin="1.5" end="2">world</span></p></div></body></tt>)embed");
+    smtc::lyrics::TtmlParser parser;
+    require(parser.parseUtf8(ttml), "English TTML with embedded subtitle should parse");
+    require(parser.originalLines().size() == 1 && parser.originalLines()[0].text == L"Helloworld",
+            "foreign lyrics must keep original TTML text separate from embedded subtitles");
+    require(smtc::lyrics::mostlyCjkLyrics(parser.originalLines()) == false,
+            "English original lines should not be classified as Chinese");
+    require(parser.translatedLines().size() == 1 && parser.translatedLines()[0].text == L"中文翻译" &&
+            !parser.translatedLines()[0].wordTiming,
+            "English embedded subtitle should remain an optional line-only translation");
+}
+void testEmbeddedTranslationPair() {
+    const std::string ttml = std::string(R"pair(<tt xmlns="http://www.w3.org/ns/ttml" xmlns:itunes="http://music.apple.com/lyric-ttml-internal" xmlns:ttm="http://www.w3.org/ns/ttml#metadata"><head><metadata><translations><translation type="subtitle" xml:lang="zh-Hans"><text for="L1">中文翻译</text></translation></translations></metadata></head><body><div><p begin="1" end="2" itunes:key="L1"><span begin="1" end="1.5">Hello</span><span begin="1.5" end="2">world</span></p></div></body></tt>)pair");
+    smtc::lyrics::TtmlParser parser;
+    require(parser.parseUtf8(ttml), "English TTML with translated subtitle should parse");
+    const auto original = parser.originalLines();
+    const auto translated = smtc::lyrics::alwaysOriginalLines(parser.lines());
+    require(original.size() == translated.size() && original[0].text == L"Helloworld" &&
+            translated[0].text == L"中文翻译",
+            "original and translated lines should be separate vectors");
+    smtc::lyrics::LrcParser lyrics;
+    lyrics.setLines(original, translated, original);
+    require(lyrics.frameAt(1800, 1).text == L"Helloworld" && lyrics.frameAt(1800, 1).drawWordHighlight,
+            "original display must retain the TTML line and its genuine word timing");
+    lyrics.setTranslationVisible(true);
+    require(lyrics.frameAt(1800, 1).text == L"中文翻译" && !lyrics.frameAt(1800, 1).drawWordHighlight,
+            "line-only translated subtitle should use whole-line display");
+}
 void testTtmlLineOnlyWithLocalizations() {
     const std::string ttml = std::string(R"line(<tt xmlns="http://www.w3.org/ns/ttml"><head><metadata><translations><translation xml:lang="zh-Hans" type="replacement"><text for="L1">原文</text></translation></translations></metadata></head><body><div><p begin="1" end="2" itunes:key="L1">原文</p></div></body></tt>)line");
     require(!smtc::lyrics::TtmlParser::hasSyllableTiming(ttml),
@@ -348,6 +396,14 @@ void testTtmlLineOnlyWithLocalizations() {
     smtc::lyrics::TtmlParser inlineParser;
     require(inlineParser.parseUtf8(inlineTransliteration) && inlineParser.lines()[0].text == L"歌詞",
             "inline transliteration roles must not be appended to the displayed lyric");
+}
+void testLocalizedTtmlDoesNotMergeSourceReplacement() {
+    const std::string translated = std::string(R"local(<tt xmlns="http://www.w3.org/ns/ttml" xml:lang="zh-Hans"><head><metadata><translations><translation type="replacement" xml:lang="zh-Hans"><text for="L1">译文</text></translation></translations></metadata></head><body><div><p begin="4" end="6" itunes:key="L1">翻译原文</p></div></body></tt>)local");
+    smtc::lyrics::TtmlParser parser;
+    require(parser.parseUtf8(translated) && parser.lines().size() == 1 && parser.lines()[0].text == L"译文",
+            "localized TTML should preserve its localized replacement text");
+    require(parser.translatedLines().size() == 1 && parser.translatedLines()[0].text == L"译文",
+            "localized TTML must produce an independent translated line list");
 }
 
 void testAppleMusicLanguageSelection() {
@@ -372,11 +428,130 @@ void testAppleMusicLanguageSelection() {
     require(smtc::lyrics::appleMusicTtmlForLanguage(response, "ja-JP").empty(),
             "Apple Music should use original TTML rather than an unrelated localization");
 }
+void testTranslationUsesIndependentTimeline() {
+    smtc::lyrics::LrcParser original;
+    smtc::lyrics::LrcParser translated;
+    require(original.parseUtf8(R"o(<tt xmlns="http://www.w3.org/ns/ttml"><body><div><p begin="1" end="2"><span begin="1" end="1.5">原</span><span begin="1.5" end="2">文</span></p><p begin="3" end="4"><span begin="3" end="3.5">第</span><span begin="3.5" end="4">二</span></p></div></body></tt>)o"),
+            "original TTML fixture should parse");
+    require(translated.parseUtf8(R"t(<tt xmlns="http://www.w3.org/ns/ttml"><body><div><p begin="4" end="6"><span begin="4" end="5">译</span><span begin="5" end="6">文</span></p><p begin="7" end="9">整行译文</p></div></body></tt>)t"),
+            "translated TTML fixture should parse");
+    original.setLines(original.lines(), translated.lines());
+    require(original.frameAt(1500, 1).text == L"原文" && original.frameAt(3500, 1).text == L"第二",
+            "original frames must retain their independent TTML timeline");
+    original.setTranslationVisible(false);
+    require(original.frameAt(1500, 1).text == L"原文",
+            "switching back from translation must restore the original timeline");
+    original.setTranslationVisible(true);
+    const auto frame = original.frameAt(4500, 1);
+    require(frame.text == L"译文" && frame.drawWordHighlight,
+            "translation display should use its own word timing");
+    const auto lineOnly = original.frameAt(7500, 1);
+    require(lineOnly.text == L"整行译文" && !lineOnly.drawWordHighlight && lineOnly.highlightPercent > 0,
+            "line-only translation should highlight by its own whole-line timing without a word sweep");
+}
+
+void testMostlyCjkLyricsThreshold() {
+    const std::vector<smtc::lyrics::LrcLine> seventyFive{{0, 1000, L"中文中A", {}}};
+    const std::vector<smtc::lyrics::LrcLine> seventyFour{{0, 1000, L"中文AB", {}}};
+    const std::vector<smtc::lyrics::LrcLine> english{{0, 1000, L"English lyric", {}}};
+    const std::vector<smtc::lyrics::LrcLine> korean{{0, 1000, L"한국어 가사", {}}};
+    require(smtc::lyrics::mostlyCjkLyrics(seventyFive),
+            "exactly 75% CJK letters should qualify as a Chinese lyric");
+    require(!smtc::lyrics::mostlyCjkLyrics(seventyFour),
+            "74% CJK letters should be treated as a foreign lyric");
+    require(!smtc::lyrics::mostlyCjkLyrics(english), "English lyric should be treated as foreign");
+    require(smtc::lyrics::mostlyCjkLyrics(korean), "Hangul lyric should count as CJK");
+}
+
+void testAppleMusicOriginalAndTranslationAreSeparated() {
+    const std::string response = std::string(R"apple({"data":[{"attributes":{"ttml":"<tt><body><div><p begin=\"1\" end=\"3\"><span begin=\"1\" end=\"2\">原</span><span begin=\"2\" end=\"3\">文</span></p></div></body></tt>","ttmlLocalizations":{"zh-Hans-CN":"<tt><body><div><p begin=\"1\" end=\"3\"><span begin=\"1\" end=\"2\">译</span><span begin=\"2\" end=\"3\">文</span></p></div></body></tt>"}}}]})apple");
+    const auto selection = smtc::lyrics::selectAppleMusicLyrics(response, "zh-Hans-CN");
+    require(!selection.originalTtml.empty() && !selection.translatedTtml.empty() &&
+            selection.originalTtml.find("原") != std::string::npos &&
+            selection.translatedTtml.find("译") != std::string::npos,
+            "Apple Music original and translation must remain separate TTML");
+    require(smtc::lyrics::selectAppleMusicLyrics(response, "").translatedTtml.empty(),
+            "foreign-original request must not select a Chinese translation");
+}
+void testAppleMusicLanguageFlowByOriginalLanguage() {
+    require(std::string(smtc::lyrics::kAppleMusicLyricsLanguages[0]) == "zh-Hans-CN",
+            "Chinese lyrics should request zh-Hans-CN first");
+    const std::string response = std::string(R"apple({"data":[{"attributes":{"ttml":"<tt xml:lang=\"en\"><body><div><p begin=\"1\" end=\"2\"><span begin=\"1\" end=\"1.5\">Hello</span><span begin=\"1.5\" end=\"2\">world</span></p></div></body></tt>","ttmlLocalizations":{"zh-Hans-CN":"<tt xml:lang=\"zh-Hans\"><body><div><p begin=\"1\" end=\"2\"><span begin=\"1\" end=\"1.5\">你好</span><span begin=\"1.5\" end=\"2\">世界</span></p></div></body></tt>"}}}]})apple");
+    const auto original = smtc::lyrics::selectAppleMusicLyrics(response, "");
+    smtc::lyrics::LrcParser originalParser;
+    require(originalParser.parseBytes(std::vector<std::uint8_t>(original.originalTtml.begin(), original.originalTtml.end())) &&
+            !smtc::lyrics::mostlyCjkLyrics(originalParser.originalLines()),
+            "English original should select foreign-language mode");
+    const auto translated = smtc::lyrics::selectAppleMusicLyrics(response, "zh-Hans-CN");
+    require(!translated.translatedTtml.empty() && translated.translatedTtml != translated.originalTtml,
+            "Chinese translation must remain a separate TTML from original");
+}
+
+void testTranslationPreferenceCache() {
+    const auto path = std::filesystem::temp_directory_path() / L"smtclyrics-translation-cache.json";
+    std::filesystem::remove(path);
+    smtc::cache::LyricCache cache(path);
+    cache.setTranslationVisible("Song - Artist", true);
+    cache.setTranslationVisible("Song - Artist", false);
+    cache.save();
+    cache.load();
+    require(cache.translationVisibleFor("Song - Artist").has_value() &&
+            !*cache.translationVisibleFor("Song - Artist"),
+            "manual translation preference should update and persist");
+    cache.setTranslationVisible("Song - Artist", true);
+    cache.save();
+    cache.load();
+    require(cache.translationVisibleFor("Song - Artist").value_or(false),
+            "manual translation preference should persist as a boolean");
+    std::filesystem::remove(path);
+}
+
 void testWordLevelTimingDetection() {
     const std::string lineLrc = "[00:01.00]first line\n[00:02.00]second line\n";
     require(!smtc::lyrics::hasWordLevelTiming(toBytes(lineLrc)), "plain LRC must remain a line-level fallback");
     const std::string wordTtml = R"word(<tt xmlns="http://www.w3.org/ns/ttml"><body><div><p begin="1" end="3"><span begin="1" end="2">A</span><span begin="2" end="3">B</span></p><p begin="3" end="5"><span begin="3" end="4">C</span><span begin="4" end="5">D</span></p></div></body></tt>)word";
     require(smtc::lyrics::hasWordLevelTiming(toBytes(wordTtml)), "two lines of timed spans should be word-level");
+}
+
+void testTranslationTimelineMustDiffer() {
+    const std::string source = R"src(<tt xmlns="http://www.w3.org/ns/ttml"><body><div><p begin="1" end="2"><span begin="1" end="1.5">原</span><span begin="1.5" end="2">文</span></p><p begin="3" end="4"><span begin="3" end="3.5">歌</span><span begin="3.5" end="4">词</span></p></div></body></tt>)src";
+    const std::string same = R"same(<tt xmlns="http://www.w3.org/ns/ttml"><body><div><p begin="1" end="2"><span begin="1" end="1.5">同</span><span begin="1.5" end="2">一</span></p><p begin="3" end="4"><span begin="3" end="3.5">时</span><span begin="3.5" end="4">轴</span></p></div></body></tt>)same";
+    const std::string distinct = R"dist(<tt xmlns="http://www.w3.org/ns/ttml"><body><div><p begin="4" end="6">译文一</p><p begin="7" end="9">译文二</p></div></body></tt>)dist";
+    smtc::lyrics::LrcParser sourceParser;
+    smtc::lyrics::LrcParser sameParser;
+    smtc::lyrics::LrcParser distinctParser;
+    require(sourceParser.parseUtf8(source) && sameParser.parseUtf8(same) && distinctParser.parseUtf8(distinct),
+            "translation timeline fixtures should parse");
+    sourceParser.setLines(sourceParser.lines(), sameParser.lines());
+    require(sourceParser.hasDistinctTranslation(),
+            "a different translated text track should remain switchable even with identical timestamps");
+    sourceParser.setLines(sourceParser.lines(), distinctParser.lines());
+    require(sourceParser.hasDistinctTranslation(),
+            "an independently timed translation should be accepted");
+    sourceParser.setLines(sourceParser.lines(), sourceParser.originalLines());
+    require(!sourceParser.hasDistinctTranslation(),
+            "the same TTML must not be exposed as a translation");
+    require(sourceParser.originalLines()[0].text == L"原文",
+            "rejecting an identical translation must not alter original display lines");
+}
+
+void testNoTranslationToggleDoesNotChangePreference() {
+    const auto path = std::filesystem::temp_directory_path() / L"smtclyrics-no-translation-preference.json";
+    std::filesystem::remove(path);
+    smtc::cache::LyricCache cache(path);
+    const std::string lineOnly = R"line(<tt xmlns="http://www.w3.org/ns/ttml"><body><div><p begin="1" end="2">只有原文</p></div></body></tt>)line";
+    smtc::lyrics::LrcParser parser;
+    require(parser.parseBytes(toBytes(lineOnly)) && !parser.hasTranslation(),
+            "a TTML without a translation must not expose a translation track");
+    cache.setTranslationVisible("Song - Artist", false);
+    cache.save();
+    if (parser.hasTranslation()) cache.setTranslationVisible("Song - Artist", !parser.translationVisible());
+    cache.save();
+    cache.load();
+    require(cache.translationVisibleFor("Song - Artist").has_value() &&
+            !*cache.translationVisibleFor("Song - Artist"),
+            "a no-translation click must not modify or erase the saved preference");
+    std::filesystem::remove(path);
 }
 
 
@@ -814,6 +989,7 @@ void testCache() {
 
 int main() {
     try {
+        std::cout << "running testLrcParser\n" << std::flush;
         testLrcParser();
         testLyricRepositoryLocalPriority();
         testLyricRepositoryLocalFallback();
@@ -826,15 +1002,27 @@ int main() {
         testTtmlSelfClosingElements();
         testTtmlLineOnlyLyrics();
         testTtmlReplacementLanguage();
+        testTtmlChineseTranslationWithoutBodyKeys();
+        testTtmlUnkeyedBodyDoesNotMatchTranslationKey();
         testTtmlEnglishSpanSpacing();
+        testEnglishEmbeddedSubtitleUsesOriginalLines();
+        testEmbeddedTranslationPair();
         testTtmlLineOnlyWithLocalizations();
+        testLocalizedTtmlDoesNotMergeSourceReplacement();
         testAppleMusicLanguageSelection();
+        testAppleMusicLanguageFlowByOriginalLanguage();
+        testTranslationUsesIndependentTimeline();
+        testMostlyCjkLyricsThreshold();
+        testAppleMusicOriginalAndTranslationAreSeparated();
+        testTranslationPreferenceCache();
         testAppleMusicParserAndVersionMatching();
         testAppleMusicAccountStorefront();
         testAppleMusicStorefrontIsRuntimeOnly();
         testAppleMusicConfigCredentials();
         testAppleMusicRepositoryFallback();
         testWordLevelTimingDetection();
+        testTranslationTimelineMustDiffer();
+        testNoTranslationToggleDoesNotChangePreference();
         testLineOnlyLyricsDoNotDrawSweep();
         testLineOnlyAppleNeverOverridesConfiguredWordSource();
         testManualSourceSwitchSkipsLocalLyrics();
