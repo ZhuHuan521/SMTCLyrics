@@ -117,7 +117,7 @@ Release 版 `SMTCLyrics.exe` 已将 Apple Music bridge DLL 作为资源嵌入。
 
 发布版程序位于 [cpp/release/AppleMusicLyrics/SMTCLyrics.exe](cpp/release/AppleMusicLyrics/SMTCLyrics.exe)。Apple Music 内部模式即使在程序启动时尚未建立 bridge 管道，也会在首次读取播放状态时自动加载 bridge；已有 bridge 模块但暂不响应时不会反复卸载和注入。
 
-当前发布版为 [GitHub Release v1.4.1](https://github.com/ZhuHuan521/SMTCLyrics/releases/tag/v1.4.1)。下载的 `SMTCLyrics.exe` 大小为 2,295,310 字节，SHA256 为 `D86D66598B1361838DE1DE7A930DDC16DAF4E603F2284C2D16F19757731AF851`。v1.4.1 发布程序未使用 UPX 加壳。
+当前发布版为 [GitHub Release v1.4.1](https://github.com/ZhuHuan521/SMTCLyrics/releases/tag/v1.4.1)。下载的 `SMTCLyrics.exe` 大小为 674,318 字节，SHA256 为 `5812AFD9027D40F59ACB7A26E670B90BC11AC8EDF22C551A6D7B12C74BFC4EF2`。该附件按你提供的 `cpp1/SMTCLyrics.exe` 发布，使用封装启动器，内部携带未加壳程序。
 
 如果没有检测到 SMTC 媒体会话或 Apple Music 内部播放信息，桌面歌词窗口会显示等待提示。在线歌词源依赖第三方服务接口和网络状态，接口失效时建议优先使用本地歌词。
 

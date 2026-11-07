@@ -1,4 +1,5 @@
 #include "applemusic/AppleMusicInternalProvider.h"
+#include "json.hpp"
 #include "cache/Cache.h"
 #include "config/Config.h"
 #include "lyrics/AppleMusicLyrics.h"
@@ -367,7 +368,7 @@ void testEnglishEmbeddedSubtitleUsesOriginalLines() {
             !parser.translatedLines()[0].wordTiming,
             "English embedded subtitle should remain an optional line-only translation");
 }
-void testEmbeddedTranslationPair() {
+void testTranslationDisplaySwitch() {
     const std::string ttml = std::string(R"pair(<tt xmlns="http://www.w3.org/ns/ttml" xmlns:itunes="http://music.apple.com/lyric-ttml-internal" xmlns:ttm="http://www.w3.org/ns/ttml#metadata"><head><metadata><translations><translation type="subtitle" xml:lang="zh-Hans"><text for="L1">中文翻译</text></translation></translations></metadata></head><body><div><p begin="1" end="2" itunes:key="L1"><span begin="1" end="1.5">Hello</span><span begin="1.5" end="2">world</span></p></div></body></tt>)pair");
     smtc::lyrics::TtmlParser parser;
     require(parser.parseUtf8(ttml), "English TTML with translated subtitle should parse");
@@ -380,9 +381,9 @@ void testEmbeddedTranslationPair() {
     lyrics.setLines(original, translated, original);
     require(lyrics.frameAt(1800, 1).text == L"Helloworld" && lyrics.frameAt(1800, 1).drawWordHighlight,
             "original display must retain the TTML line and its genuine word timing");
-    lyrics.setTranslationVisible(true);
-    require(lyrics.frameAt(1800, 1).text == L"中文翻译" && !lyrics.frameAt(1800, 1).drawWordHighlight,
-            "line-only translated subtitle should use whole-line display");
+    lyrics.replaceDisplayLines(translated);
+    require(lyrics.frameAt(1800, 1).text == L"中文翻译",
+            "replacing display lines must select the translated text");
 }
 void testTtmlLineOnlyWithLocalizations() {
     const std::string ttml = std::string(R"line(<tt xmlns="http://www.w3.org/ns/ttml"><head><metadata><translations><translation xml:lang="zh-Hans" type="replacement"><text for="L1">原文</text></translation></translations></metadata></head><body><div><p begin="1" end="2" itunes:key="L1">原文</p></div></body></tt>)line");
@@ -412,12 +413,16 @@ void testAppleMusicLanguageSelection() {
             std::string(smtc::lyrics::kAppleMusicLyricsLanguages[2]) == "zh-Hant-HK" &&
             smtc::lyrics::kAppleMusicLyricsLanguages[3].empty(),
             "Apple Music should try Simplified Chinese, Taiwan, Hong Kong, then original");
+    require(std::string(smtc::lyrics::kAppleMusicLyricsLanguages[4]) == "zh-Hans-CN",
+            "foreign lyrics must retain a manually selectable Simplified Chinese translation");
     require(smtc::lyrics::appleMusicLyricQuery("zh-Hans-CN") == "?extend=ttmlLocalizations&l%5Blyrics%5D=zh-Hans-CN&l%5Bscript%5D=zh-Hans",
             "Apple Music should derive zh-Hans script from the simplified Chinese language");
     require(smtc::lyrics::appleMusicLyricQuery("zh-Hant-TW") == "?extend=ttmlLocalizations&l%5Blyrics%5D=zh-Hant-TW&l%5Bscript%5D=zh-Hant",
             "Apple Music should derive zh-Hant script from the Taiwan language variant");
-    require(smtc::lyrics::appleMusicLyricQuery("") == "?extend=ttmlLocalizations",
-            "Apple Music should omit language and script parameters when requesting the original lyrics");
+    require(smtc::lyrics::appleMusicLyricQuery("") == "",
+            "Apple Music original lyrics must not request ttmlLocalizations instead of attrs.ttml");
+    require(std::string(smtc::lyrics::appleMusicOriginalTtml(R"multi({"data":[{"attributes":{"ttmlLocalizations":"<tt><body><div><p begin=\"1\" end=\"2\">原文</p></div></body></tt>"}}]})multi")).find("原文") != std::string::npos,
+            "Apple Music must recover original TTML from a localization string without dropping the response");
     const std::string response = std::string(R"apple({"data":[{"attributes":{"ttml":"<tt><body><div><p begin=\"1\" end=\"3\"><span begin=\"1\" end=\"2\">原</span><span begin=\"2\" end=\"3\">文</span></p><p begin=\"3\" end=\"5\"><span begin=\"3\" end=\"4\">歌</span><span begin=\"4\" end=\"5\">词</span></p></div></body></tt>","ttmlLocalizations":{"zh-Hans-CN":"<tt><body><div><p begin=\"1\" end=\"3\"><span begin=\"1\" end=\"2\">简</span><span begin=\"2\" end=\"3\">体</span></p><p begin=\"3\" end=\"5\"><span begin=\"3\" end=\"4\">歌</span><span begin=\"4\" end=\"5\">词</span></p></div></body></tt>","zh-Hant":"<tt><body><div><p begin=\"1\" end=\"3\">繁</p><p begin=\"3\" end=\"5\">体</p></div></body></tt>"}}}]})apple");
     const auto selected = smtc::lyrics::appleMusicTtmlForLanguage(response, "zh-Hans-CN");
     require(!selected.empty(), "Apple Music should select the requested simplified Chinese TTML");
@@ -428,7 +433,13 @@ void testAppleMusicLanguageSelection() {
     require(smtc::lyrics::appleMusicTtmlForLanguage(response, "ja-JP").empty(),
             "Apple Music should use original TTML rather than an unrelated localization");
 }
-void testTranslationUsesIndependentTimeline() {
+
+void testAppleMusicSourceCheckReportsReason() {
+    const auto fetched = smtc::lyrics::AppleMusicLyricsClient{}.fetch("Hello - Adele", {}, {});
+    require(fetched.status == smtc::lyrics::AppleMusicStatus::AuthRequired && !fetched.diagnostic.empty(),
+            "Apple Music source check must retain a readable failure reason");
+}
+void testTranslationSwitchUsesItsOwnTimeline() {
     smtc::lyrics::LrcParser original;
     smtc::lyrics::LrcParser translated;
     require(original.parseUtf8(R"o(<tt xmlns="http://www.w3.org/ns/ttml"><body><div><p begin="1" end="2"><span begin="1" end="1.5">原</span><span begin="1.5" end="2">文</span></p><p begin="3" end="4"><span begin="3" end="3.5">第</span><span begin="3.5" end="4">二</span></p></div></body></tt>)o"),
@@ -438,16 +449,16 @@ void testTranslationUsesIndependentTimeline() {
     original.setLines(original.lines(), translated.lines());
     require(original.frameAt(1500, 1).text == L"原文" && original.frameAt(3500, 1).text == L"第二",
             "original frames must retain their independent TTML timeline");
-    original.setTranslationVisible(false);
+    original.replaceDisplayLines(original.lines());
     require(original.frameAt(1500, 1).text == L"原文",
             "switching back from translation must restore the original timeline");
-    original.setTranslationVisible(true);
+    original.replaceDisplayLines(translated.lines());
     const auto frame = original.frameAt(4500, 1);
-    require(frame.text == L"译文" && frame.drawWordHighlight,
-            "translation display should use its own word timing");
+    require(frame.text == L"译文",
+            "translation display should use its own translated text and timeline");
     const auto lineOnly = original.frameAt(7500, 1);
-    require(lineOnly.text == L"整行译文" && !lineOnly.drawWordHighlight && lineOnly.highlightPercent > 0,
-            "line-only translation should highlight by its own whole-line timing without a word sweep");
+    require(lineOnly.text == L"整行译文" && lineOnly.highlightPercent > 0,
+            "translation display should use its own translated text and timeline");
 }
 
 void testMostlyCjkLyricsThreshold() {
@@ -485,6 +496,39 @@ void testAppleMusicLanguageFlowByOriginalLanguage() {
     const auto translated = smtc::lyrics::selectAppleMusicLyrics(response, "zh-Hans-CN");
     require(!translated.translatedTtml.empty() && translated.translatedTtml != translated.originalTtml,
             "Chinese translation must remain a separate TTML from original");
+}
+
+void testAppleMusicLocalizedResponseIsTranslation() {
+    const std::string localized = std::string(R"localized(<tt xmlns="http://www.w3.org/ns/ttml" xmlns:itunes="http://music.apple.com/lyric-ttml-internal" xml:lang="zh-Hant" itunes:timing="Word"><head><metadata><translations><translation type="replacement" xml:lang="zh-Hans"><text for="L1"><span begin="1" end="1.5">简</span><span begin="1.5" end="2">体</span></text></translation></translations></metadata></head><body><div><p begin="1" end="2" itunes:key="L1"><span begin="1" end="1.5">繁</span><span begin="1.5" end="2">體</span></p></div></body></tt>)localized");
+    const std::string response = "{\"data\":[{\"attributes\":{\"ttmlLocalizations\":" + nlohmann::json(localized).dump() + "}}]}";
+    const auto selection = smtc::lyrics::selectAppleMusicLyrics(response, "zh-Hans-CN");
+    require(selection.originalTtml == localized && selection.translatedTtml.empty(),
+            "a language-specific Apple response must use its localization as the returned TTML");
+    smtc::lyrics::TtmlParser parser;
+    require(parser.parseUtf8(selection.originalTtml) && parser.translatedLines().size() == 1 &&
+            parser.translatedLines()[0].text == L"简体",
+            "language-specific response must preserve the actual translated text");
+}
+
+void testMisalignedTranslationTimelineRemainsAvailable() {
+    const std::vector<smtc::lyrics::LrcLine> original{{1000, 1000, L"Hello", {}}, {3000, 1000, L"world", {}}};
+    const std::vector<smtc::lyrics::LrcLine> translated{{1500, 500, L"你好", {}}, {3500, 500, L"世界", {}}};
+    smtc::lyrics::LrcParser parser;
+    parser.setLines(original, translated);
+    require(parser.hasTranslation(),
+            "translation lines with shifted timelines must not be discarded as duplicate lyrics");
+    parser.replaceDisplayLines(translated);
+    require(parser.frameAt(4000, 1).text == L"世界",
+            "manually selected translation must render from its own independent clock");
+}
+
+void testLocalizedTtmlUsesTranslatedLinesNotOriginalBody() {
+    const std::string localized = R"localized(<tt xmlns="http://www.w3.org/ns/ttml" xmlns:itunes="http://music.apple.com/lyric-ttml-internal" itunes:timing="Word"><head><metadata><translations><translation type="replacement" xml:lang="zh-Hans"><text for="L1"><span begin="1" end="1.5">你</span><span begin="1.5" end="2">好</span></text></translation></translations></metadata></head><body><div><p begin="1" end="2" itunes:key="L1"><span begin="1" end="1.5">Hello</span><span begin="1.5" end="2">world</span></p></div></body></tt>)localized";
+    smtc::lyrics::LrcParser translated;
+    require(translated.parseUtf8(localized) && translated.hasTranslation(),
+            "localized TTML should expose its translation separately from its original body");
+    require(translated.translatedLines().size() == 1 && translated.translatedLines()[0].text == L"你好",
+            "the translated line must be used instead of the original TTML body");
 }
 
 void testTranslationPreferenceCache() {
@@ -528,10 +572,11 @@ void testTranslationTimelineMustDiffer() {
     sourceParser.setLines(sourceParser.lines(), distinctParser.lines());
     require(sourceParser.hasDistinctTranslation(),
             "an independently timed translation should be accepted");
-    sourceParser.setLines(sourceParser.lines(), sourceParser.originalLines());
-    require(!sourceParser.hasDistinctTranslation(),
+    smtc::lyrics::LrcParser sameTtml = sourceParser;
+    sameTtml.setLines(sourceParser.lines(), sourceParser.lines(), sourceParser.lines());
+    require(!sameTtml.hasDistinctTranslation(),
             "the same TTML must not be exposed as a translation");
-    require(sourceParser.originalLines()[0].text == L"原文",
+    require(sameTtml.originalLines()[0].text == L"原文",
             "rejecting an identical translation must not alter original display lines");
 }
 
@@ -723,6 +768,13 @@ void testAppleMusicParserAndVersionMatching() {
             "Apple Music should reject a live version unless requested");
     require(!smtc::lyrics::appleMusicRecordingMatches("Song", "Wrong Artist", std::string(R"single({"data":[{"id":"123","attributes":{"name":"Song","artistName":"Artist","durationInMillis":180000}}]})single"), 180000), "Apple Music should reject mismatched artist");
     require(smtc::lyrics::normalizedCatalogId(" 123456 ") && !smtc::lyrics::normalizedCatalogId("12a"), "Apple Music catalog IDs should be numeric");
+    const std::string searchResponse = std::string(R"search({"results":{"songs":{"data":[{"id":"1051332387","attributes":{"name":"Hello","artistName":"Adele","albumName":"25","durationInMillis":295502,"isrc":"GBBKS1500214"}}]}}})search");
+    const auto searchCandidates = smtc::lyrics::parseAppleMusicTrackCandidates(searchResponse);
+    require(searchCandidates.size() == 1 && searchCandidates[0].catalogId == "1051332387" &&
+            searchCandidates[0].title == "Hello" && searchCandidates[0].artist == "Adele",
+            "Apple Music search results must be read from results.songs.data");
+    require(smtc::lyrics::appleMusicRecordingMatches("Hello", "Adele", searchResponse, 295502),
+            "Apple Music must verify a real song returned by the search endpoint");
     smtc::lyrics::AppleMusicTokenSettings settings;
     const auto result = smtc::lyrics::AppleMusicLyricsClient{}.fetch("Song - Artist", {}, settings);
     require(result.status == smtc::lyrics::AppleMusicStatus::AuthRequired && result.ttml.empty(),
@@ -1006,12 +1058,16 @@ int main() {
         testTtmlUnkeyedBodyDoesNotMatchTranslationKey();
         testTtmlEnglishSpanSpacing();
         testEnglishEmbeddedSubtitleUsesOriginalLines();
-        testEmbeddedTranslationPair();
+        testTranslationDisplaySwitch();
         testTtmlLineOnlyWithLocalizations();
         testLocalizedTtmlDoesNotMergeSourceReplacement();
         testAppleMusicLanguageSelection();
+        testAppleMusicSourceCheckReportsReason();
         testAppleMusicLanguageFlowByOriginalLanguage();
-        testTranslationUsesIndependentTimeline();
+        testAppleMusicLocalizedResponseIsTranslation();
+        testMisalignedTranslationTimelineRemainsAvailable();
+        testLocalizedTtmlUsesTranslatedLinesNotOriginalBody();
+        testTranslationSwitchUsesItsOwnTimeline();
         testMostlyCjkLyricsThreshold();
         testAppleMusicOriginalAndTranslationAreSeparated();
         testTranslationPreferenceCache();
