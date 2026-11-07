@@ -384,35 +384,18 @@ void LrcParser::frameAt(std::int64_t positionMs, int displayMode, LyricFrame& fr
     frame.highlightPercent = 0;
     frame.highlightLine = 0;
     frame.drawWordHighlight = false;
-    const auto& activeLines = translationVisible() ? translatedLines_
-        : (originalLines_.empty() ? lines_ : originalLines_);
-    if (activeLines.empty()) return;
+    if (lines_.empty()) return;
 
     const auto adjusted = positionMs;
-    auto it = std::upper_bound(activeLines.begin(), activeLines.end(), adjusted,
-                               [](std::int64_t value, const LrcLine& line) { return value < line.timeMs; });
-    if (it == activeLines.begin()) return;
-    const int index = static_cast<int>(std::distance(activeLines.begin(), std::prev(it)));
+    const int index = findCurrentIndex(adjusted);
     if (index < 0) return;
 
-    const auto visibleNear = [&](int start, int direction, int maxDistance, std::wstring_view excluded = {})
-        -> std::optional<VisibleLyricLine> {
-        for (int i = 0; i <= maxDistance; ++i) {
-            const int candidate = start + i * direction;
-            if (candidate < 0 || candidate >= static_cast<int>(activeLines.size())) continue;
-            const auto text = trimView(activeLines[static_cast<std::size_t>(candidate)].text);
-            if (!text.empty() && text != excluded) {
-                return VisibleLyricLine{candidate, text};
-            }
-        }
-        return std::nullopt;
-    };
-    const auto current = visibleNear(index, +1, 2);
+    const auto current = visibleLineNear(index, +1, 2);
     if (!current) return;
 
     if (displayMode == 2) {
         // 两句向后：当前行高亮，下一句用第二行样式显示。
-        if (auto next = visibleNear(current->index + 1, +1, 3, current->text)) {
+        if (auto next = visibleLineNear(current->index + 1, +1, 3, current->text)) {
             frame.text.reserve(current->text.size() + 1 + next->text.size());
             frame.text.append(current->text.begin(), current->text.end()).push_back(L'\n');
             frame.text.append(next->text.begin(), next->text.end());
@@ -422,7 +405,7 @@ void LrcParser::frameAt(std::int64_t positionMs, int displayMode, LyricFrame& fr
         }
     } else if (displayMode == 3) {
         // 两句向前：上一句在第一行，当前行在第二行高亮。
-        if (auto previous = visibleNear(current->index - 1, -1, 3, current->text)) {
+        if (auto previous = visibleLineNear(current->index - 1, -1, 3, current->text)) {
             frame.text.reserve(previous->text.size() + 1 + current->text.size());
             frame.text.append(previous->text.begin(), previous->text.end()).push_back(L'\n');
             frame.text.append(current->text.begin(), current->text.end());
@@ -433,38 +416,10 @@ void LrcParser::frameAt(std::int64_t positionMs, int displayMode, LyricFrame& fr
     } else {
         frame.text.assign(current->text.begin(), current->text.end());
     }
-    const auto& currentLine = activeLines[static_cast<std::size_t>(current->index)];
-    double highlightPercent = 0.0;
-    if (reliableWordTiming(currentLine)) {
-        const auto localMs = adjusted - currentLine.timeMs;
-        if (localMs > currentLine.segments.front().offsetMs) {
-            const auto& last = currentLine.segments.back();
-            if (last.beginMs > 0 && last.endMs > 0 && localMs >= last.endMs) {
-                highlightPercent = 10000.0;
-            } else {
-                auto segment = currentLine.segments.end();
-                for (auto segmentIt = currentLine.segments.begin(); segmentIt != currentLine.segments.end(); ++segmentIt) {
-                    if (segmentIt->offsetMs > localMs) break;
-                    segment = segmentIt;
-                }
-                if (segment != currentLine.segments.end()) {
-                    const auto segmentStart = segment->offsetMs;
-                    const auto segmentEnd = segmentStart + std::max<std::int64_t>(1, segment->durationMs);
-                    const double progress = static_cast<double>(std::clamp(localMs, segmentStart, segmentEnd) - segmentStart) /
-                                            static_cast<double>(segmentEnd - segmentStart);
-                    const double covered = static_cast<double>(segment->textStart) +
-                        static_cast<double>(segment->textEnd - segment->textStart) * progress;
-                    highlightPercent = covered * 10000.0 / static_cast<double>(currentLine.text.size());
-                }
-            }
-        }
-    } else if (currentLine.durationMs > 0) {
-        highlightPercent = static_cast<double>(std::clamp<std::int64_t>(adjusted - currentLine.timeMs, 0, currentLine.durationMs)) *
-                           10000.0 / static_cast<double>(currentLine.durationMs);
-    }
+    const auto highlightPercent = highlightPercentForLine(current->index, adjusted);
     frame.highlightPercent = static_cast<int>(std::clamp(
         std::floor(highlightPercent * 100.0) / 100.0, 0.0, 10000.0));
-    frame.drawWordHighlight = reliableWordTiming(currentLine);
+    frame.drawWordHighlight = reliableWordTiming(lines_[current->index]);
 }
 
 void LrcParser::setLines(std::vector<LrcLine> lines, std::vector<LrcLine> translatedLines,
@@ -473,24 +428,57 @@ void LrcParser::setLines(std::vector<LrcLine> lines, std::vector<LrcLine> transl
     std::stable_sort(lines.begin(), lines.end(), byTime);
     std::stable_sort(translatedLines.begin(), translatedLines.end(), byTime);
     std::stable_sort(originalLines.begin(), originalLines.end(), byTime);
+    // 调用方可以传入 this->lines() 或 other.lines()，因此先完成
+    // 比较，再移动目标成员，避免参数引用随赋值失效。
+    const bool distinctTranslation = [&] {
+        if (translatedLines.empty() || lines.empty()) return false;
+        for (const auto& translated : translatedLines) {
+            const auto matching = std::find_if(lines.begin(), lines.end(), [&](const LrcLine& original) {
+                return original.timeMs == translated.timeMs && original.text == translated.text;
+            });
+            if (matching == lines.end()) return true;
+        }
+        return false;
+    }();
     lines_ = std::move(lines);
     translatedLines_ = std::move(translatedLines);
     originalLines_ = std::move(originalLines);
-    if (!hasDistinctTranslation()) translatedLines_.clear();
+    if (!distinctTranslation) translatedLines_.clear();
+    if (!translatedLines_.empty() && originalLines_.size() != lines_.size()) originalLines_ = lines_;
     translationVisible_ = false;
+}
+
+void LrcParser::replaceDisplayLines(std::vector<LrcLine> lines) {
+    std::stable_sort(lines.begin(), lines.end(), [](const LrcLine& a, const LrcLine& b) {
+        return a.timeMs < b.timeMs;
+    });
+    lines_ = std::move(lines);
 }
 
 bool LrcParser::hasDistinctTranslation() const {
     if (translatedLines_.empty()) return false;
-    const auto& source = lines_;
-    if (source.empty() || source.size() != translatedLines_.size()) return !source.empty();
-    for (std::size_t i = 0; i < source.size(); ++i) {
-        const auto& original = source[i];
-        const auto& translated = translatedLines_[i];
-        if (original.timeMs != translated.timeMs || original.durationMs != translated.durationMs ||
-            original.text != translated.text) {
-            return true;
+    if (lines_.empty()) return false;
+    // 当前 lines_ 若已和译文完全相同，说明调用方没有提供两套独立数据；
+    // 仅两套原始时间轴相同（如繁简版本）不能因此丢掉真实译文。
+    if (lines_.size() == translatedLines_.size()) {
+        bool sameAsDisplay = true;
+        for (std::size_t i = 0; i < lines_.size(); ++i) {
+            if (lines_[i].timeMs != translatedLines_[i].timeMs ||
+                lines_[i].text != translatedLines_[i].text) {
+                sameAsDisplay = false;
+                break;
+            }
         }
+        if (sameAsDisplay) return false;
+    }
+    const auto& source = originalLines_.empty() ? lines_ : originalLines_;
+    // 原文与译文可以各自拥有不同数量、不同起点的行。按配对行号比较会
+    // 在英文原文和译文滚动错位时误判为“同一份歌词”，从而丢掉真实译文。
+    for (const auto& translated : translatedLines_) {
+        const auto matching = std::find_if(source.begin(), source.end(), [&](const LrcLine& original) {
+            return original.timeMs == translated.timeMs && original.text == translated.text;
+        });
+        if (matching == source.end()) return true;
     }
     return false;
 }

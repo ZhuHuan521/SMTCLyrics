@@ -72,7 +72,9 @@ constexpr std::string_view kAppleMusicLyricsLanguages[] = {
     "zh-Hans-CN",
     "zh-Hant-TW",
     "zh-Hant-HK",
-    ""
+    "",
+    // 外文歌词默认显示原文，但用户仍可手动切换为本地化译文。
+    "zh-Hans-CN"
 };
 
 struct AppleMusicLyricSelection {

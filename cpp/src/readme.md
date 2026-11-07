@@ -82,7 +82,7 @@ Media-User-Token=
 
 程序先按原文 TTML 的中日韩字符比例（至少 75%）区分中外文。外文歌直接使用原文；中文歌依次请求 `zh-Hans-CN`、`zh-Hant-TW`、`zh-Hant-HK`。请求带 `extend=ttmlLocalizations`，语言和 script 参数按语言主标签自动推导；没有中文歌词时使用原文。解析时丢弃音译、字形脚本和背景歌词，逐字 span 的毫秒时间保留为 `LyricSegment`。
 
-`TtmlParser` 把正文保存到 `originalLines_`，把独立的本地化 translation 保存到 `translatedLines_`。`LrcParser::frameAt()` 根据 `translationVisible` 在两套各自按时间排序的 `LrcLine` 间选择，不使用原文时间轴去套译文。只有译文 span 具有真实词级时间时才启用扫光，否则按译文自己的整行起止时间显示高亮。
+`TtmlParser` 把正文保存到 `originalLines_`，把独立的本地化 translation 保存到 `translatedLines_`。切换翻译时 `LrcParser::replaceDisplayLines()` 直接替换当前显示行；`frameAt()`、当前行查找和逐字高亮仍沿用 `v1.4` 原实现，不增加第二条渲染分支。
 
 “操作与检测”中的“显示/隐藏翻译”不重新下载歌词。没有可切换的独立译文时只提示“音源无翻译”，不改变缓存；成功切换后把当前歌曲的布尔偏好写入 `cache.json`。原文至少 75% 为中日韩文字时默认显示简体译文，外文歌默认显示原文，已有手动偏好优先。只有原文和译文内容确实不同才允许切换，避免重复显示同一份歌词。
 ## 六、歌词加载策略

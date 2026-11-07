@@ -591,11 +591,27 @@ void ControlWindow::processSourceCheck(const config::LyricSourceCheckContext& co
 }
 
 void ControlWindow::completeSourceCheck(const std::array<config::LyricSourceCheckResult, 5>& status) {
-    // 把四个源的可用性写回对应状态标签。
+    // 把可用性与具体失败原因一起写回；状态栏保留 Apple Music 的失败原因。
     sourceCheckRunning_ = false;
     EnableWindow(GetDlgItem(hwnd_, IdCheckSources), TRUE);
     for (int i = 0; i < 5; ++i) {
-        setText(sourceStatusId(i), status[static_cast<std::size_t>(i)].ok ? L"可用" : L"不可用");
+        const auto& item = status[static_cast<std::size_t>(i)];
+        setText(sourceStatusId(i), item.ok ? L"可用" : L"不可用");
+    }
+    const auto& appleMusic = status[4];
+    if (!appleMusic.ok) {
+        setStatusText(appleMusic.detail.empty() ? L"Apple Music 检测失败原因未知"
+                                                : L"Apple Music 不可用：" + appleMusic.detail);
+        return;
+    }
+    for (int i = 0; i < 4; ++i) {
+        const auto& item = status[static_cast<std::size_t>(i)];
+        if (!item.ok) {
+            const std::wstring label = i == 0 ? L"QQ 音乐" : i == 1 ? L"酷狗" : i == 2 ? L"酷我" : L"网易云";
+            setStatusText(label + L" 不可用：" +
+                          (item.detail.empty() ? L"未返回可解析歌词" : item.detail));
+            return;
+        }
     }
     setStatusText(L"歌词源检测完成");
 }

@@ -429,7 +429,10 @@ void Application::loadLyricsForCurrentTrack(const playback::MediaState& state, b
                 lyrics::LrcParser translatedParser;
                 if (!result.translatedLrcBytes.empty() &&
                     translatedParser.parseBytes(result.translatedLrcBytes)) {
-                    translatedLines = translatedParser.lines();
+                    // 语言请求返回的是完整歌词 TTML；真正的译文在
+                    // translatedLines，不能把 TTML 正文英语误作中文译文。
+                    translatedLines = translatedParser.hasTranslation()
+                        ? translatedParser.translatedLines() : translatedParser.lines();
                 }
                 auto displayLines = asyncResult->parser.lines();
                 auto originalLines = asyncResult->parser.originalLines();
@@ -482,11 +485,11 @@ void Application::handleLyricsLoadedMessage(LPARAM lParam) {
     translationAvailable_ = parser_.hasTranslation();
     translationVisible_ = false;
     if (translationAvailable_) {
-        // 适配旧版本：原文含 75% 以上中日韩字符时默认显示简体译文，外文歌保持原文。
-        const bool sourceIsChinese = translationAvailable_ && lyrics::mostlyCjkLyrics(parser_.originalLines());
+        // 只有中文原文默认显示简体译文；外文歌虽有可选译文，但默认保留原文。
+        const bool sourceIsChinese = lyrics::mostlyCjkLyrics(parser_.originalLines());
         translationVisible_ = cache_.translationVisibleFor(util::wideToUtf8(result->keyword))
                                   .value_or(sourceIsChinese);
-        parser_.setTranslationVisible(translationVisible_);
+        if (translationVisible_) parser_.replaceDisplayLines(parser_.translatedLines());
     }
     currentSource_ = result->source;
     controlWindow_.setCurrentLyricSource(lyricSourceDisplayName(currentSource_));
@@ -590,7 +593,8 @@ void Application::switchToNextOnlineSource(const playback::MediaState& state) {
                 lyrics::LrcParser translatedParser;
                 if (!result.translatedLrcBytes.empty() &&
                     translatedParser.parseBytes(result.translatedLrcBytes)) {
-                    translatedLines = translatedParser.lines();
+                    translatedLines = translatedParser.hasTranslation()
+                        ? translatedParser.translatedLines() : translatedParser.lines();
                 }
                 auto displayLines = asyncResult->parser.lines();
                 auto originalLines = asyncResult->parser.originalLines();
@@ -615,8 +619,8 @@ void Application::toggleTranslation() {
         controlWindow_.setStatusText(L"音源无翻译");
         return;
     }
-    translationVisible_ = !parser_.translationVisible();
-    parser_.setTranslationVisible(translationVisible_);
+    translationVisible_ = !translationVisible_;
+    parser_.replaceDisplayLines(translationVisible_ ? parser_.translatedLines() : parser_.originalLines());
     if (!currentKeyword_.empty()) {
         cache_.setTranslationVisible(util::wideToUtf8(currentKeyword_), translationVisible_);
         cache_.save();

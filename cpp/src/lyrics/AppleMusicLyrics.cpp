@@ -171,8 +171,10 @@ bool verifiedCandidate(const OnlineTrackVerifier& candidate, const OnlineTrackVe
 } // namespace
 
 std::string appleMusicLyricQuery(std::string_view language) {
+    // 原文必须直接取 attrs.ttml。带 extend=ttmlLocalizations 时接口只返回
+    // ttmlLocalizations 一个 TTML 字符串，attrs.ttml 为空，不能把它误作原文。
+    if (language.empty()) return {};
     std::string query = "?extend=ttmlLocalizations";
-    if (language.empty()) return query;
     query += "&l%5Blyrics%5D=" + util::urlEncode(language);
     // Same derivation as am-ttml-fetch: zh-Hans-CN -> zh-Hans.
     const auto dash = language.find('-');
@@ -187,7 +189,11 @@ std::string appleMusicOriginalTtml(std::string_view responseJson) {
     const auto response = parseJson(responseJson);
     const auto* attrs = at(at(at(&response, "data"), std::size_t{0}), "attributes");
     if (!attrs) return {};
-    return jsonText(at(attrs, "ttml"));
+    const auto original = jsonText(at(attrs, "ttml"));
+    if (!original.empty()) return original;
+    // 兼容仍然返回 ttmlLocalizations 字符串的接口；字符串本身就是 TTML。
+    const auto* localized = at(attrs, "ttmlLocalizations");
+    return localized && localized->is_string() ? localized->get<std::string>() : std::string{};
 }
 
 AppleMusicLyricSelection selectAppleMusicLyrics(std::string_view responseJson, std::string_view requestedLanguage) {
@@ -280,8 +286,15 @@ std::vector<OnlineTrackVerifier> parseAppleMusicTrackCandidates(std::string_view
     const auto* data = at(&response, "data");
     if (data && data->is_array()) {
         for (const auto& item : *data) add(item);
-    } else if (at(&response, "attributes")) {
-        add(response);
+    } else {
+        // 搜索接口的结构是 results.songs.data，不是顶层 data。
+        // 兼容这种结构后，普通 SMTC 模式才能按歌名和歌手找到真实 catalog ID。
+        const auto* searchSongs = at(at(at(&response, "results"), "songs"), "data");
+        if (searchSongs && searchSongs->is_array()) {
+            for (const auto& item : *searchSongs) add(item);
+        } else if (at(&response, "attributes")) {
+            add(response);
+        }
     }
     return result;
 }
@@ -290,11 +303,12 @@ OnlineTrackVerifier parseAppleMusicTrackCandidate(std::string_view json) {
     return all.empty() ? OnlineTrackVerifier{} : all.front();
 }
 bool appleMusicRecordingMatches(std::string_view title, std::string_view artist, std::string_view json, std::int64_t durationMs) {
-    const auto response = parseJson(json);
-    const auto* item = at(at(&response, "data"), std::size_t{0});
-    if (!item) item = &response;
-    const auto* attrs = at(item, "attributes");
-    return attrs && candidateMatches(*attrs, title, artist, durationMs);
+    const auto candidates = parseAppleMusicTrackCandidates(json);
+    return !candidates.empty() && candidateMatches(
+        nlohmann::json{{"name", candidates.front().title},
+                       {"artistName", candidates.front().artist},
+                       {"durationInMillis", candidates.front().durationMs}},
+        title, artist, durationMs);
 }
 AppleMusicLyricsClient::AppleMusicLyricsClient(http::HttpClient client) : client_(std::move(client)) {}
 
@@ -335,7 +349,7 @@ bool AppleMusicLyricsClient::validStorefront(std::string_view storefront) {
 AppleMusicFetchResult AppleMusicLyricsClient::fetch(std::string_view keywordUtf8, const OnlineTrackVerifier& track,
                                                     const AppleMusicTokenSettings& settings) const {
     AppleMusicFetchResult result;
-    // 先取得原文，并按原文字种决定是否需要翻译请求。
+    // 先取得原文，并按原文字种决定默认显示和译文请求。
     auto original = fetch(keywordUtf8, track, settings, "");
     if (original.status == AppleMusicStatus::AuthRequired || original.status == AppleMusicStatus::AuthRejected ||
         original.status == AppleMusicStatus::MalformedResponse) {
@@ -348,17 +362,22 @@ AppleMusicFetchResult AppleMusicLyricsClient::fetch(std::string_view keywordUtf8
     TtmlParser sourceTtml;
     const bool sourceIsCjk = sourceTtml.parseUtf8(original.ttml) &&
         mostlyCjkLyrics(sourceTtml.originalLines());
-    if (!sourceIsCjk) {
-        // 外文歌只使用原文；中文译文字幕仅作为可选播放字幕保留。
-        original.translatedTtml.clear();
-        return original;
-    }
 
-    // 中文歌优先使用简体翻译；没有简体时依次尝试台湾、香港繁中。
-    for (const auto language : kAppleMusicLyricsLanguages) {
+    // 中文歌依次请求简体、台湾繁中、香港繁中；外文歌只额外请求简体，
+    // 并继续默认显示原文。Apple 没有译文时 translatedTtml 保持为空。
+    const auto languages = sourceIsCjk
+        ? std::span<const std::string_view>(kAppleMusicLyricsLanguages, 3)
+        : std::span<const std::string_view>(kAppleMusicLyricsLanguages).subspan(4, 1);
+    for (const auto language : languages) {
         if (language.empty()) break;
         const auto translated = fetch(keywordUtf8, track, settings, language);
         if (translated.translatedTtml.empty()) continue;
+        TtmlParser translatedTtml;
+        if (translatedTtml.parseUtf8(translated.translatedTtml) && translatedTtml.translatedLines().empty()) {
+            // Apple 在没有该歌词语言时会回传原文 TTML。没有本地化翻译文本时
+            // 不能把原文当成可切换译文，继续寻找；否则界面仍应提示“无翻译”。
+            continue;
+        }
         original.translatedTtml = translated.translatedTtml;
         original.detectedStorefront = translated.detectedStorefront.empty()
             ? original.detectedStorefront : translated.detectedStorefront;
@@ -488,7 +507,11 @@ AppleMusicFetchResult AppleMusicLyricsClient::fetch(std::string_view keywordUtf8
     }
     const auto selection = selectAppleMusicLyrics(lyrics.text(), fixedLanguage);
     result.ttml = selection.originalTtml;
-    result.translatedTtml = selection.translatedTtml;
+    // 仅请求一种本地化语言时，响应只含 ttmlLocalizations，不含 attrs.ttml。
+    // 此时返回的 TTML 就是该语言的翻译，不能因为 translatedTtml 字段为空而
+    // 把已经获取到的翻译文本丢弃。
+    result.translatedTtml = selection.translatedTtml.empty() && !fixedLanguage.empty()
+        ? selection.originalTtml : selection.translatedTtml;
     if (result.ttml.empty()) {
         result.status = AppleMusicStatus::NoMatch;
         result.diagnostic = fixedLanguage.empty()

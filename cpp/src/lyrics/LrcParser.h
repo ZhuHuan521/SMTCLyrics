@@ -58,16 +58,17 @@ public:
     void frameAt(std::int64_t positionMs, int displayMode, LyricFrame& frame) const;
     bool empty() const { return lines_.empty(); }
     const std::vector<LrcLine>& lines() const { return lines_; }
-    // 原文与译文各自保留自己的行和时间轴；空译文表示没有可显示的翻译。
+    // 原文与译文各自保留自己的行和时间轴；setLines 只替换当前显示集合。
     void setLines(std::vector<LrcLine> lines, std::vector<LrcLine> translatedLines = {},
                   std::vector<LrcLine> originalLines = {});
-    const std::vector<LrcLine>& originalLines() const { return originalLines_.empty() ? lines_ : originalLines_; }
+    // 切换翻译时直接替换 lines_，不改变 v1.4 的当前行和逐字高亮计算。
+    void replaceDisplayLines(std::vector<LrcLine> lines);
+    const std::vector<LrcLine>& originalLines() const { return originalLines_; }
     const std::vector<LrcLine>& translatedLines() const { return translatedLines_; }
     bool hasTranslation() const { return !translatedLines_.empty(); }
     // 同一 TTML 被误传为译文时不算“可切换”，避免按钮只重复显示同一行。
     bool hasDistinctTranslation() const;
-    void setTranslationVisible(bool visible) { translationVisible_ = visible; }
-    bool translationVisible() const { return translationVisible_ && hasTranslation(); }
+    bool translationVisible() const { return translationVisible_; }
 
 private:
     // 解析不同歌词格式的内部工具。
