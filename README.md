@@ -19,7 +19,7 @@ SMTCLyrics 是一个 Windows 桌面歌词显示工具。它通过 SMTC（System 
 - 支持手动检测、加载或卸载 Apple Music bridge。
 - 支持桌面歌词窗口置顶显示、拖动定位、锁定位置和窗口位置记忆。
 - 支持全局歌词偏移和单曲偏移记忆。
-- 在线源按配置的优先级依次尝试；自动加载不写来源缓存，源不可用时继续回退。
+- 在线源按配置的优先级依次尝试；逐行歌词可回退，存在逐字歌词时优先显示逐字歌词。
 - 歌词加载在后台线程执行，避免在线请求或 QRC/KRC 解析阻塞界面。
 - 控制窗口提供歌词源可用性检测，一键探测五个在线源是否仍可返回可解析歌词。
 - Apple Music Token 由用户在控制窗口或本地 `config.ini` 的 `[AppleMusic]` 段填写，不会自动抓取或写入 Git。
@@ -116,6 +116,8 @@ Release 版 `SMTCLyrics.exe` 已将 Apple Music bridge DLL 作为资源嵌入。
 
 发布版程序位于 [cpp/release/AppleMusicLyrics/SMTCLyrics.exe](cpp/release/AppleMusicLyrics/SMTCLyrics.exe)。Apple Music 内部模式即使在程序启动时尚未建立 bridge 管道，也会在首次读取播放状态时自动加载 bridge；已有 bridge 模块但暂不响应时不会反复卸载和注入。
 
+当前发布版为 [GitHub Release v1.4](https://github.com/ZhuHuan521/SMTCLyrics/releases/tag/v1.4)。下载的 `SMTCLyrics.exe` 大小应约为 649 KB（664,078 字节），SHA256 为 `C6A50028832AA3EE30A9798EF4807EC582F185786B8CF9BA506FA2EE270DCA7A`。
+
 如果没有检测到 SMTC 媒体会话或 Apple Music 内部播放信息，桌面歌词窗口会显示等待提示。在线歌词源依赖第三方服务接口和网络状态，接口失效时建议优先使用本地歌词。
 
 ## 本地歌词
@@ -142,8 +144,11 @@ Release 版 `SMTCLyrics.exe` 已将 Apple Music bridge DLL 作为资源嵌入。
 2. 酷狗音乐
 3. 酷我音乐
 4. 网易云音乐
+5. Apple Music 官方（需在控制窗口填写两项凭证）
 
 QQ 音乐会优先尝试 QRC 逐字歌词；酷狗音乐会优先尝试 KRC；网易云音乐会优先尝试 YRC，失败后回退到普通 LRC。自动加载和自动播放换歌不会写来源缓存；只有手动“换源”选择了来源，或对当前歌曲保存了微调偏移时，才会写入 `cache.json`。
+
+Apple Music 官方源请求简体中文歌词，没有简体版本时尝试繁体中文，仍没有则使用原文。仅返回逐行 TTML 时继续寻找逐字歌词；如果所有源都只有逐行歌词，则回到配置中优先级最高的可用来源。点击“换源”会强制切换至下一个来源，不会因逐行/逐字优先级而跳过目标来源。
 
 ## 配置说明
 
@@ -179,6 +184,7 @@ priority1=1
 priority2=2
 priority3=3
 priority4=4
+priority5=5
 
 [SMTC]
 mode=1
@@ -192,6 +198,11 @@ left=0
 top=0
 width=1200
 height=150
+
+[AppleMusic]
+Authorization=
+Media-User-Token=
+地区=
 ```
 
 关键配置：
@@ -200,11 +211,14 @@ height=150
 - `Lyrics.normal*`：未高亮歌词的渐变颜色和描边。
 - `Lyrics.highlight*`：当前高亮歌词的渐变颜色和描边。
 - `Lyrics.highlight2*`：双行显示模式下第二行的渐变颜色和描边。
-- `Sources.priority1` 到 `priority4`：在线歌词源优先级，`1=QQ`，`2=酷狗`，`3=酷我`，`4=网易云`。
+- `Sources.priority1` 到 `priority5`：在线歌词源优先级，`1=QQ`，`2=酷狗`，`3=酷我`，`4=网易云`，`5=Apple Music 官方`。
 - `SMTC.mode`：播放信息来源/同步模式，`1=SMTC1`，`2=SMTC2`，`3=Apple Music 内部`。
 - `SMTC.pollIntervalMs`：SMTC 轮询间隔，程序会限制在 `500` 到 `2000` 毫秒。
 - `Display.mode`：显示模式，`1=单行`，`2=当前行+下一行`，`3=上一行+当前行`。
 - `Window`：歌词窗口位置和尺寸，通常通过控制窗口拖动保存。
+- `AppleMusic.Authorization`：控制窗口「Authorization」输入框对应的凭证值。
+- `AppleMusic.Media-User-Token`：控制窗口「Media-User-Token」输入框对应的凭证值，通常以 `0.Av` 开头。
+- `AppleMusic.地区`：可选的 Apple Music 地区代码（例如 `cn`、`tr`）。留空时请求会依据凭证读取账号地区，但自动获取的地区不写入 `config.ini`。手动填写后按填写值请求。此段由控制窗口保存，请勿把真实凭证提交到 Git。
 
 ## 测试
 

@@ -12,8 +12,8 @@ WinMain
   -> smtc::SmtcProvider 读取 SMTC 媒体会话状态
   -> applemusic::AppleMusicInternalProvider 读取 Apple Music 内部播放状态（可选）
   -> lyrics::LyricRepository 查本地 lyrics 目录、查 cache.json、请求在线歌词
-  -> lyrics::OnlineLyrics / http::HttpClient 抓取 QQ、酷狗、酷我、网易云歌词
-  -> lyrics::LrcParser 解析 LRC/KRC/QRC/YRC
+  -> lyrics::OnlineLyrics / AppleMusicLyricsClient 抓取在线歌词与 Apple Music TTML
+  -> lyrics::LrcParser / TtmlParser 解析 LRC/KRC/QRC/YRC/TTML
   -> ui::DesktopLyricsWindow 绘制透明桌面歌词
   -> ui::ControlWindow 提供配置和手动操作入口
 ```
@@ -47,7 +47,7 @@ WinMain
 3. 程序启动两个定时器：SMTC 轮询定时器（`kSmtcTimerId`）和渲染定时器（`kRenderTimerId`，16ms 间隔，约 60fps）。
 4. `playbackTick()` 根据配置的 `smtcMode` 调用 `SmtcProvider::readState()` 或 `AppleMusicInternalProvider::readState()`。如果歌曲变化，调用 `loadLyricsForCurrentTrack()`。
 5. 歌词加载在线程中执行，避免网络请求阻塞 UI。线程完成后用 `PostMessageW` 把 `AsyncLyricLoadResult` 交回主线程，通过 `lyricLoadRequestId_` 计数器丢弃过期响应。
-6. `handleLyricsLoadedMessage()` 收到歌词后更新 `LrcParser`。
+6. `handleLyricsLoadedMessage()` 收到歌词后更新对应解析结果；自动加载只更新当前显示，手动换源才记录来源。
 7. `renderTick()` 通过 `estimatedPositionMs()` 用本地高精度时钟估算当前播放位置，然后调用 `parser_.frameAt()` 计算当前歌词帧，最后调用 `DesktopLyricsWindow::updateLyrics()` 触发 GDI+ 重绘。
 
 ## 四、Apple Music 内部模式
@@ -63,6 +63,8 @@ Apple Music 内部模式（`SMTC.mode=3`）通过注入 bridge DLL 到 Apple Mus
 5. `AppleMusicInternalProvider::readState()` 将快照转换为 `MediaState`，与 SMTC 返回的格式统一。
 6. 退出时 `shutdown()` 发送 `kCommandShutdown` 命令，bridge 从 Apple Music 进程卸载。
 
+`Application::readAppleMusicState()` 在首次读取播放状态时允许连接过程自动加载 bridge。若命名管道尚未建立（`0x80070002`），会注入嵌入的 bridge；若已有 bridge 模块但暂不响应，则按重试间隔等待，不会反复卸载并重新注入。这样启动时无需先手动点击“加载/卸载 DLL”即可恢复毫秒播放进度。
+
 bridge 通过逆向 Apple Music 的 `AmpMusicLibrary` COM 接口实现，使用 `IAmpLibrary`、`INowPlayingItem`、`IPlayerState` 等内部接口读取播放状态。
 
 ## 五、Apple Music 官方歌词凭证
@@ -71,14 +73,14 @@ bridge 通过逆向 Apple Music 的 `AmpMusicLibrary` COM 接口实现，使用 
 
 ```ini
 [AppleMusic]
-developerToken=eyJ...
-mediaUserToken=0.Avks...
-storefront=
+Authorization=
+Media-User-Token=
+地区=
 ```
 
-凭证只在本机保存，仅用于请求 `music.apple.com` / `amp-api.music.apple.com`；不会自动抓取、替换或上传到第三方。Token 过期后需重新填写。超过 1023 字符的 Token 请直接写入 `config.ini`。地区留空时通过 `/v1/me/storefront` 读取账号地区。专用模式下，bridge 读取的 catalog ID 用于精确取词；普通 SMTC 模式才按歌名与艺人搜索，并要求时长和录音版本一致。
+凭证只在本机保存，仅用于请求 `music.apple.com` / `amp-api.music.apple.com`；不会自动抓取、替换或上传到第三方。Token 过期后需重新填写。超过 1023 字符的 Token 请直接写入 `config.ini`。地区留空时在请求中通过账号接口临时获取地区，不自动回填或保存到 `config.ini`；手动填写地区后使用填写值。专用模式下，bridge 读取的 catalog ID 用于精确取词；普通 SMTC 模式才按歌名与艺人搜索，并要求时长和录音版本一致。
 
-Apple Music 歌词语言依次请求 `zh-Hans-CN`、`zh-Hant-TW`、`zh-Hant-HK`。请求带 `extend=ttmlLocalizations`，脚本参数按语言主标签自动推导；响应含简体 replacement 或简体翻译时显示对应文本。歌曲没有简体中文版本时直接使用原文，并继续按配置尝试其他源。解析时丢弃音译、翻译字幕和背景歌词，逐字 span 的毫秒时间保留为 `LyricSegment`。
+Apple Music 歌词语言依次请求 `zh-Hans-CN`、`zh-Hant-TW`、`zh-Hant-HK`。请求带 `extend=ttmlLocalizations`，脚本参数按语言主标签自动推导；响应含简体 replacement 或简体翻译时显示对应文本。歌曲没有中文版本时直接使用原文。解析时丢弃音译、字形脚本、翻译字幕和背景歌词，逐字 span 的毫秒时间保留为 `LyricSegment`。
 ## 六、歌词加载策略
 
 `LyricRepository::loadForKeyword()` 的顺序是：
@@ -90,6 +92,8 @@ Apple Music 歌词语言依次请求 `zh-Hans-CN`、`zh-Hant-TW`、`zh-Hant-HK`�
 5. 自动加载和自动播放换歌不记录来源。只有用户手动“换源”，或保存当前歌曲的微调偏移时，才会写入 `cache.json`。行级 Apple TTML 缓存不会阻止更高优先的可用源，也不会挡住逐字歌词搜索。
 
 用户点击"换源"时，`Application::switchLyricsSource()` 不会永久改配置，而是临时把当前源放到队尾，再强制忽略缓存重新加载。
+
+“换源”从当前来源之后开始并强制接受目标来源，即使目标只有逐行歌词也直接显示，不受逐字源优先级影响。歌词加载完成后，控制窗口显示的是实际使用的来源，而不是切换前残留的来源名称。
 
 Apple Music 内部模式的首次播放状态读取会在 bridge 管道尚未建立时自动加载 bridge，修复启动时只有 `0x80070002` 而没有播放进度的问题。已有 bridge 模块但暂不响应时不会反复卸载并重新注入。
 
@@ -107,6 +111,8 @@ LrcLine
 
 普通 LRC 通常只有行级时间，`segments` 为空，程序只能按整行持续时间估算高亮。KRC、QRC、YRC 带词级时间，解析器会生成 `LyricSegment`，从而支持更准确的逐字/逐词高亮。
 
+逐行歌词保持整行渐变渲染，不使用逐字扫光；只有带词级时间片的格式启用当前行扫光。
+
 `LrcParser::frameAt()` 根据当前播放位置和显示模式输出 `LyricFrame`（包含文本、高亮百分比和高亮行号）。显示模式 1 是当前一句，模式 2 是当前句加下一句，模式 3 是上一句加当前句。
 
 ## 八、时间同步设计
@@ -122,6 +128,8 @@ SMTC 的时间轴更新频率和不同播放器行为并不完全一致，所以
 ## 九、界面与绘制
 
 控制窗口是传统 Win32 子控件布局，所有按钮和输入框通过 `ControlId` 枚举分组管理。它不直接操作歌词仓库或 SMTC，而是通过 `ControlWindowCallbacks` 把操作交给 `Application`。回调集合包括：应用配置、获取/移动歌词窗口、设置拖动、重载歌词、换源、清缓存、打开本地歌词、检测歌词源可用性、检测/切换 Apple Music bridge、保存单曲偏移。
+
+Apple Music 凭证区域显示 `Authorization`、`Media-User-Token`、地区和“保存 Apple Music 凭证”按钮。检测歌词源会使用编辑框中尚未保存的值。
 
 桌面歌词窗口是 `WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW` 的透明置顶窗口。绘制时先在 32 位 DIB 后备缓冲上用 GDI+ 画文字路径，再用 `UpdateLayeredWindow` 一次性提交到屏幕。高亮效果通过裁剪区域叠加高亮画刷实现。窗口支持布局缓存（`layoutCache_`），只在文本或配置变化时重建路径，减少每帧重绘开销。
 
