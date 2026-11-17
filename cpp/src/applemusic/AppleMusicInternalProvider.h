@@ -26,6 +26,7 @@ struct AppleMusicInternalSnapshot {
     std::int64_t queryQpc = 0;
     std::int64_t qpcFrequency = 0;
     bool playing = false;
+    bool positionTimestampAccurate = false;
 };
 
 struct AppleMusicBridgeStatus {
@@ -65,11 +66,14 @@ private:
     bool sendBridgeCommand(DWORD appleMusicPid, std::uint32_t command, bridge::SnapshotResponse& response);
     bool waitForBridgePipe(DWORD appleMusicPid);
     bool injectBridge(DWORD appleMusicPid, bool force);
-    bool unloadBridgeModules(DWORD appleMusicPid, std::wstring* detail);
+    bool waitForBridgeUnload(DWORD appleMusicPid, std::wstring* detail);
     bool isBridgeModuleLoaded(DWORD appleMusicPid) const;
     void clearRuntime();
 
     DWORD bridgePid_ = 0;
+    // 同一 Apple Music 进程只解析一次成功的元数据，普通轮询直接复用接口 IID。
+    mutable DWORD cachedIidsPid_ = 0;
+    mutable bridge::SnapshotRequest cachedIids_{};
     std::filesystem::path bridgeDllPath_;
     std::wstring lastError_;
     // 最近一次管道连接是否明确返回 ERROR_FILE_NOT_FOUND（即 0x80070002）。

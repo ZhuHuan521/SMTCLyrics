@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(SMTCLyricsCpp VERSION 1.4.1 LANGUAGES CXX)
+project(SMTCLyricsCpp VERSION 1.4.2 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -78,20 +78,55 @@ add_custom_command(
     VERBATIM
 )
 
+configure_file(cmake/VersionResource.h.in "${CMAKE_CURRENT_BINARY_DIR}/generated/VersionResource.h" @ONLY)
 add_executable(SMTCLyrics WIN32 src/main.cpp resource.rc "${SMTCLYRICS_EMBEDDED_BRIDGE_RESOURCE}")
 target_link_libraries(SMTCLyrics PRIVATE smtclyrics_core)
+target_include_directories(SMTCLyrics PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/generated")
 add_dependencies(SMTCLyrics SMTCLyricsAppleMusicBridge)
 
 add_executable(SMTCLyricsTests tests/core_tests.cpp)
 target_link_libraries(SMTCLyricsTests PRIVATE smtclyrics_core)
 
+add_executable(PlaybackClockTests tests/playback_clock_tests.cpp)
+target_include_directories(PlaybackClockTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+add_executable(AppleMusicPositionTrackerTests tests/apple_music_position_tracker_tests.cpp)
+target_include_directories(AppleMusicPositionTrackerTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+# Keep the mock Apple Music library isolated from the application and release files.
+add_library(AppleMusicTestServices SHARED tests/applemusic_bridge_integration/FakeAmpServices.cpp)
+target_include_directories(AppleMusicTestServices PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_link_libraries(AppleMusicTestServices PRIVATE runtimeobject)
+set_target_properties(AppleMusicTestServices PROPERTIES
+    PREFIX ""
+    OUTPUT_NAME "AMP.Services"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bridge-integration"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bridge-integration"
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bridge-integration"
+)
+add_executable(AppleMusicBridgeIntegrationHost tests/applemusic_bridge_integration/BridgeIntegrationHost.cpp)
+target_include_directories(AppleMusicBridgeIntegrationHost PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_link_libraries(AppleMusicBridgeIntegrationHost PRIVATE runtimeobject ole32)
+set_target_properties(AppleMusicBridgeIntegrationHost PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bridge-integration"
+)
+add_dependencies(AppleMusicBridgeIntegrationHost AppleMusicTestServices SMTCLyricsAppleMusicBridge)
+
+enable_testing()
+add_test(NAME playback_clock COMMAND PlaybackClockTests)
+add_test(NAME apple_music_position_tracker COMMAND AppleMusicPositionTrackerTests)
+add_test(NAME core COMMAND SMTCLyricsTests)
+add_test(NAME apple_music_bridge_ipc COMMAND AppleMusicBridgeIntegrationHost
+    "$<TARGET_FILE:AppleMusicTestServices>" "$<TARGET_FILE:SMTCLyricsAppleMusicBridge>")
+set_tests_properties(apple_music_bridge_ipc PROPERTIES TIMEOUT 30)
+
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    foreach(target SMTCLyrics SMTCLyricsTests SMTCLyricsAppleMusicBridge)
+    foreach(target SMTCLyrics SMTCLyricsTests SMTCLyricsAppleMusicBridge PlaybackClockTests AppleMusicPositionTrackerTests AppleMusicTestServices AppleMusicBridgeIntegrationHost)
         target_link_options(${target} PRIVATE -static -static-libgcc -static-libstdc++)
     endforeach()
+    target_link_options(AppleMusicBridgeIntegrationHost PRIVATE -municode)
 endif()
 
-foreach(target smtclyrics_core SMTCLyrics SMTCLyricsTests SMTCLyricsAppleMusicBridge)
+foreach(target smtclyrics_core SMTCLyrics SMTCLyricsTests SMTCLyricsAppleMusicBridge PlaybackClockTests AppleMusicPositionTrackerTests AppleMusicTestServices AppleMusicBridgeIntegrationHost)
     target_compile_options(${target} PRIVATE
         $<$<AND:$<NOT:$<CONFIG:Debug>>,$<CXX_COMPILER_ID:GNU,Clang>>:-ffunction-sections>
         $<$<AND:$<NOT:$<CONFIG:Debug>>,$<CXX_COMPILER_ID:GNU,Clang>>:-fdata-sections>
@@ -103,14 +138,14 @@ foreach(target smtclyrics_core SMTCLyrics SMTCLyricsTests SMTCLyricsAppleMusicBr
     endif()
 endforeach()
 
-foreach(target SMTCLyrics SMTCLyricsTests SMTCLyricsAppleMusicBridge)
+foreach(target SMTCLyrics SMTCLyricsTests SMTCLyricsAppleMusicBridge PlaybackClockTests AppleMusicPositionTrackerTests AppleMusicTestServices AppleMusicBridgeIntegrationHost)
     target_link_options(${target} PRIVATE
         $<$<AND:$<NOT:$<CONFIG:Debug>>,$<CXX_COMPILER_ID:GNU,Clang>>:-Wl,--gc-sections>
     )
 endforeach()
 
 if(SMTCLYRICS_STRIP_RELEASE AND CMAKE_STRIP AND NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-    foreach(target SMTCLyrics SMTCLyricsTests SMTCLyricsAppleMusicBridge)
+    foreach(target SMTCLyrics SMTCLyricsTests SMTCLyricsAppleMusicBridge PlaybackClockTests AppleMusicPositionTrackerTests AppleMusicTestServices AppleMusicBridgeIntegrationHost)
         add_custom_command(TARGET ${target} POST_BUILD
             COMMAND "${CMAKE_STRIP}" --strip-all "$<TARGET_FILE:${target}>"
         )

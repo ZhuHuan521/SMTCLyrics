@@ -12,6 +12,10 @@ struct MediaState {
     std::wstring appleMusicCatalogId;
     std::wstring isrc;
     std::int64_t positionMs = 0;
+    std::int64_t rawPositionMs = 0;
+    // QPC milliseconds corresponding to positionMs, independent of UI processing time.
+    std::int64_t positionSampleTimeMs = 0;
+    bool positionTimestampAccurate = false;
     std::int64_t durationMs = 0;
     bool valid = false;
     bool playing = false;

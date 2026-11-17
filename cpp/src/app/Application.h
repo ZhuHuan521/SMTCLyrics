@@ -6,6 +6,7 @@
 #include "lyrics/LrcParser.h"
 #include "lyrics/OnlineLyrics.h"
 #include "playback/PlaybackState.h"
+#include "playback/PlaybackClock.h"
 #include "smtc/SmtcProvider.h"
 #include "ui/ControlWindow.h"
 #include "ui/DesktopLyricsWindow.h"
@@ -107,12 +108,14 @@ private:
     long long lastAcceptedPositionMs_ = 0;  // 最近一次接受的播放位置，避免轻微回跳导致歌词抖动。
     long long smtc1TrackChangeCalibrationAtMs_ = 0;
     bool isPlaying_ = false;
+    // Internal Apple Music samples correct local phase gradually between polls.
+    playback::PlaybackClock appleMusicClock_;
+    std::int64_t lastAppleMusicRawPositionMs_ = -1;
 
     // 两个 Win32 定时器：一个轮询 SMTC，一个驱动歌词高亮动画。
     static constexpr UINT_PTR kSmtcTimerId = 1;
     static constexpr UINT_PTR kRenderTimerId = 2;
     static constexpr int kRenderIntervalMs = 16;  // 约 60fps。
-    static constexpr long long kMaxPositionJumpMs = 500;  // 预留的最大回跳阈值。
 };
 
 }

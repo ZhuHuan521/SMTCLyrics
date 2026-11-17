@@ -7,6 +7,8 @@
 #include "lyrics/LyricRepository.h"
 #include "lyrics/TtmlParser.h"
 #include "lyrics/QrcDecrypter.h"
+#include "playback/PerformanceClock.h"
+#include "playback/PlaybackClock.h"
 #include "ui/ControlWindow.h"
 #include "util/Base64.h"
 #include "util/Encoding.h"
@@ -838,6 +840,10 @@ void testAppleMusicInternalStateMapping() {
     require(state.title == L"Song" && state.artist == L"Artist" && state.album == L"Album", "Apple Music internal metadata should map");
     require(state.positionMs == 42000 && state.durationMs == 180000, "Apple Music TimeSpan values should map to milliseconds");
     require(state.playing, "Apple Music playing flag should map");
+    require(state.rawPositionMs == 42000 && state.positionSampleTimeMs > 0,
+            "internal samples must retain the cached value and its receiving QPC timestamp");
+    require(!state.positionTimestampAccurate,
+            "legacy query timestamps must not be accepted as precise position events");
 
     snapshot.currentPosition100ns = 200LL * 10000000;
     state = smtc::applemusic::mapAppleMusicSnapshotToMediaState(snapshot);
@@ -858,6 +864,70 @@ void testAppleMusicInternalStateMapping() {
     snapshot.album.clear();
     state = smtc::applemusic::mapAppleMusicSnapshotToMediaState(snapshot);
     require(state.artist == L"Artist From Subtitle" && state.album == L"Album From Subtitle", "Apple Music subtitle should fill missing artist and album");
+}
+
+void testAppleMusicEventDelayCompensation() {
+    smtc::applemusic::AppleMusicInternalSnapshot snapshot;
+    snapshot.name = L"Song";
+    snapshot.currentPosition100ns = 42LL * 10000000;
+    snapshot.duration100ns = 180LL * 10000000;
+    snapshot.playing = true;
+    snapshot.positionTimestampAccurate = true;
+    const auto sampled = smtc::playback::readPerformanceCounter();
+    // The position event occurred 200 ms before delivery to the UI.
+    snapshot.queryQpc = sampled.ticks - sampled.frequency / 5;
+    snapshot.qpcFrequency = sampled.frequency;
+    const auto state = smtc::applemusic::mapAppleMusicSnapshotToMediaState(snapshot);
+    const auto received = smtc::playback::readPerformanceCounter();
+    const auto expected = 42000 + smtc::playback::qpcMilliseconds(received.ticks - snapshot.queryQpc, sampled.frequency);
+    require(state.positionTimestampAccurate && state.rawPositionMs == 42000,
+            "event provenance and original position must survive bridge mapping");
+    require(state.positionMs >= 42200 && state.positionMs <= expected,
+            "event delivery time must be added to the playing position exactly once");
+    require(state.positionSampleTimeMs >= sampled.milliseconds() &&
+            state.positionSampleTimeMs <= received.milliseconds(),
+            "the compensated position must carry its actual receiving time");
+    snapshot.playing = false;
+    require(smtc::applemusic::mapAppleMusicSnapshotToMediaState(snapshot).positionMs == 42000,
+            "a paused event must never extrapolate delivery or pause time");
+    snapshot.playing = true;
+    snapshot.queryQpc = sampled.ticks - sampled.frequency * 12;
+    require(!smtc::applemusic::mapAppleMusicSnapshotToMediaState(snapshot).positionTimestampAccurate,
+            "an event that stopped updating must not be used to rewind the active clock");
+    snapshot.queryQpc = 0;
+    require(!smtc::applemusic::mapAppleMusicSnapshotToMediaState(snapshot).positionTimestampAccurate,
+            "a missing source timestamp must not be classified as precise");
+
+    constexpr std::int64_t frequency = 10'000'000;
+    constexpr std::int64_t thirtyDays = 30LL * 24 * 60 * 60;
+    require(smtc::playback::qpcMilliseconds(thirtyDays * frequency + frequency / 5, frequency) ==
+            thirtyDays * 1000 + 200,
+            "QPC milliseconds must not overflow after weeks of uptime");
+}
+
+void testSmoothClockDrivesTwoHundredMillisecondWords() {
+    std::string ttml = R"(<tt xmlns="http://www.w3.org/ns/ttml" xmlns:itunes="http://music.apple.com/lyric-ttml-internal" itunes:timing="Word"><body><div><p begin="10000ms" end="16400ms">)";
+    for (int index = 0; index < 32; ++index) {
+        ttml += "<span begin=\"" + std::to_string(10000 + index * 200) + "ms\" end=\"" +
+                std::to_string(10200 + index * 200) + "ms\">字</span>";
+    }
+    ttml += "</p></div></body></tt>";
+    smtc::lyrics::LrcParser parser;
+    require(parser.parseUtf8(ttml), "200 ms word-level TTML must parse");
+    smtc::playback::PlaybackClock clock;
+    clock.synchronize(10000, 0, true);
+    clock.update(11200, 1000, true);
+    const auto initialFrame = parser.frameAt(clock.positionAt(1000), 1);
+    const auto referenceFrame = parser.frameAt(11200, 1);
+    require(referenceFrame.highlightPercent - initialFrame.highlightPercent >= 300,
+            "a 200 ms clock lag must reproduce the reported one-character sweep difference");
+    clock.update(12200, 2000, true);
+    clock.update(13200, 3000, true);
+    const auto correctedFrame = parser.frameAt(clock.positionAt(3000), 1);
+    const auto accurateFrame = parser.frameAt(13200, 1);
+    require(correctedFrame.text == accurateFrame.text && correctedFrame.drawWordHighlight &&
+            std::abs(correctedFrame.highlightPercent - accurateFrame.highlightPercent) <= 40,
+            "smooth clock correction must restore the sweep without changing any TTML times");
 }
 
 void testAppleMusicStartupBridgeConnectionPolicy() {
@@ -1092,6 +1162,8 @@ int main() {
         testTtmlReplacementUsesItsOwnTimeline();
         testAppleMusicBridgeDynamicIidRequest();
         testAppleMusicInternalStateMapping();
+        testAppleMusicEventDelayCompensation();
+        testSmoothClockDrivesTwoHundredMillisecondWords();
         testAppleMusicStartupBridgeConnectionPolicy();
         testEnglishConfigRoundTrip();
         testLegacyConfigMigration();

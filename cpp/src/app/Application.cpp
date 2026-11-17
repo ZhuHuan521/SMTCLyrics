@@ -1,6 +1,7 @@
 #include "app/Application.h"
 
 #include "lyrics/LyricRepository.h"
+#include "playback/PerformanceClock.h"
 #include "resource.h"
 #include "util/Encoding.h"
 #include "util/Path.h"
@@ -26,8 +27,6 @@ constexpr int kMinSmtcPollIntervalMs = 500;
 constexpr int kMaxSmtcPollIntervalMs = 2000;
 // SMTC1 在换歌初期的位置偶尔会滞后，延迟一段时间后再校准一次。
 constexpr long long kSmtc1TrackChangeCalibrationDelayMs = 10000;
-// Apple Music 内部位置偶尔会有小幅抖动；超过该阈值才认为用户拖动了进度。
-constexpr long long kAppleMusicPositionCorrectionThresholdMs = 1500;
 // 后台歌词加载线程通过自定义窗口消息把结果交回 UI 线程。
 constexpr UINT kLyricsLoadedMessage = WM_APP + 101;
 
@@ -201,6 +200,8 @@ void Application::playbackTick() {
                 translationVisible_ = false;
                 smtc1TrackChangeCalibrationAtMs_ = 0;
                 isPlaying_ = false;
+                appleMusicClock_.reset();
+                lastAppleMusicRawPositionMs_ = -1;
                 controlWindow_.setCurrentLyricSource(L"未加载");
                 showTextOnce(noPlaybackMessage());
                 return;
@@ -209,43 +210,25 @@ void Application::playbackTick() {
             const auto keyword = lyrics::makeKeyword(state.artist, state.title);
             if (keyword.empty()) return;
 
-            const long long now = currentTimeMs();
-            const auto syncToAppleMusicPosition = [&] {
-                lastSmtcPositionMs_ = state.positionMs;
-                lastAcceptedPositionMs_ = state.positionMs + totalOffsetMs();
-                lastSmtcTimestampMs_ = now;
-            };
-            const auto scheduleAppleMusicCalibration = [&] {
-                smtc1TrackChangeCalibrationAtMs_ = state.playing ? now + kSmtc1TrackChangeCalibrationDelayMs : 0;
-            };
-
-            if (keyword != currentKeyword_) {
+            const auto sampleTime = state.positionSampleTimeMs > 0 ? state.positionSampleTimeMs : currentTimeMs();
+            const bool trackChanged = keyword != currentKeyword_;
+            const bool rawPositionChanged = state.rawPositionMs != lastAppleMusicRawPositionMs_;
+            if (trackChanged) {
+                appleMusicClock_.synchronize(state.positionMs, sampleTime, state.playing);
                 currentKeyword_ = keyword;
-                syncToAppleMusicPosition();
-                scheduleAppleMusicCalibration();
                 loadLyricsForCurrentTrack(state);
+            } else if (state.positionTimestampAccurate || !state.playing ||
+                       state.playing != appleMusicClock_.playing() ||
+                       (rawPositionChanged && std::abs(state.positionMs - appleMusicClock_.positionAt(sampleTime)) >
+                                              playback::PlaybackClock::kSeekThresholdMs)) {
+                // Poll at the configured interval; only local clock arithmetic runs per frame.
+                appleMusicClock_.update(state.positionMs, sampleTime, state.playing);
             }
-
-            const bool wasPlaying = isPlaying_;
-            isPlaying_ = state.playing;
-            const bool trackChangeCalibrationDue = smtc1TrackChangeCalibrationAtMs_ > 0 && now >= smtc1TrackChangeCalibrationAtMs_;
-            if (!state.playing) {
-                syncToAppleMusicPosition();
-                smtc1TrackChangeCalibrationAtMs_ = 0;
-            } else if (!wasPlaying) {
-                syncToAppleMusicPosition();
-                scheduleAppleMusicCalibration();
-            } else if (trackChangeCalibrationDue) {
-                syncToAppleMusicPosition();
-                smtc1TrackChangeCalibrationAtMs_ = 0;
-            } else {
-                const long long localEstimate = lastSmtcPositionMs_ + (now - lastSmtcTimestampMs_);
-                const long long delta = state.positionMs - localEstimate;
-                if (std::abs(delta) > kAppleMusicPositionCorrectionThresholdMs) {
-                    syncToAppleMusicPosition();
-                    smtc1TrackChangeCalibrationAtMs_ = 0;
-                }
-            }
+            // Query-only samples may still contain a cached position. They can
+            // identify a real seek, but must not repeatedly drag normal playback back.
+            lastAppleMusicRawPositionMs_ = state.rawPositionMs;
+            isPlaying_ = appleMusicClock_.playing();
+            smtc1TrackChangeCalibrationAtMs_ = 0;
 
             if (!parser_.empty()) {
                 parser_.frameAt(estimatedPositionMs(currentTimeMs()), config_.displayMode, scratchFrame_);
@@ -351,6 +334,10 @@ void Application::applyConfig(const config::AppConfig& config) {
     // 配置变更会影响歌词偏移、样式和轮询周期，因此需要同时更新持久化和运行态。
     const int previousSmtcMode = config_.smtcMode;
     config_ = config;
+    if (previousSmtcMode != config_.smtcMode) {
+        appleMusicClock_.reset();
+        lastAppleMusicRawPositionMs_ = -1;
+    }
     configStore_.save(config_);
     if (previousSmtcMode == 3 && config_.smtcMode != 3) {
         appleMusic_.shutdown();
@@ -835,20 +822,16 @@ void Application::showFrameIfChanged(const lyrics::LyricFrame& frame) {
 }
 
 long long Application::estimatedPositionMs(long long now) const {
+    if (config_.smtcMode == 3) {
+        // User offsets do not affect clock calibration or seek detection.
+        return appleMusicClock_.positionAt(now) + totalOffsetMs();
+    }
     // 暂停时固定在最后接受的位置；播放时按本地时间差外推。
     return isPlaying_ ? lastAcceptedPositionMs_ + (now - lastSmtcTimestampMs_) : lastAcceptedPositionMs_;
 }
 
 long long Application::currentTimeMs() const {
-    // QueryPerformanceCounter 是单调高精度时钟，适合做歌词动画插值。
-    static const long long frequency = [] {
-        LARGE_INTEGER freq{};
-        QueryPerformanceFrequency(&freq);
-        return freq.QuadPart;
-    }();
-    LARGE_INTEGER counter{};
-    QueryPerformanceCounter(&counter);
-    return (counter.QuadPart * 1000) / frequency;
+    return playback::readPerformanceCounter().milliseconds();
 }
 
 }

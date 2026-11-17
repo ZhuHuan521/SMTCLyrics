@@ -12,6 +12,7 @@ constexpr std::uint32_t kVersion = 4;
 constexpr std::uint32_t kCommandSnapshot = 1;
 constexpr std::uint32_t kCommandShutdown = 2;
 constexpr wchar_t kPipeNamePrefix[] = L"SMTCLyricsAppleMusicBridge6-";
+constexpr wchar_t kEventPositionCapability[] = L"smtc:event-position-qpc-v1";
 constexpr std::size_t kTextChars = 256;
 constexpr std::size_t kErrorChars = 512;
 

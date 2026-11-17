@@ -1,4 +1,5 @@
 #include "applemusic/AppleMusicBridgeProtocol.h"
+#include "applemusic/AppleMusicPositionTracker.h"
 
 #include <windows.h>
 #include <aclapi.h>
@@ -7,10 +8,12 @@
 #include <winstring.h>
 
 #include <algorithm>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <iterator>
+#include <new>
 #include <string>
 #include <string_view>
 
@@ -248,6 +251,234 @@ void captureQpc(bridge::SnapshotResponse& response) {
     response.qpcFrequency = frequency.QuadPart;
 }
 
+std::uintptr_t objectIdentity(void* object) noexcept {
+    void* identity = nullptr;
+    if (!object || FAILED(queryInterface(object, smtc::applemusic::property_events::kUnknownGuid, &identity)) || !identity) {
+        return 0;
+    }
+    const auto value = reinterpret_cast<std::uintptr_t>(identity);
+    releaseInspectable(identity);
+    return value;
+}
+
+// One subscription per player/item object. Position changes are stamped on the
+// publishing thread; snapshot requests and the render timer remain low-cost.
+class PositionEventObserver {
+public:
+    smtc::applemusic::TimedPositionSample snapshot(
+        void* player, void* itemObject, const bridge::SnapshotRequest& request,
+        std::int64_t rawPosition, std::int64_t rawQpc, bool playing,
+        std::int64_t identityObservedQpc) noexcept {
+        const auto playerIdentity = objectIdentity(player);
+        const auto itemIdentity = objectIdentity(itemObject);
+        if (!stopping_.load(std::memory_order_seq_cst)) {
+            ensureBindings(player, playerIdentity, itemObject, itemIdentity, request, identityObservedQpc);
+        }
+        AcquireSRWLockExclusive(&sampleLock_);
+        const auto sample = tracker_.query(itemIdentity, rawPosition, rawQpc, playing, identityObservedQpc);
+        ReleaseSRWLockExclusive(&sampleLock_);
+        return sample;
+    }
+
+    bool close(DWORD timeoutMs) noexcept {
+        stopping_.store(true, std::memory_order_seq_cst);
+        retire(playerBinding_);
+        retire(itemBinding_);
+        const auto started = GetTickCount64();
+        Binding** cursor = &retired_;
+        while (*cursor) {
+            Binding* binding = *cursor;
+            const auto elapsed = GetTickCount64() - started;
+            const DWORD remaining = elapsed < timeoutMs ? static_cast<DWORD>(timeoutMs - elapsed) : 0;
+            if (binding->subscription.close(remaining)) {
+                *cursor = binding->next;
+                delete binding;
+            } else {
+                cursor = &binding->next;
+            }
+        }
+        return retired_ == nullptr;
+    }
+
+private:
+    enum class Kind { Player, Item };
+    struct Binding {
+        PositionEventObserver* owner = nullptr;
+        Kind kind = Kind::Item;
+        void* player = nullptr;
+        std::uintptr_t playerIdentity = 0;
+        std::uintptr_t objectIdentity = 0;
+        bridge::SnapshotRequest request;
+        smtc::applemusic::property_events::PropertyChangedSubscription subscription;
+        Binding* next = nullptr;
+
+        ~Binding() {
+            // Destruction only follows a successful subscription.close().
+            releaseInspectable(player);
+        }
+    };
+
+    static bool isRelevantProperty(void* args, Kind kind) noexcept {
+        using namespace smtc::applemusic::property_events;
+        if (!args) return false;
+        void* propertyArgs = nullptr;
+        HRESULT hr = table<UnknownVTable>(args)->QueryInterface(args, kArgsGuid, &propertyArgs);
+        if (FAILED(hr) || !propertyArgs) {
+            propertyArgs = nullptr;
+            hr = table<UnknownVTable>(args)->QueryInterface(args, kLegacyArgsGuid, &propertyArgs);
+        }
+        if (FAILED(hr) || !propertyArgs) return false;
+        HSTRING name = nullptr;
+        hr = table<ArgsVTable>(propertyArgs)->get_PropertyName(propertyArgs, &name);
+        release(propertyArgs);
+        if (FAILED(hr)) return false;
+        UINT32 length = 0;
+        const wchar_t* text = WindowsGetStringRawBuffer(name, &length);
+        const std::wstring_view property(text ? text : L"", length);
+        const bool relevant = kind == Kind::Player ?
+            property.empty() || property == L"NowPlayingItem" : property == L"CurrentPosition";
+        WindowsDeleteString(name);
+        return relevant;
+    }
+
+    static bool readPlaying(void* player, const bridge::SnapshotRequest& request) noexcept {
+        void* stateObject = nullptr;
+        void* state = nullptr;
+        bool playing = false;
+        if (player && SUCCEEDED(vtable<IPlayerVTable>(player)->get_PlayerState(player, &stateObject)) && stateObject) {
+            const GUID& stateGuid = hasGuid(request.playerStateIid) ? request.playerStateIid : kIPlayerStateGuid;
+            if (SUCCEEDED(queryInterface(stateObject, stateGuid, &state)) && state) {
+                playing = getBool(state, vtable<IPlayerStateVTable>(state)->get_IsPlaying);
+            }
+        }
+        releaseInspectable(state);
+        releaseInspectable(stateObject);
+        return playing;
+    }
+
+    static void capture(void* context, void* sender, void* args, std::int64_t qpc) noexcept {
+        auto* binding = static_cast<Binding*>(context);
+        auto* owner = binding->owner;
+        if (owner->stopping_.load(std::memory_order_seq_cst) ||
+            binding->playerIdentity != owner->playerIdentity_.load(std::memory_order_seq_cst) ||
+            !isRelevantProperty(args, binding->kind)) return;
+
+        void* itemObject = nullptr;
+        void* item = nullptr;
+        void* player = nullptr;
+        if (binding->kind == Kind::Player) {
+            if (SUCCEEDED(queryPlayerInterface(sender, binding->request, &player)) && player) {
+                vtable<IPlayerVTable>(player)->get_NowPlayingItem(player, &itemObject);
+            }
+        } else if (sender) {
+            itemObject = sender;
+            vtable<InspectableVTable>(itemObject)->AddRef(itemObject);
+        }
+        if (itemObject) queryNowPlayingInterface(itemObject, binding->request, &item);
+        bool positionRead = false;
+        const auto position = item ? getInt64(item, vtable<INowPlayingItemVTable>(item)->get_CurrentPosition, &positionRead) : 0;
+        const auto identity = objectIdentity(itemObject);
+        const bool playing = readPlaying(binding->player, binding->request);
+        if (positionRead && identity &&
+            !owner->stopping_.load(std::memory_order_seq_cst) &&
+            binding->playerIdentity == owner->playerIdentity_.load(std::memory_order_seq_cst)) {
+            AcquireSRWLockExclusive(&owner->sampleLock_);
+            if (binding->kind == Kind::Player) {
+                // Object replacement does not establish when its cached
+                // CurrentPosition was measured. Only the item's own position
+                // notification is an accurate position timestamp.
+                owner->tracker_.query(identity, position, qpc, playing);
+            } else {
+                owner->tracker_.event(identity, position, qpc, playing);
+            }
+            ReleaseSRWLockExclusive(&owner->sampleLock_);
+        }
+        releaseInspectable(item);
+        releaseInspectable(itemObject);
+        releaseInspectable(player);
+    }
+
+    Binding* makeBinding(void* observable, std::uintptr_t identity, Kind kind,
+                         void* player, std::uintptr_t playerIdentity,
+                         const bridge::SnapshotRequest& request) noexcept {
+        auto* binding = new (std::nothrow) Binding;
+        if (!binding) return nullptr;
+        binding->owner = this;
+        binding->kind = kind;
+        binding->player = player;
+        binding->playerIdentity = playerIdentity;
+        binding->objectIdentity = identity;
+        binding->request = request;
+        vtable<InspectableVTable>(player)->AddRef(player);
+        if (!binding->subscription.attach(observable, binding, &capture)) {
+            delete binding;
+            return nullptr;
+        }
+        return binding;
+    }
+
+    void retire(Binding*& binding) noexcept {
+        if (!binding) return;
+        binding->subscription.disable();
+        binding->next = retired_;
+        retired_ = binding;
+        binding = nullptr;
+    }
+
+    void reapRetired() noexcept {
+        Binding** cursor = &retired_;
+        while (*cursor) {
+            Binding* binding = *cursor;
+            if (binding->subscription.close(0)) {
+                *cursor = binding->next;
+                delete binding;
+            } else {
+                cursor = &binding->next;
+            }
+        }
+    }
+
+    void ensureBindings(void* player, std::uintptr_t playerIdentity,
+                        void* itemObject, std::uintptr_t itemIdentity,
+                        const bridge::SnapshotRequest& request, std::int64_t qpc) noexcept {
+        if (!playerIdentity || !itemIdentity) return;
+        AcquireSRWLockExclusive(&sampleLock_);
+        const bool currentIdentity = tracker_.track(itemIdentity, qpc);
+        ReleaseSRWLockExclusive(&sampleLock_);
+        if (!currentIdentity) return;
+        const auto oldPlayerIdentity = playerIdentity_.load(std::memory_order_seq_cst);
+        if (oldPlayerIdentity != playerIdentity) {
+            retire(playerBinding_);
+            retire(itemBinding_);
+            playerIdentity_.store(playerIdentity, std::memory_order_seq_cst);
+            failedPlayerIdentity_ = 0;
+            failedItemIdentity_ = 0;
+        }
+        if (itemBinding_ && itemBinding_->objectIdentity != itemIdentity) retire(itemBinding_);
+        if (!playerBinding_ && failedPlayerIdentity_ != playerIdentity) {
+            playerBinding_ = makeBinding(player, playerIdentity, Kind::Player, player, playerIdentity, request);
+            if (!playerBinding_) failedPlayerIdentity_ = playerIdentity;
+        }
+        if (!itemBinding_ && failedItemIdentity_ != itemIdentity) {
+            itemBinding_ = makeBinding(itemObject, itemIdentity, Kind::Item, player, playerIdentity, request);
+            if (!itemBinding_) failedItemIdentity_ = itemIdentity;
+        }
+        reapRetired();
+    }
+
+    SRWLOCK sampleLock_ = SRWLOCK_INIT;
+    smtc::applemusic::AppleMusicPositionTracker tracker_;
+    std::atomic<std::uintptr_t> playerIdentity_{0};
+    std::atomic<bool> stopping_{false};
+    std::uintptr_t failedPlayerIdentity_ = 0;
+    std::uintptr_t failedItemIdentity_ = 0;
+    Binding* playerBinding_ = nullptr;
+    Binding* itemBinding_ = nullptr;
+    Binding* retired_ = nullptr;
+};
+
+PositionEventObserver gPositionEvents;
+
 bool validRequest(const bridge::SnapshotRequest& request) {
     return request.magic == bridge::kMagic &&
            request.version == bridge::kVersion &&
@@ -320,6 +551,7 @@ bridge::SnapshotResponse readSnapshot(const bridge::SnapshotRequest& request) {
 
     void* nowPlayingObjectRaw = nullptr;
     hr = vtable<IPlayerVTable>(playerInterfaceRaw)->get_NowPlayingItem(playerInterfaceRaw, &nowPlayingObjectRaw);
+    const auto itemObservedQpc = queryQpc();
     if (FAILED(hr) || !nowPlayingObjectRaw) {
         releaseInspectable(playerInterfaceRaw);
         releaseInspectable(playerRaw);
@@ -406,6 +638,7 @@ bridge::SnapshotResponse readSnapshot(const bridge::SnapshotRequest& request) {
     if (positionRead) {
         response.queryQpc = queryQpc();
     }
+    const auto positionQueryQpc = response.queryQpc;
     response.duration100ns = getInt64(nowPlayingRaw, now->get_Duration);
 
     void* playerStateObjectRaw = nullptr;
@@ -420,7 +653,17 @@ bridge::SnapshotResponse readSnapshot(const bridge::SnapshotRequest& request) {
         }
     }
 
-    response.status = static_cast<std::uint32_t>(bridge::Status::Ok);
+    if (positionRead) {
+        const auto sample = gPositionEvents.snapshot(playerInterfaceRaw, nowPlayingObjectRaw, request,
+            response.position100ns, positionQueryQpc, response.playing != 0, itemObservedQpc);
+        response.position100ns = sample.position100ns;
+        response.queryQpc = sample.queryQpc;
+        response.hresult = sample.fromEvent ? S_OK : S_FALSE;
+        copyWide(response.contentProperties, bridge::kEventPositionCapability);
+        response.status = static_cast<std::uint32_t>(bridge::Status::Ok);
+    } else {
+        setError(response, bridge::Status::InternalError, E_FAIL, L"读取 Apple Music 播放位置失败");
+    }
 
     releaseInspectable(playerStateRaw);
     releaseInspectable(playerStateObjectRaw);
@@ -454,11 +697,18 @@ bool servePipeClient(HANDLE pipe) {
     response.magic = bridge::kMagic;
     response.version = bridge::kVersion;
     captureQpc(response);
+    bool shutdownRequested = false;
 
     if (!ReadFile(pipe, &request, sizeof(request), &read, nullptr) || read != sizeof(request) || !validRequest(request)) {
         setError(response, bridge::Status::InvalidRequest, E_INVALIDARG, L"Apple Music bridge 收到无效请求");
     } else if (request.command == bridge::kCommandShutdown) {
-        response.status = static_cast<std::uint32_t>(bridge::Status::Ok);
+        shutdownRequested = gPositionEvents.close(3000);
+        if (shutdownRequested) {
+            response.status = static_cast<std::uint32_t>(bridge::Status::Ok);
+        } else {
+            setError(response, bridge::Status::InternalError, HRESULT_FROM_WIN32(ERROR_BUSY),
+                L"Apple Music 位置回调尚未释放，bridge 保持加载");
+        }
     } else {
         response = readSnapshot(request);
     }
@@ -466,7 +716,7 @@ bool servePipeClient(HANDLE pipe) {
     DWORD written = 0;
     WriteFile(pipe, &response, sizeof(response), &written, nullptr);
     FlushFileBuffers(pipe);
-    return validRequest(request) && request.command == bridge::kCommandShutdown;
+    return shutdownRequested;
 }
 
 DWORD WINAPI pipeThread(void*) {

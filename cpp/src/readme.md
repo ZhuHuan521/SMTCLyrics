@@ -125,9 +125,13 @@ SMTC 的时间轴更新频率和不同播放器行为并不完全一致，所以
 
 `SmtcProvider` 先把系统返回的原始时间轴整理成 `MediaState::positionMs`。模式 1 更依赖 SMTC 的 `LastUpdatedTime`，模式 2 更依赖本地 `steady_clock` 外推。
 
-`Application` 再用 `lastSmtcPositionMs_`、`lastSmtcTimestampMs_` 和 `lastAcceptedPositionMs_` 做渲染层插值。`lastAcceptedPositionMs_` 用于避免轻微回跳导致歌词抖动（回跳阈值 `kMaxPositionJumpMs` 为 500ms）。这样 SMTC 可以低频轮询，但歌词高亮仍能用约 60fps 的渲染定时器平滑推进。
+SMTC 模式仍由 `Application` 用位置基线和本地时间差做渲染层插值。
 
-全局歌词偏移 `config_.lyricOffsetMs` 和单曲偏移 `currentSongOffsetMs_` 会叠加成 `totalOffsetMs()`，用于修正解析帧时的播放位置。
+Apple Music 内部模式从 v1.4.2 起单独使用 `PlaybackClock`。`NowPlayingItem.CurrentPosition` 是约一秒更新一次的缓存属性，不能把每次查询时间当成位置的实际更新时间。bridge 订阅 `CurrentPosition` 属性变化，将位置与事件发生时的 QPC 保存成一对样本；重复查询保留该事件时间，主程序补偿事件到接收期间的播放时间。暂停直接接受停止位置，恢复时清除暂停前的计时基线。查询回退值和过旧事件不参与普通相位纠正。
+
+内部模式保留配置的 500–2000ms 轮询间隔和约 60fps 本地渲染。小偏差先经过相位滤波，再通过有界平滑过渡逐渐消除：20ms 以内的采样噪声忽略，正常纠偏的推进速率保持在 0.8–1.2 倍，不会倒退；收到超过 1500ms 的实际跳转或播放状态变化样本后重新同步。每帧只做常数次本地运算，主轮询频率和渲染频率保持原配置；相关事件回调只作轻量属性采样。成功解析的接口 IID 按 Apple Music 进程缓存，避免每次轮询重读 WinMD。
+
+全局歌词偏移 `config_.lyricOffsetMs` 和单曲偏移 `currentSongOffsetMs_` 会叠加成 `totalOffsetMs()`，用于修正解析帧时的播放位置；内部模式在读出时钟后才叠加偏移，偏移不会影响相位滤波或跳转判定。
 
 ## 九、界面与绘制
 

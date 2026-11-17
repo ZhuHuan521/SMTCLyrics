@@ -1,6 +1,7 @@
 #include "applemusic/AppleMusicInternalProvider.h"
 
 #include "applemusic/AppleMusicBridgeProtocol.h"
+#include "playback/PerformanceClock.h"
 #include "resource.h"
 #include "util/Path.h"
 
@@ -197,12 +198,10 @@ std::int64_t normalizeMediaTimeMs(std::int64_t value) {
     return value / 10'000;
 }
 
-std::int64_t snapshotPositionMs(const AppleMusicInternalSnapshot& snapshot) {
+std::int64_t snapshotPositionMs(const AppleMusicInternalSnapshot& snapshot, const playback::PerformanceCounter& now) {
     std::int64_t positionMs = normalizeMediaTimeMs(snapshot.currentPosition100ns);
     if (snapshot.playing && snapshot.queryQpc > 0 && snapshot.qpcFrequency > 0) {
-        LARGE_INTEGER now{};
-        QueryPerformanceCounter(&now);
-        const auto elapsedMs = ((now.QuadPart - snapshot.queryQpc) * 1000) / snapshot.qpcFrequency;
+        const auto elapsedMs = playback::qpcMilliseconds(now.ticks - snapshot.queryQpc, snapshot.qpcFrequency);
         if (elapsedMs > 0 && elapsedMs < 10'000) {
             positionMs += elapsedMs;
         }
@@ -406,6 +405,8 @@ AppleMusicInternalSnapshot snapshotFromResponse(const bridge::SnapshotResponse& 
     snapshot.queryQpc = response.queryQpc;
     snapshot.qpcFrequency = response.qpcFrequency;
     snapshot.playing = response.playing != 0;
+    snapshot.positionTimestampAccurate = response.hresult == S_OK &&
+        std::wstring_view(response.contentProperties) == bridge::kEventPositionCapability;
     applySubtitleFallback(snapshot);
     return snapshot;
 }
@@ -419,48 +420,12 @@ std::wstring readableSnapshotMessage(const playback::MediaState& state) {
     return message;
 }
 
-bool remoteFreeLibrary(DWORD pid, HMODULE module, DWORD* error = nullptr) {
-    if (error) *error = ERROR_SUCCESS;
-    HANDLE processRaw = OpenProcess(PROCESS_CREATE_THREAD | PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
-    if (!processRaw) {
-        if (error) *error = GetLastError();
-        return false;
-    }
-    UniqueHandle process(processRaw);
-
-    HMODULE kernel32 = GetModuleHandleW(L"kernel32.dll");
-    auto freeLibrary = kernel32 ? reinterpret_cast<LPTHREAD_START_ROUTINE>(GetProcAddress(kernel32, "FreeLibrary")) : nullptr;
-    if (!freeLibrary) {
-        if (error) *error = GetLastError();
-        return false;
-    }
-
-    HANDLE threadRaw = CreateRemoteThread(process.get(), nullptr, 0, freeLibrary, module, 0, nullptr);
-    if (!threadRaw) {
-        if (error) *error = GetLastError();
-        return false;
-    }
-    UniqueHandle thread(threadRaw);
-
-    const DWORD wait = WaitForSingleObject(thread.get(), 5000);
-    if (wait != WAIT_OBJECT_0) {
-        if (error) *error = wait == WAIT_TIMEOUT ? WAIT_TIMEOUT : GetLastError();
-        return false;
-    }
-
-    DWORD exitCode = 0;
-    if (!GetExitCodeThread(thread.get(), &exitCode)) {
-        if (error) *error = GetLastError();
-        return false;
-    }
-    return exitCode != 0;
-}
-
 }
 
 playback::MediaState mapAppleMusicSnapshotToMediaState(const AppleMusicInternalSnapshot& input) {
     auto snapshot = input;
     applySubtitleFallback(snapshot);
+    const auto now = playback::readPerformanceCounter();
 
     playback::MediaState state;
     state.title = snapshot.name.empty() ? snapshot.subtitle : snapshot.name;
@@ -469,7 +434,13 @@ playback::MediaState mapAppleMusicSnapshotToMediaState(const AppleMusicInternalS
     state.appleMusicCatalogId = snapshot.adamId.empty() ? snapshot.canonicalId : snapshot.adamId;
     state.isrc = snapshot.isrc;
     state.durationMs = normalizeMediaTimeMs(snapshot.duration100ns);
-    state.positionMs = snapshotPositionMs(snapshot);
+    state.positionMs = snapshotPositionMs(snapshot, now);
+    state.rawPositionMs = normalizeMediaTimeMs(snapshot.currentPosition100ns);
+    state.positionSampleTimeMs = now.milliseconds();
+    const auto sampleAgeMs = playback::qpcMilliseconds(now.ticks - snapshot.queryQpc, snapshot.qpcFrequency);
+    state.positionTimestampAccurate = snapshot.positionTimestampAccurate &&
+        snapshot.queryQpc > 0 && snapshot.qpcFrequency > 0 && snapshot.queryQpc <= now.ticks &&
+        sampleAgeMs < 10'000;
     state.playing = snapshot.playing;
     if (state.durationMs > 0) {
         state.positionMs = std::clamp(state.positionMs, std::int64_t{0}, state.durationMs);
@@ -495,7 +466,7 @@ playback::MediaState AppleMusicInternalProvider::connectState(bool allowReload) 
 
     const DWORD appleMusicPid = findAppleMusicProcessId();
     if (!appleMusicPid) {
-        bridgePid_ = 0;
+        clearRuntime();
         lastError_ = L"Apple Music 未运行";
         return state;
     }
@@ -521,6 +492,7 @@ AppleMusicBridgeStatus AppleMusicInternalProvider::detectBridge() {
     status.appleMusicPid = appleMusicPid;
     status.appleMusicRunning = appleMusicPid != 0;
     if (!appleMusicPid) {
+        clearRuntime();
         status.message = L"Apple Music 未运行";
         lastError_ = status.message;
         return status;
@@ -579,7 +551,7 @@ bool AppleMusicInternalProvider::loadBridge(std::wstring& message) {
 
     if (isBridgeModuleLoaded(appleMusicPid)) {
         std::wstring detail;
-        if (!unloadBridgeModules(appleMusicPid, &detail)) {
+        if (!unloadBridge(detail)) {
             message = L"DLL 已加载但无法卸载旧实例: " + detail;
             lastError_ = message;
             return false;
@@ -623,12 +595,21 @@ bool AppleMusicInternalProvider::unloadBridge(std::wstring& message) {
     bridge::SnapshotResponse response;
     const bool wasLoaded = isBridgeModuleLoaded(appleMusicPid);
     const bool shutdownSent = sendBridgeCommand(appleMusicPid, bridge::kCommandShutdown, response);
+    // A live event handler must never be force-unloaded after a failed cleanup.
+    if ((shutdownSent && (response.status != static_cast<std::uint32_t>(bridge::Status::Ok) ||
+                          FAILED(static_cast<HRESULT>(response.hresult)))) ||
+        (!shutdownSent && wasLoaded)) {
+        message = shutdownSent ? responseErrorMessage(response, L"Apple Music bridge 事件清理未完成") : lastError_;
+        if (message.empty()) message = L"Apple Music bridge 未确认关闭，保留已加载的 DLL";
+        lastError_ = message;
+        return false;
+    }
     if (shutdownSent) {
         Sleep(200);
     }
 
     std::wstring detail;
-    const bool ok = unloadBridgeModules(appleMusicPid, &detail);
+    const bool ok = waitForBridgeUnload(appleMusicPid, &detail);
     clearRuntime();
     if (ok && (shutdownSent || wasLoaded) && detail == L"未检测到已加载的 DLL") {
         message = L"DLL 已卸载";
@@ -645,6 +626,15 @@ void AppleMusicInternalProvider::shutdown() {
 }
 
 bool AppleMusicInternalProvider::resolveCurrentIids(bridge::SnapshotRequest& request, std::wstring* detail) const {
+    const auto copyIids = [](bridge::SnapshotRequest& destination, const bridge::SnapshotRequest& source) {
+        destination.playerIid = source.playerIid;
+        destination.playerStaticsIid = source.playerStaticsIid;
+        destination.nowPlayingItemIid = source.nowPlayingItemIid;
+        destination.playerStateIid = source.playerStateIid;
+        destination.contentDescriptorDrivenIid = source.contentDescriptorDrivenIid;
+        destination.contentDescriptorIid = source.contentDescriptorIid;
+    };
+    if (detail) detail->clear();
     request.playerIid = {};
     request.playerStaticsIid = {};
     request.nowPlayingItemIid = {};
@@ -652,10 +642,19 @@ bool AppleMusicInternalProvider::resolveCurrentIids(bridge::SnapshotRequest& req
     request.contentDescriptorDrivenIid = {};
     request.contentDescriptorIid = {};
 
-    const DWORD pid = findAppleMusicProcessId();
+    // sendBridgeCommand 已查明目标 PID，避免同一次轮询再扫描全部进程。
+    const DWORD pid = bridgePid_;
+    if (cachedIidsPid_ != pid) {
+        cachedIidsPid_ = 0;
+        cachedIids_ = {};
+    }
     if (!pid) {
         if (detail) *detail = L"Apple Music 未运行";
         return false;
+    }
+    if (cachedIidsPid_ == pid) {
+        copyIids(request, cachedIids_);
+        return true;
     }
 
     const auto packageDir = appleMusicPackageDirectory(pid);
@@ -711,6 +710,10 @@ bool AppleMusicInternalProvider::resolveCurrentIids(bridge::SnapshotRequest& req
                           hasGuid(request.playerStaticsIid) &&
                           hasGuid(request.nowPlayingItemIid) &&
                           hasGuid(request.playerStateIid);
+    if (complete) {
+        copyIids(cachedIids_, request);
+        cachedIidsPid_ = pid;
+    }
     if (!complete && detail) {
         *detail = L"AMP.Services.winmd 中缺少必要的接口 IID，将使用 bridge 内置兼容值";
     }
@@ -895,7 +898,7 @@ bool AppleMusicInternalProvider::injectBridge(DWORD appleMusicPid, bool force) {
     return true;
 }
 
-bool AppleMusicInternalProvider::unloadBridgeModules(DWORD appleMusicPid, std::wstring* detail) {
+bool AppleMusicInternalProvider::waitForBridgeUnload(DWORD appleMusicPid, std::wstring* detail) {
     bool sawModule = false;
     DWORD enumError = ERROR_SUCCESS;
 
@@ -911,14 +914,12 @@ bool AppleMusicInternalProvider::unloadBridgeModules(DWORD appleMusicPid, std::w
         }
 
         sawModule = true;
-        for (const auto& module : modules) {
-            DWORD freeError = ERROR_SUCCESS;
-            remoteFreeLibrary(appleMusicPid, module.handle, &freeError);
-        }
+        // The worker releases its DLL only after its callbacks and pipe client
+        // have returned. An ACK does not mean that worker has already exited.
         Sleep(120);
     }
 
-    if (detail) *detail = L"DLL 仍在 AppleMusic.exe 中，可能仍有引用未释放";
+    if (detail) *detail = L"bridge 已确认关闭，等待 Apple Music 释放 DLL";
     return false;
 }
 
@@ -929,6 +930,8 @@ bool AppleMusicInternalProvider::isBridgeModuleLoaded(DWORD appleMusicPid) const
 
 void AppleMusicInternalProvider::clearRuntime() {
     bridgePid_ = 0;
+    cachedIidsPid_ = 0;
+    cachedIids_ = {};
     bridgeDllPath_.clear();
     lastInjectAttempt_ = {};
 }
